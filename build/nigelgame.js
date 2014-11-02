@@ -1,4 +1,4 @@
-var nigelgame = {}
+var nigelgame = {};
 
 nigelgame.start = function(options) {
   //initialize some things
@@ -31,13 +31,23 @@ nigelgame.start = function(options) {
       logicReady = true;
     }, options.minFreq || 33);
   }
+  
   function reqAnim() {
     if(doingFrame) return;
     doingFrame = true;
     if(logicReady) {
       logicReady = false;
-      view.update();
-      view.draw(screen);
+      if(!view.clock) view.clock = 0;
+      if(view.update) view.update();
+      if(view.nextView) {
+        var next = view.nextView;
+        view.nextView = null;
+        view = next;
+        if(!view.clock) view.clock = 0;
+      }
+      screen.fitElement();
+      if(view.draw) view.draw(screen);
+      ++view.clock;
     }
     doingFrame = false;
     window.requestAnimationFrame(reqAnim);
@@ -62,7 +72,7 @@ nigelgame.start = function(options) {
       if(view.keyup) view.keyup(key);
     }
   }
-}
+};
 
 window.requestAnimationFrame =
   window.requestAnimationFrame ||
@@ -75,16 +85,16 @@ nigelgame.Point = function(params) {
   this.y = params.y || 0;
   this.xAnchor = params.xAnchor || 0;
   this.yAnchor = params.yAnchor || 0;
-}
+};
 nigelgame.Point.prototype.xFor = function(screen) {
   return Math.round(this.xAnchor * screen.width / 100 + this.x);
-}
+};
 nigelgame.Point.prototype.yFor = function(screen) {
   return Math.round(this.yAnchor * screen.height / 100 + this.y);
-}
+};
 nigelgame.Point.prototype.coordsFor = function(screen) {
   return { x: this.xFor(screen), y: this.yFor(screen) };
-}
+};
 nigelgame.Point.prototype.translate = function(params) {
   return new nigelgame.Point({
     x: this.x + (params.x || 0),
@@ -92,7 +102,7 @@ nigelgame.Point.prototype.translate = function(params) {
     xAnchor: this.xAnchor + (params.xAnchor || 0),
     yAnchor: this.yAnchor + (params.yAnchor || 0)
   });
-}
+};
 
 nigelgame.Screen = function(element, mw, mh) {
   //vars
@@ -118,7 +128,7 @@ nigelgame.Screen = function(element, mw, mh) {
   if(this.element !== window && this.element.tabIndex < 0) this.element.tabIndex = 0;
   //fit to div
   this.fitElement();
-}
+};
 
 nigelgame.Screen.prototype.fitElement = function() {
   var w = this.element.clientWidth || this.element.innerWidth;
@@ -257,7 +267,7 @@ nigelgame.loadImages = function(sheetList, callback) {
     }
 
   }
-}
+};
 
 nigelgame.Sheet = function(alias, img, src, spriteWidth, spriteHeight) {
   this.alias = alias;
@@ -269,7 +279,7 @@ nigelgame.Sheet = function(alias, img, src, spriteWidth, spriteHeight) {
   this.spriteHeight = spriteHeight || this.height;
   this.numCols = Math.floor(this.width / this.spriteWidth);
   this.numRows = Math.floor(this.height / this.spriteHeight);
-}
+};
 
 nigelgame.Sheet.prototype.getFrameRect = function(frame) {
   if(frame!==undefined && (typeof frame === "number") && (frame%1)===0) {
@@ -287,4 +297,4 @@ nigelgame.Sheet.prototype.getFrameRect = function(frame) {
     width: fw,
     height: fh
   };
-}
+};

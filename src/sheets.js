@@ -39,7 +39,7 @@ nigelgame.loadImages = function(sheetList, callback) {
     }
 
   }
-}
+};
 
 nigelgame.Sheet = function(alias, img, src, spriteWidth, spriteHeight) {
   this.alias = alias;
@@ -51,7 +51,7 @@ nigelgame.Sheet = function(alias, img, src, spriteWidth, spriteHeight) {
   this.spriteHeight = spriteHeight || this.height;
   this.numCols = Math.floor(this.width / this.spriteWidth);
   this.numRows = Math.floor(this.height / this.spriteHeight);
-}
+};
 
 nigelgame.Sheet.prototype.getFrameRect = function(frame) {
   if(frame!==undefined && (typeof frame === "number") && (frame%1)===0) {
@@ -69,4 +69,4 @@ nigelgame.Sheet.prototype.getFrameRect = function(frame) {
     width: fw,
     height: fh
   };
-}
+};

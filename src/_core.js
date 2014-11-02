@@ -1,4 +1,4 @@
-var nigelgame = {}
+var nigelgame = {};
 
 nigelgame.start = function(options) {
   //initialize some things
@@ -31,13 +31,23 @@ nigelgame.start = function(options) {
       logicReady = true;
     }, options.minFreq || 33);
   }
+  
   function reqAnim() {
     if(doingFrame) return;
     doingFrame = true;
     if(logicReady) {
       logicReady = false;
-      view.update();
-      view.draw(screen);
+      if(!view.clock) view.clock = 0;
+      if(view.update) view.update();
+      if(view.nextView) {
+        var next = view.nextView;
+        view.nextView = null;
+        view = next;
+        if(!view.clock) view.clock = 0;
+      }
+      screen.fitElement();
+      if(view.draw) view.draw(screen);
+      ++view.clock;
     }
     doingFrame = false;
     window.requestAnimationFrame(reqAnim);
@@ -62,4 +72,4 @@ nigelgame.start = function(options) {
       if(view.keyup) view.keyup(key);
     }
   }
-}
+};

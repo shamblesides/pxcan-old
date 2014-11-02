@@ -22,7 +22,7 @@ nigelgame.Screen = function(element, mw, mh) {
   if(this.element !== window && this.element.tabIndex < 0) this.element.tabIndex = 0;
   //fit to div
   this.fitElement();
-}
+};
 
 nigelgame.Screen.prototype.fitElement = function() {
   var w = this.element.clientWidth || this.element.innerWidth;
