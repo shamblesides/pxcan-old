@@ -1,11 +1,3 @@
-// polyfills
-window.requestAnimationFrame =
-  window.requestAnimationFrame ||
-  window.mozRequestAnimationFrame ||
-  window.webkitRequestAnimationFrame ||
-  window.oRequestAnimationFrame;
-
-// nigelgame
 var nigelgame = {}
 
 nigelgame.start = function(options) {
@@ -72,81 +64,36 @@ nigelgame.start = function(options) {
   }
 }
 
-// image loading
-nigelgame.sheets = {};
+window.requestAnimationFrame =
+  window.requestAnimationFrame ||
+  window.mozRequestAnimationFrame ||
+  window.webkitRequestAnimationFrame ||
+  window.oRequestAnimationFrame;
 
-nigelgame.Sheet = function(alias, img, src, spriteWidth, spriteHeight) {
-  this.alias = alias;
-  this.img = img;
-  this.src = src;
-  this.width = img.width;
-  this.height = img.height;
-  this.spriteWidth = spriteWidth || this.width;
-  this.spriteHeight = spriteHeight || this.height;
-  this.numCols = Math.floor(this.width / this.spriteWidth);
-  this.numRows = Math.floor(this.height / this.spriteHeight);
+nigelgame.Point = function(params) {
+  this.x = params.x || 0;
+  this.y = params.y || 0;
+  this.xAnchor = params.xAnchor || 0;
+  this.yAnchor = params.yAnchor || 0;
+}
+nigelgame.Point.prototype.xFor = function(screen) {
+  return Math.round(this.xAnchor * screen.width / 100 + this.x);
+}
+nigelgame.Point.prototype.yFor = function(screen) {
+  return Math.round(this.yAnchor * screen.height / 100 + this.y);
+}
+nigelgame.Point.prototype.coordsFor = function(screen) {
+  return { x: this.xFor(screen), y: this.yFor(screen) };
+}
+nigelgame.Point.prototype.translate = function(params) {
+  return new nigelgame.Point({
+    x: this.x + (params.x || 0),
+    y: this.y + (params.y || 0),
+    xAnchor: this.xAnchor + (params.xAnchor || 0),
+    yAnchor: this.yAnchor + (params.yAnchor || 0)
+  });
 }
 
-nigelgame.Sheet.prototype.getFrameRect = function(frame) {
-  if(frame!==undefined && (typeof frame === "number") && (frame%1)===0) {
-    frame = { col: frame % this.numCols, row: Math.floor(frame / this.numCols) };
-  }
-  var fx = (frame!==undefined)? (frame.x!==undefined? frame.x: frame.col? frame.col*this.spriteWidth: 0): 0;
-  var fy = (frame!==undefined)? (frame.y!==undefined? frame.y: frame.row? frame.row*this.spriteHeight: 0): 0;
-  var fw = (frame!==undefined)? (frame.width!==undefined? frame.width: (frame.col!==undefined? this.spriteWidth: this.img.width-fx)): this.img.width-fx;
-  var fh = (frame!==undefined)? (frame.height!==undefined? frame.height: (frame.row!==undefined? this.spriteHeight: this.img.height-fy)): this.img.height-fy;
-  return {
-    left: fx,
-    top: fy,
-    right: fx + fw,
-    bottom: fy + fh,
-    width: fw,
-    height: fh
-  };
-}
-
-nigelgame.loadImages = function(sheetList, callback) {
-  var numRequested = 0;
-  var numLoaded = 0;
-  
-  for(var i = 0; i < sheetList.length; ++i) {
-    if(!sheetList[i].src) throw "missing source image";
-    if(!sheetList[i].alias) throw "missing alias";
-    if(nigelgame.sheets[sheetList[i].alias]) {
-      var oldsheet = nigelgame.sheets[sheetList[i].alias];
-      if(oldsheet.src === sheetList[i].src)
-        continue;
-      else
-        throw "Sheet already defined with alias " + oldsheet.alias + "(" + oldsheet.src + ", " + sheetList[i].src + ")";
-    }
-    loadSheet(sheetList[i]);
-  }
-  if(numRequested === 0) {
-    callback();
-  }
-  function loadSheet(sheetInfo) {
-    var img = new Image();
-    img.onload = onLoadedFile;
-    img.onerror = function() {
-      throw "Failed to load image " + sheetInfo.src;
-    }
-    img.src = sheetInfo.src;
-    ++numRequested;
-    
-    function onLoadedFile() {
-      nigelgame.sheets[sheetInfo.alias] = new nigelgame.Sheet(
-        sheetInfo.alias, img, sheetInfo.src, sheetInfo.spriteWidth, sheetInfo.spriteHeight
-      );
-      ++numLoaded;
-      if(numLoaded >= numRequested) {
-        callback();
-      }
-    }
-
-  }
-}
-
-// screen
 nigelgame.Screen = function(element, mw, mh) {
   //vars
   this.element = element;
@@ -269,26 +216,75 @@ nigelgame.Screen.prototype.drawString = function(text, font, point, cols, rows) 
   }
 };
 
-nigelgame.Point = function(params) {
-  this.x = params.x || 0;
-  this.y = params.y || 0;
-  this.xAnchor = params.xAnchor || 0;
-  this.yAnchor = params.yAnchor || 0;
+nigelgame.sheets = {};
+
+nigelgame.loadImages = function(sheetList, callback) {
+  var numRequested = 0;
+  var numLoaded = 0;
+  
+  for(var i = 0; i < sheetList.length; ++i) {
+    if(!sheetList[i].src) throw "missing source image";
+    if(!sheetList[i].alias) throw "missing alias";
+    if(nigelgame.sheets[sheetList[i].alias]) {
+      var oldsheet = nigelgame.sheets[sheetList[i].alias];
+      if(oldsheet.src === sheetList[i].src)
+        continue;
+      else
+        throw "Sheet already defined with alias " + oldsheet.alias + "(" + oldsheet.src + ", " + sheetList[i].src + ")";
+    }
+    loadSheet(sheetList[i]);
+  }
+  if(numRequested === 0) {
+    callback();
+  }
+  function loadSheet(sheetInfo) {
+    var img = new Image();
+    img.onload = onLoadedFile;
+    img.onerror = function() {
+      throw "Failed to load image " + sheetInfo.src;
+    }
+    img.src = sheetInfo.src;
+    ++numRequested;
+    
+    function onLoadedFile() {
+      nigelgame.sheets[sheetInfo.alias] = new nigelgame.Sheet(
+        sheetInfo.alias, img, sheetInfo.src, sheetInfo.spriteWidth, sheetInfo.spriteHeight
+      );
+      ++numLoaded;
+      if(numLoaded >= numRequested) {
+        callback();
+      }
+    }
+
+  }
 }
-nigelgame.Point.prototype.xFor = function(screen) {
-  return Math.round(this.xAnchor * screen.width / 100 + this.x);
+
+nigelgame.Sheet = function(alias, img, src, spriteWidth, spriteHeight) {
+  this.alias = alias;
+  this.img = img;
+  this.src = src;
+  this.width = img.width;
+  this.height = img.height;
+  this.spriteWidth = spriteWidth || this.width;
+  this.spriteHeight = spriteHeight || this.height;
+  this.numCols = Math.floor(this.width / this.spriteWidth);
+  this.numRows = Math.floor(this.height / this.spriteHeight);
 }
-nigelgame.Point.prototype.yFor = function(screen) {
-  return Math.round(this.yAnchor * screen.height / 100 + this.y);
-}
-nigelgame.Point.prototype.coordsFor = function(screen) {
-  return { x: this.xFor(screen), y: this.yFor(screen) };
-}
-nigelgame.Point.prototype.translate = function(params) {
-  return new nigelgame.Point({
-    x: this.x + (params.x || 0),
-    y: this.y + (params.y || 0),
-    xAnchor: this.xAnchor + (params.xAnchor || 0),
-    yAnchor: this.yAnchor + (params.yAnchor || 0)
-  });
+
+nigelgame.Sheet.prototype.getFrameRect = function(frame) {
+  if(frame!==undefined && (typeof frame === "number") && (frame%1)===0) {
+    frame = { col: frame % this.numCols, row: Math.floor(frame / this.numCols) };
+  }
+  var fx = (frame!==undefined)? (frame.x!==undefined? frame.x: frame.col? frame.col*this.spriteWidth: 0): 0;
+  var fy = (frame!==undefined)? (frame.y!==undefined? frame.y: frame.row? frame.row*this.spriteHeight: 0): 0;
+  var fw = (frame!==undefined)? (frame.width!==undefined? frame.width: (frame.col!==undefined? this.spriteWidth: this.img.width-fx)): this.img.width-fx;
+  var fh = (frame!==undefined)? (frame.height!==undefined? frame.height: (frame.row!==undefined? this.spriteHeight: this.img.height-fy)): this.img.height-fy;
+  return {
+    left: fx,
+    top: fy,
+    right: fx + fw,
+    bottom: fy + fh,
+    width: fw,
+    height: fh
+  };
 }
