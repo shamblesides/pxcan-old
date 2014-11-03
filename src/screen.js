@@ -119,3 +119,36 @@ nigelgame.Screen.prototype.drawString = function(text, font, point, cols, rows) 
     }
   }
 };
+
+nigelgame.Screen.prototype.drawStringBox = function(box, color, text, font, point, cols, rows) {
+  //calculate dimensions
+  var width = cols * font.spriteWidth + 2 * box.spriteWidth;
+  var height = rows * font.spriteHeight + 2 * box.spriteHeight;
+  //horizontal 
+  for(var di = box.spriteWidth, i = di; i <= width-di; i += di) {
+    //top
+    this.drawSprite(box, point.translate({ x: i, y: 0 }), {row:0, col:1});
+    //bottom
+    this.drawSprite(box, point.translate({ x: i, y: height - box.spriteHeight }), {row:2, col:1});
+  }
+  //vertical
+  for(var di = box.spriteHeight, i = di; i <= height-di; i += di) {
+    //left
+    this.drawSprite(box, point.translate({ x: 0, y: i }), {row:1, col:0});
+    //right
+    this.drawSprite(box, point.translate({ x: width-box.spriteWidth, y: i }), {row:1, col:2});
+  }
+  //corners
+  this.drawSprite(box, point, {row: 0, col: 0});
+  this.drawSprite(box, point.translate({ x: width-box.spriteWidth }), {row: 0, col: 2});
+  this.drawSprite(box, point.translate({ y: height-box.spriteHeight }), {row: 2, col: 0});
+  this.drawSprite(box, point.translate({ x: width-box.spriteWidth, y: height-box.spriteHeight }), {row: 2, col: 2});
+  //positioning of interior content
+  var contentPos = point.translate({ x: box.spriteWidth, y: box.spriteHeight })
+  //fill inside of box
+  this.fill(contentPos, cols * font.spriteWidth, rows * font.spriteHeight, color);
+  //message, if any
+  if(text) {
+    this.drawString(text, font, contentPos, cols, rows);
+  }
+};

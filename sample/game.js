@@ -8,6 +8,7 @@ function init(el) {
       { src: "img/chara.png", alias: "chara", spriteWidth: 20, spriteHeight: 20 },
       { src: "img/bg.png", alias: "bg" },
       { src: "img/ascii.png", alias: "ascii", spriteWidth: 8, spriteHeight: 8 },
+      { src: "img/uibox.png", alias: "uibox", spriteWidth: 8, spriteHeight: 8 }
     ],
     keyBinds: {
       //d, right
@@ -31,12 +32,27 @@ function init(el) {
 function TitleView() {}
 
 TitleView.prototype.draw = function(screen) {
-  screen.drawString(
-    "nigelgame demo!\n\npress space to play\n(must have\nkeyboard focus)",
+  screen.drawStringBox(
+    nigelgame.sheets.uibox,
+    "#000",
+    "NIGELGAME DEMO",
     nigelgame.sheets.ascii,
     new nigelgame.Point({
-      x: -80,
+      x: -66,
       y: -40,
+      xAnchor: 50,
+      yAnchor: 50
+    }),
+    "NIGELGAME DEMO".length,
+    1
+  );
+    
+  screen.drawString(
+    "press space to play\n\n   (must have\n keyboard focus)",
+    nigelgame.sheets.ascii,
+    new nigelgame.Point({
+      x: -76,
+      y: 0,
       xAnchor: 50,
       yAnchor: 50
     })
