@@ -67,12 +67,14 @@ function GameView() {
   this.chara = { x: 0, y: 0, xDir: 0, yDir: 0, speed: 3, frame: 0 };
 }
 
-GameView.prototype.update = function() {
+GameView.prototype.update = function(frameInfo) {
   this.chara.x += this.chara.xDir * this.chara.speed;
   this.chara.y += this.chara.yDir * this.chara.speed;
   if(this.chara.xDir || this.chara.yDir) {
     this.chara.frame = (this.chara.frame+1)%3;
   }
+  this.viewFrames = frameInfo.viewClock;
+  this.totalFrames = frameInfo.clock;
 };
 
 GameView.prototype.draw = function(screen) {
@@ -104,6 +106,17 @@ GameView.prototype.draw = function(screen) {
       yAnchor: 50,
       y: -50,
       x: -40
+    })
+  );
+  screen.drawString(
+    "view frames: " + this.viewFrames +
+    "\ntotal frames: " + this.totalFrames,
+    nigelgame.sheets.ascii,
+    new nigelgame.Point({
+      xAnchor: 50,
+      yAnchor: 50,
+      y: 50,
+      x: -80
     })
   );
 }

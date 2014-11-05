@@ -6,6 +6,8 @@ nigelgame.start = function(options) {
   var view = options.view;
   var logicReady = true;
   var doingFrame = false;
+  var totalClock = 0;
+  var viewClock = 0;
   //setup screen
   var screen = new nigelgame.Screen(
     options.element, options.width || null, options.height || null
@@ -37,17 +39,21 @@ nigelgame.start = function(options) {
     doingFrame = true;
     if(logicReady) {
       logicReady = false;
-      if(!view.clock) view.clock = 0;
-      if(view.update) view.update();
+      var frameInfo = {
+        clock: totalClock,
+        viewClock: viewClock
+      };
+      if(view.update) view.update(frameInfo);
+      ++viewClock;
+      ++totalClock;
       if(view.nextView) {
         var next = view.nextView;
         view.nextView = null;
         view = next;
-        if(!view.clock) view.clock = 0;
+        viewClock = 0;
       }
       screen.fitElement();
       if(view.draw) view.draw(screen);
-      ++view.clock;
     }
     doingFrame = false;
     window.requestAnimationFrame(reqAnim);
