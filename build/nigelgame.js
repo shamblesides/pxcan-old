@@ -39,21 +39,21 @@ nigelgame.start = function(options) {
     doingFrame = true;
     if(logicReady) {
       logicReady = false;
-      var frameInfo = {
-        clock: totalClock,
-        viewClock: viewClock
-      };
-      if(view.update) view.update(frameInfo);
-      ++viewClock;
-      ++totalClock;
       if(view.nextView) {
         var next = view.nextView;
         view.nextView = null;
         view = next;
         viewClock = 0;
       }
+      var clocks = {
+        total: totalClock,
+        view: viewClock
+      };
+      if(view.update) view.update(clocks);
       screen.fitElement();
-      if(view.draw) view.draw(screen);
+      if(view.draw) view.draw(screen, clocks);
+      ++viewClock;
+      ++totalClock;
     }
     doingFrame = false;
     window.requestAnimationFrame(reqAnim);

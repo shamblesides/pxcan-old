@@ -77,7 +77,7 @@ GameView.prototype.update = function(frameInfo) {
   this.totalFrames = frameInfo.clock;
 };
 
-GameView.prototype.draw = function(screen) {
+GameView.prototype.draw = function(screen, clocks) {
   screen.clear();
   screen.drawSprite(
     nigelgame.sheets.bg,
@@ -109,8 +109,8 @@ GameView.prototype.draw = function(screen) {
     })
   );
   screen.drawString(
-    "view frames: " + this.viewFrames +
-    "\ntotal frames: " + this.totalFrames,
+    "view frames: " + clocks.viewFrames +
+    "\ntotal frames: " + clocks.totalFrames,
     nigelgame.sheets.ascii,
     new nigelgame.Point({
       xAnchor: 50,
