@@ -3,6 +3,10 @@ var nigelgame = {};
 nigelgame.start = function(options) {
   //initialize some things
   var buttons = {};
+  var mouseState = {
+    startPoint: null,
+    lastPoint: null
+  }
   var view = options.view;
   var logicReady = true;
   var doingFrame = false;
@@ -22,10 +26,16 @@ nigelgame.start = function(options) {
   }
   
   function loadedImages() {
-    //listeners
+    //key listeners
     if(options.keyBinds) {
       options.element.addEventListener("keydown", gotKeyDown, false);
       options.element.addEventListener("keyup", gotKeyUp, false);
+    }
+    //mouse listeners
+    if(options.useTouch) {
+      options.element.addEventListener("mousedown", gotMouseDown, false);
+      options.element.addEventListener("mouseup", gotMouseUp, false);
+      options.element.addEventListener("mousemove", gotMouseMove, false);
     }
     // begin doing frame actions
     window.requestAnimationFrame(reqAnim);
@@ -77,5 +87,56 @@ nigelgame.start = function(options) {
       buttons[key] = false;
       if(view.keyup) view.keyup(key);
     }
+  }
+  
+  function gotMouseDown(evt) {
+    var point = mousePoint(evt);
+    mouseState.startPoint = point;
+    mouseState.lastPoint = point;
+    if(view.touch) view.touch(point, "mouse");
+  }
+  function gotMouseMove(evt) {
+    if(!mouseState.startPoint) return;
+    var point = mousePoint(evt);
+    point.startPoint = mouseState.startPoint;
+    point.lastPoint = mouseState.lastPoint;
+    point.lastPoint.startPoint = undefined;
+    point.lastPoint.lastPoint = undefined;
+    mouseState.lastPoint = point;
+    if(view.drag) view.drag(point, "mouse");
+  }
+  function gotMouseUp(evt) {
+    if(view.release && mouseState.startPoint) {
+      var point = mousePoint(evt);
+      point.startPoint = mouseState.startPoint;
+      view.release(point, "mouse");
+    }
+    mouseState.startPoint = null;
+    mouseState.lastPoint = null;
+  }
+  
+  //auxilliary functions for touches
+  function point(x, y) {
+    var sw = screen.width;
+    var sh = screen.height;
+    return {
+      fromScreenLeft: x,
+      fromScreenTop: y,
+      fromScreenRight: sw - x,
+      fromScreenBottom: sh - y,
+      fromCenterX: Math.round(x-sw/2),
+      fromCenterY: Math.round(y-sh/2),
+      hPercent: x / sw * 100,
+      vPercent: y / sh * 100,
+      inBounds: x >= 0 && y >= 0 && x < sw && y < sh
+    };
+  }
+  function mousePoint(evt) {
+    var x = evt.clientX - (options.element.clientLeft || 0) - (options.element.offsetLeft || 0);
+    var y = evt.clientY - (options.element.clientTop || 0) - (options.element.offsetTop || 0);
+    return point(
+      Math.floor(x*screen.width/(options.element.clientWidth || options.element.innerWidth)),
+      Math.floor(y*screen.height/(options.element.clientHeight || options.element.innerHeight))
+    );
   }
 };

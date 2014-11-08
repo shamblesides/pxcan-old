@@ -25,7 +25,8 @@ function init(el) {
       40: "down",
       //space
       32: "start"
-    }
+    },
+    useTouch: true
   });
 }
 
@@ -109,8 +110,8 @@ GameView.prototype.draw = function(screen, clocks) {
     })
   );
   screen.drawString(
-    "view frames: " + clocks.viewFrames +
-    "\ntotal frames: " + clocks.totalFrames,
+    "view frames: " + clocks.view +
+    "\ntotal frames: " + clocks.total,
     nigelgame.sheets.ascii,
     new nigelgame.Point({
       xAnchor: 50,
@@ -131,4 +132,8 @@ GameView.prototype.keyup = function(key) {
   else if(key === "down" && this.chara.yDir === 1) this.chara.yDir = 0;
   else if(key === "left" && this.chara.xDir === -1) this.chara.xDir = 0;
   else if(key === "right" && this.chara.xDir === 1) this.chara.xDir = 0;
+}
+
+GameView.prototype.touch = function(point) {
+  console.log(point);
 }
