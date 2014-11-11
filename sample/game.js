@@ -33,30 +33,22 @@ function init(el) {
 function TitleView() {}
 
 TitleView.prototype.draw = function(screen) {
-  screen.drawStringBox(
+  screen.drawBox(
     nigelgame.sheets.uibox,
-    "#000",
-    "NIGELGAME DEMO",
-    nigelgame.sheets.ascii,
-    new nigelgame.Point({
-      x: -66,
-      y: -40,
-      xAnchor: 50,
-      yAnchor: 50
-    }),
-    "NIGELGAME DEMO".length,
-    1
+    { point: { y: -20 }, height: 30, bottom: 0, left: 50, right: 50 },
+    { color: "#000", anchor: { y: 1 } }
   );
-    
   screen.drawString(
-    "press space to play\n\n   (must have\n keyboard focus)",
+    "NIGELGAME",
     nigelgame.sheets.ascii,
-    new nigelgame.Point({
-      x: -76,
-      y: 0,
-      xAnchor: 50,
-      yAnchor: 50
-    })
+    { y: -32 },
+    { anchor: { y: 1 } }
+  );
+  screen.drawString(
+    "press space to play\n\n(must have\nkeyboard focus)",
+    nigelgame.sheets.ascii,
+    { y: 20 },
+    { align: "center" }
   );
 };
 
@@ -82,43 +74,24 @@ GameView.prototype.draw = function(screen, clocks) {
   screen.clear();
   screen.drawSprite(
     nigelgame.sheets.bg,
-    new nigelgame.Point({
-      xAnchor: 50,
-      yAnchor: 50,
-      x: -nigelgame.sheets.bg.spriteWidth / 2,
-      y: -nigelgame.sheets.bg.spriteHeight / 2
-    })
+    new nigelgame.Point({ x: 0, y: 0 })
   );
   screen.drawSprite(
-    nigelgame.sheets.chara,
-    new nigelgame.Point({
-      x: this.chara.x,
-      y: this.chara.y,
-      xAnchor: 50,
-      yAnchor: 50
-    }),
-    this.chara.frame
+    nigelgame.sheets.chara.getSprite(this.chara.frame),
+    { x: this.chara.x, y: this.chara.y },
+    { anchor: { x: 0, y: 1 } }
   );
   screen.drawString(
     "hello,\nnigelgame!",
     nigelgame.sheets.ascii,
-    new nigelgame.Point({
-      xAnchor: 50,
-      yAnchor: 50,
-      y: -50,
-      x: -40
-    })
+    { xAnchor: 1, yAnchor: -1 },
+    { align: "right", anchor: { x: 1, y: -1} }
   );
   screen.drawString(
-    "view frames: " + clocks.view +
-    "\ntotal frames: " + clocks.total,
+    "view frames: " + clocks.view + "\ntotal frames: " + clocks.total,
     nigelgame.sheets.ascii,
-    new nigelgame.Point({
-      xAnchor: 50,
-      yAnchor: 50,
-      y: 50,
-      x: -80
-    })
+    { xAnchor: -1, yAnchor: 1, x: 1, y: -1 },
+    { align: "left", anchor: { x: -1, y: 1 } }
   );
 }
 GameView.prototype.keydown = function(key) {

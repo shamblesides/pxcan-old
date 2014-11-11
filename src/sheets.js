@@ -51,22 +51,27 @@ nigelgame.Sheet = function(alias, img, src, spriteWidth, spriteHeight) {
   this.spriteHeight = spriteHeight || this.height;
   this.numCols = Math.floor(this.width / this.spriteWidth);
   this.numRows = Math.floor(this.height / this.spriteHeight);
+  this.numSprites = this.numCols * this.numRows;
 };
 
-nigelgame.Sheet.prototype.getFrameRect = function(frame) {
-  if(frame!==undefined && (typeof frame === "number") && (frame%1)===0) {
-    frame = { col: frame % this.numCols, row: Math.floor(frame / this.numCols) };
+nigelgame.Sheet.prototype.getSprite = function(frame) {
+  return new nigelgame.Sprite(this, frame);
+}
+
+nigelgame.Sprite = function(sheet, frame) {
+  if((typeof frame === "number") && (frame%1)===0) {
+    frame = { col: frame % sheet.numCols, row: Math.floor(frame / sheet.numCols) };
   }
-  var fx = (frame!==undefined)? (frame.x!==undefined? frame.x: frame.col? frame.col*this.spriteWidth: 0): 0;
-  var fy = (frame!==undefined)? (frame.y!==undefined? frame.y: frame.row? frame.row*this.spriteHeight: 0): 0;
-  var fw = (frame!==undefined)? (frame.width!==undefined? frame.width: (frame.col!==undefined? this.spriteWidth: this.img.width-fx)): this.img.width-fx;
-  var fh = (frame!==undefined)? (frame.height!==undefined? frame.height: (frame.row!==undefined? this.spriteHeight: this.img.height-fy)): this.img.height-fy;
-  return {
+  var fx = (frame!==undefined)? (frame.x!==undefined? frame.x: frame.col? frame.col*sheet.spriteWidth: 0): 0;
+  var fy = (frame!==undefined)? (frame.y!==undefined? frame.y: frame.row? frame.row*sheet.spriteHeight: 0): 0;
+  var fw = (frame!==undefined)? (frame.width!==undefined? frame.width: (frame.col!==undefined? sheet.spriteWidth: sheet.width-fx)): sheet.width-fx;
+  var fh = (frame!==undefined)? (frame.height!==undefined? frame.height: (frame.row!==undefined? sheet.spriteHeight: sheet.height-fy)): sheet.height-fy;
+  
+  this.sheet = sheet;
+  this.rect = new nigelgame.Rect({
     left: fx,
     top: fy,
-    right: fx + fw,
-    bottom: fy + fh,
     width: fw,
     height: fh
-  };
-};
+  });
+}
