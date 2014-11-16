@@ -20,42 +20,65 @@ nigelgame.Point.prototype.translate = function(params) {
 };
 
 nigelgame.Rect = function(p) {
-  if((p.left !== undefined) + (p.right !== undefined) + (p.width !== undefined) !== 2)
-    throw "Horizontal boundaries are not well defined.";
-  if((p.top !== undefined) + (p.bottom !== undefined) + (p.height !== undefined) !== 2)
-    throw "Vertical boundaries are not well defined.";
-  if(p.point instanceof nigelgame.Point) this.point = p.point;
-  else if(typeof(p.point) === "object") this.point = new nigelgame.Point(p.point);
-  else if(!p.point) this.point = new nigelgame.Point({});
-  else throw "strange point given to Rect";
-  this.left = (p.left !== undefined)? p.left: (p.width - p.right);
-  this.right = (p.right !== undefined)? p.right: (p.width - p.left);
-  this.top = (p.top !== undefined)? p.top: (p.height - p.bottom);
-  this.bottom = (p.bottom !== undefined)? p.bottom: (p.height - p.top);
-  this.width = this.left + this.right;
-  this.height = this.top + this.bottom;
-}
+  //make sure boundaries are well-defined for vertical & horizontal
+  var hdef = 0;
+  if(p.left !== undefined || p.leftAnchor !== undefined) ++hdef;
+  if(p.right !== undefined || p.rightAnchor !== undefined) ++hdef;
+  if(p.width !== undefined || p.widthPerc !== undefined) ++hdef;
+  if(hdef < 2) throw "Horizontal boundaries are not well defined.";
+  else if(hdef > 2) throw "Too many arguments for horizontal boundaries.";
+  var vdef = 0;
+  if(p.top !== undefined || p.topAnchor !== undefined) ++vdef;
+  if(p.bottom !== undefined || p.bottomAnchor !== undefined) ++vdef;
+  if(p.height !== undefined || p.heightPerc !== undefined) ++vdef;
+  if(vdef < 2) throw "Vertical boundaries are not well defined.";
+  else if(vdef > 2) throw "Too many arguments for vertical boundaries.";
+  //assign all fields from info provided
+  this.left = (p.left !== undefined || p.leftAnchor !== undefined)? 
+    (p.left || p.right || 0): (p.right || 0) - (p.width || 0);
+  this.right = (p.right !== undefined || p.rightAnchor !== undefined)?
+    (p.right || p.left || 0): (p.left || 0) + (p.width || 0);
+  this.top = (p.top !== undefined || p.topAnchor !== undefined)?
+    (p.top || p.bottom || 0): (p.bottom || 0) - (p.height || 0);
+  this.bottom = (p.bottom !== undefined || p.bottomAnchor !== undefined)?
+    (p.bottom || p.top || 0): (p.top || 0) + (p.height || 0);
+  this.leftAnchor = (p.leftAnchor !== undefined || p.left !== undefined)?
+    (p.leftAnchor || p.rightAnchor || 0): (p.rightAnchor || 0) - (p.widthPerc*2 || 0);
+  this.rightAnchor = (p.rightAnchor !== undefined || p.right !== undefined)?
+    (p.rightAnchor || p.leftAnchor || 0): (p.leftAnchor || 0) + (p.widthPerc*2 || 0);
+  this.topAnchor = (p.topAnchor !== undefined || p.left !== undefined)?
+    (p.topAnchor || p.bottomAnchor || 0): (p.bottomAnchor || 0) - (p.heightPerc*2 || 0);
+  this.bottomAnchor = (p.bottomAnchor !== undefined || p.right !== undefined)?
+    (p.bottomAnchor || p.topAnchor || 0): (p.topAnchor || 0) + (p.heightPerc*2 || 0);
+  this.width = this.right - this.left;
+  this.height = this.bottom - this.top;
+  this.widthPerc = (this.rightAnchor - this.leftAnchor)/2;
+  this.heightPerc = (this.bottomAnchor - this.topAnchor)/2;
+};
 nigelgame.Rect.prototype.leftFor = function(outer) {
-  return this.point.xFor(outer) - this.left;
-}
+  return this.left + this.leftAnchor * outer.width / 2;
+};
 nigelgame.Rect.prototype.rightFor = function(outer) {
-  return this.point.xFor(outer) + this.right;
-}
+  return this.right + this.rightAnchor * outer.width / 2;
+};
 nigelgame.Rect.prototype.topFor = function(outer) {
-  return this.point.yFor(outer) - this.top;
-}
+  return this.top + this.topAnchor * outer.height / 2;
+};
 nigelgame.Rect.prototype.bottomFor = function(outer) {
-  return this.point.yFor(outer) + this.bottom;
-}
-nigelgame.Rect.prototype.translate = function(params) {
-  this.point.translate(params);
-}
-nigelgame.Rect.prototype.resize = function(params) {
-  return new nigelgame.Rect({
-    point: this.point,
-    left: this.left + (params.left || 0),
-    right: this.right + (params.right || 0),
-    top: this.top + (params.top || 0),
-    bottom: this.bottom + (params.bottom)
+  return this.bottom + this.bottomAnchor * outer.height / 2;
+};
+nigelgame.Rect.prototype.widthFor = function(outer) {
+  return this.width + this.widthPerc * outer.width;
+};
+nigelgame.Rect.prototype.heightFor = function(outer) {
+  return this.height + this.heightPerc * outer.height;
+};
+nigelgame.Rect.prototype.pointIn = function(point) {
+  if(!(point instanceof nigelgame.Point)) point = new nigelgame.Point(point);
+  return new nigelgame.Point({
+    x: this.left + this.width * (point.xAnchor+1) / 2 + point.x,
+    y: this.top + this.height * (point.yAnchor+1) / 2 + point.y,
+    xAnchor: this.leftAnchor + (this.widthPerc * 2) * (point.xAnchor + 1) / 2,
+    yAnchor: this.topAnchor + (this.heightPerc * 2) * (point.yAnchor + 1) / 2,
   });
-}
+};

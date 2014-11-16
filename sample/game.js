@@ -32,17 +32,16 @@ function init(el) {
 
 function TitleView() {}
 
-TitleView.prototype.draw = function(screen) {
-  screen.drawBox(
-    nigelgame.sheets.uibox,
-    { point: { y: -20 }, height: 30, bottom: 0, left: 50, right: 50 },
-    { color: "#000", anchor: { y: 1 } }
-  );
-  screen.drawString(
+TitleView.prototype.draw = function(screen, clocks) {
+  //only draw on first frame
+  if(clocks.view !== 0) return;
+  //draw title elements
+  screen.drawStringBox(
     "NIGELGAME",
     nigelgame.sheets.ascii,
-    { y: -32 },
-    { anchor: { y: 1 } }
+    nigelgame.sheets.uibox,
+    { y: -20 },
+    { color: "#666", anchor: { y: 1 } }
   );
   screen.drawString(
     "press space to play\n\n(must have\nkeyboard focus)",
@@ -81,11 +80,12 @@ GameView.prototype.draw = function(screen, clocks) {
     { x: this.chara.x, y: this.chara.y },
     { anchor: { x: 0, y: 1 } }
   );
-  screen.drawString(
+  screen.drawStringBox(
     "hello,\nnigelgame!",
     nigelgame.sheets.ascii,
-    { xAnchor: 1, yAnchor: -1 },
-    { align: "right", anchor: { x: 1, y: -1} }
+    nigelgame.sheets.uibox,
+    {xAnchor: 1, yAnchor: -1},
+    { color: "#000", align: "right", anchor: {x:1, y:-1} }
   );
   screen.drawString(
     "view frames: " + clocks.view + "\ntotal frames: " + clocks.total,
@@ -93,20 +93,20 @@ GameView.prototype.draw = function(screen, clocks) {
     { xAnchor: -1, yAnchor: 1, x: 1, y: -1 },
     { align: "left", anchor: { x: -1, y: 1 } }
   );
-}
+};
 GameView.prototype.keydown = function(key) {
   if(key === "up") this.chara.yDir = -1;
   else if(key === "down") this.chara.yDir = 1;
   else if(key === "left") this.chara.xDir = -1;
   else if(key === "right") this.chara.xDir = 1;
-}
+};
 GameView.prototype.keyup = function(key) {
   if(key === "up" && this.chara.yDir === -1) this.chara.yDir = 0;
   else if(key === "down" && this.chara.yDir === 1) this.chara.yDir = 0;
   else if(key === "left" && this.chara.xDir === -1) this.chara.xDir = 0;
   else if(key === "right" && this.chara.xDir === 1) this.chara.xDir = 0;
-}
+};
 
 GameView.prototype.touch = function(point) {
   console.log(point);
-}
+};
