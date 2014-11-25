@@ -93,51 +93,47 @@ nigelgame.start = function(options) {
     var point = mousePoint(evt);
     mouseState.startPoint = point;
     mouseState.lastPoint = point;
-    if(view.touch) view.touch(point, "mouse");
+    if(view.touch) view.touch({
+      point: point,
+      type: "mouse",
+      screenRect: screen.getRect()
+    });
   }
   function gotMouseMove(evt) {
     if(!mouseState.startPoint) return;
     var point = mousePoint(evt);
-    point.startPoint = mouseState.startPoint;
-    point.lastPoint = mouseState.lastPoint;
-    point.lastPoint.startPoint = undefined;
-    point.lastPoint.lastPoint = undefined;
+    if(view.drag) view.drag({
+      point: point,
+      lastPoint: mouseState.lastPoint,
+      startPoint: mouseState.startPoint,
+      type: "mouse",
+      screenRect: screen.getRect()
+    });
     mouseState.lastPoint = point;
-    if(view.drag) view.drag(point, "mouse");
   }
   function gotMouseUp(evt) {
     if(view.release && mouseState.startPoint) {
-      var point = mousePoint(evt);
-      point.startPoint = mouseState.startPoint;
-      view.release(point, "mouse");
+      view.release({
+        point: mousePoint(evt),
+        startPoint: mouseState.startPoint,
+        type: "mouse",
+        screenRect: screen.getRect()
+      });
     }
     mouseState.startPoint = null;
     mouseState.lastPoint = null;
   }
   
   //auxilliary functions for touches
-  function point(x, y) {
-    var sw = screen.width;
-    var sh = screen.height;
-    return {
-      fromScreenLeft: x,
-      fromScreenTop: y,
-      fromScreenRight: sw - x,
-      fromScreenBottom: sh - y,
-      fromCenterX: Math.round(x-sw/2),
-      fromCenterY: Math.round(y-sh/2),
-      hPercent: x / sw * 100,
-      vPercent: y / sh * 100,
-      inBounds: x >= 0 && y >= 0 && x < sw && y < sh
-    };
-  }
   function mousePoint(evt) {
     var x = evt.clientX - (options.element.clientLeft || 0) - (options.element.offsetLeft || 0);
     var y = evt.clientY - (options.element.clientTop || 0) - (options.element.offsetTop || 0);
-    return point(
-      Math.floor(x*screen.width/(options.element.clientWidth || options.element.innerWidth)),
-      Math.floor(y*screen.height/(options.element.clientHeight || options.element.innerHeight))
-    );
+    var elw = options.element.clientWidth || options.element.innerWidth;
+    var elh = options.element.clientHeight || options.element.innerHeight;
+    return new nigelgame.Point({
+      x: Math.floor(x/elw*screen.width - screen.width/2),
+      y: Math.floor(y/elh*screen.height - screen.height/2)
+    });
   }
 };
 
@@ -222,6 +218,13 @@ nigelgame.Rect.prototype.widthFor = function(outer) {
 nigelgame.Rect.prototype.heightFor = function(outer) {
   return this.height + this.heightPerc * outer.height;
 };
+nigelgame.Rect.prototype.contains = function(point, outer) {
+  if(!(point instanceof nigelgame.Point)) point = new nigelgame.Point(point);
+  var px = point.xFor(outer);
+  var py = point.yFor(outer);
+  return px >= this.leftFor(outer) && px <= this.rightFor(outer)
+    && py >= this.topFor(outer) && py <= this.bottomFor(outer);
+};
 nigelgame.Rect.prototype.pointIn = function(point) {
   if(!(point instanceof nigelgame.Point)) point = new nigelgame.Point(point);
   return new nigelgame.Point({
@@ -254,17 +257,14 @@ nigelgame.Screen = function(element, mw, mh) {
   parent.appendChild(this.canvas);
   //make it selectable (if it's not just in the window)
   if(this.element !== window && this.element.tabIndex < 0) this.element.tabIndex = 0;
-  //fit to div
-  this.fitElement();
 };
 
 nigelgame.Screen.prototype.fitElement = function() {
   var w = this.element.clientWidth || this.element.innerWidth;
   var h = this.element.clientHeight || this.element.innerHeight;
   //if it hasn't changed, skip this step.
-  if(this.prevDims && this.prevDims.width === w && this.prevDims.height === h) {
-    return;
-  }
+  this.wasResized = !this.prevDims || this.prevDims.width !== w || this.prevDims.height !== h;
+  if(!this.wasResized) return;
   //if the desired aspect ratio is equal
   if(this.minWidth * h === this.minHeight * w) {
     this.width = this.minWidth;
@@ -298,6 +298,15 @@ nigelgame.Screen.prototype.fitElement = function() {
   }
 };
 
+nigelgame.Screen.prototype.getRect = function() {
+  return new nigelgame.Rect({
+    left: -this.width/2,
+    top: -this.height/2,
+    width: this.width,
+    height: this.height
+  });
+};
+
 nigelgame.Screen.prototype.clear = function() {
   this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 };
@@ -310,10 +319,10 @@ nigelgame.Screen.prototype.fill = function(color, rect) {
   this.context.fillStyle = color;
   //draw the rectangle
   this.context.fillRect(
-    rect.leftFor(this) * this.drawScale + this.width / 2,
-    rect.topFor(this) * this.drawScale + this.height / 2,
-    rect.widthFor(this) * this.drawScale,
-    rect.heightFor(this) * this.drawScale
+    Math.round(rect.leftFor(this) + this.width / 2) * this.drawScale,
+    Math.round(rect.topFor(this) + this.height / 2) * this.drawScale,
+    Math.round(rect.widthFor(this)) * this.drawScale,
+    Math.round(rect.heightFor(this)) * this.drawScale
   );
   //set color back
   this.context.fillStyle = temp;

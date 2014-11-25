@@ -93,50 +93,46 @@ nigelgame.start = function(options) {
     var point = mousePoint(evt);
     mouseState.startPoint = point;
     mouseState.lastPoint = point;
-    if(view.touch) view.touch(point, "mouse");
+    if(view.touch) view.touch({
+      point: point,
+      type: "mouse",
+      screenRect: screen.getRect()
+    });
   }
   function gotMouseMove(evt) {
     if(!mouseState.startPoint) return;
     var point = mousePoint(evt);
-    point.startPoint = mouseState.startPoint;
-    point.lastPoint = mouseState.lastPoint;
-    point.lastPoint.startPoint = undefined;
-    point.lastPoint.lastPoint = undefined;
+    if(view.drag) view.drag({
+      point: point,
+      lastPoint: mouseState.lastPoint,
+      startPoint: mouseState.startPoint,
+      type: "mouse",
+      screenRect: screen.getRect()
+    });
     mouseState.lastPoint = point;
-    if(view.drag) view.drag(point, "mouse");
   }
   function gotMouseUp(evt) {
     if(view.release && mouseState.startPoint) {
-      var point = mousePoint(evt);
-      point.startPoint = mouseState.startPoint;
-      view.release(point, "mouse");
+      view.release({
+        point: mousePoint(evt),
+        startPoint: mouseState.startPoint,
+        type: "mouse",
+        screenRect: screen.getRect()
+      });
     }
     mouseState.startPoint = null;
     mouseState.lastPoint = null;
   }
   
   //auxilliary functions for touches
-  function point(x, y) {
-    var sw = screen.width;
-    var sh = screen.height;
-    return {
-      fromScreenLeft: x,
-      fromScreenTop: y,
-      fromScreenRight: sw - x,
-      fromScreenBottom: sh - y,
-      fromCenterX: Math.round(x-sw/2),
-      fromCenterY: Math.round(y-sh/2),
-      hPercent: x / sw * 100,
-      vPercent: y / sh * 100,
-      inBounds: x >= 0 && y >= 0 && x < sw && y < sh
-    };
-  }
   function mousePoint(evt) {
     var x = evt.clientX - (options.element.clientLeft || 0) - (options.element.offsetLeft || 0);
     var y = evt.clientY - (options.element.clientTop || 0) - (options.element.offsetTop || 0);
-    return point(
-      Math.floor(x*screen.width/(options.element.clientWidth || options.element.innerWidth)),
-      Math.floor(y*screen.height/(options.element.clientHeight || options.element.innerHeight))
-    );
+    var elw = options.element.clientWidth || options.element.innerWidth;
+    var elh = options.element.clientHeight || options.element.innerHeight;
+    return new nigelgame.Point({
+      x: Math.floor(x/elw*screen.width - screen.width/2),
+      y: Math.floor(y/elh*screen.height - screen.height/2)
+    });
   }
 };

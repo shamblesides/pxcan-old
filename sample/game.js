@@ -34,7 +34,7 @@ function TitleView() {}
 
 TitleView.prototype.draw = function(screen, clocks) {
   //only draw on first frame
-  if(clocks.view !== 0) return;
+  if(!screen.wasResized) return;
   //draw title elements
   screen.drawStringBox(
     "NIGELGAME",
@@ -44,7 +44,7 @@ TitleView.prototype.draw = function(screen, clocks) {
     { color: "#666", anchor: { y: 1 } }
   );
   screen.drawString(
-    "press space to play\n\n(must have\nkeyboard focus)",
+    "press space or touch\nanywhere to play\n\n(must have\nkeyboard focus)",
     nigelgame.sheets.ascii,
     { y: 20 },
     { align: "center" }
@@ -54,12 +54,25 @@ TitleView.prototype.draw = function(screen, clocks) {
 TitleView.prototype.keydown = function(key) {
   if(key === "start") this.nextView = new GameView();
 };
+TitleView.prototype.touch = function() {
+  this.nextView = new GameView();
+}
 
 function GameView() {
   this.chara = { x: 0, y: 0, xDir: 0, yDir: 0, speed: 3, frame: 0 };
+  this.target = null;
 }
 
 GameView.prototype.update = function(frameInfo) {
+  if(this.target) {
+    var movex = Math.abs(this.chara.x - this.target.x) >= this.chara.speed;
+    var movey = Math.abs(this.chara.y - this.target.y) >= this.chara.speed;
+    if(movex) this.chara.xDir = Math.sign(this.target.x - this.chara.x);
+    else this.chara.xDir = 0;
+    if(movey) this.chara.yDir = Math.sign(this.target.y - this.chara.y);
+    else this.chara.yDir = 0;
+    if(!movex && !movey) this.target = null;
+  }
   this.chara.x += this.chara.xDir * this.chara.speed;
   this.chara.y += this.chara.yDir * this.chara.speed;
   if(this.chara.xDir || this.chara.yDir) {
@@ -95,6 +108,7 @@ GameView.prototype.draw = function(screen, clocks) {
   );
 };
 GameView.prototype.keydown = function(key) {
+  this.target = null;
   if(key === "up") this.chara.yDir = -1;
   else if(key === "down") this.chara.yDir = 1;
   else if(key === "left") this.chara.xDir = -1;
@@ -107,6 +121,6 @@ GameView.prototype.keyup = function(key) {
   else if(key === "right" && this.chara.xDir === 1) this.chara.xDir = 0;
 };
 
-GameView.prototype.touch = function(point) {
-  console.log(point);
+GameView.prototype.touch = function(evt) {
+  this.target = { x: evt.point.x, y: evt.point.y };
 };
