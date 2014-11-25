@@ -73,6 +73,13 @@ nigelgame.Rect.prototype.widthFor = function(outer) {
 nigelgame.Rect.prototype.heightFor = function(outer) {
   return this.height + this.heightPerc * outer.height;
 };
+nigelgame.Rect.prototype.contains = function(point, outer) {
+  if(!(point instanceof nigelgame.Point)) point = new nigelgame.Point(point);
+  var px = point.xFor(outer);
+  var py = point.yFor(outer);
+  return px >= this.leftFor(outer) && px <= this.rightFor(outer)
+    && py >= this.topFor(outer) && py <= this.bottomFor(outer);
+};
 nigelgame.Rect.prototype.pointIn = function(point) {
   if(!(point instanceof nigelgame.Point)) point = new nigelgame.Point(point);
   return new nigelgame.Point({
