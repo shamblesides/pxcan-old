@@ -20,17 +20,14 @@ nigelgame.Screen = function(element, mw, mh) {
   parent.appendChild(this.canvas);
   //make it selectable (if it's not just in the window)
   if(this.element !== window && this.element.tabIndex < 0) this.element.tabIndex = 0;
-  //fit to div
-  this.fitElement();
 };
 
 nigelgame.Screen.prototype.fitElement = function() {
   var w = this.element.clientWidth || this.element.innerWidth;
   var h = this.element.clientHeight || this.element.innerHeight;
   //if it hasn't changed, skip this step.
-  if(this.prevDims && this.prevDims.width === w && this.prevDims.height === h) {
-    return;
-  }
+  this.wasResized = !this.prevDims || this.prevDims.width !== w || this.prevDims.height !== h;
+  if(!this.wasResized) return;
   //if the desired aspect ratio is equal
   if(this.minWidth * h === this.minHeight * w) {
     this.width = this.minWidth;
@@ -64,6 +61,15 @@ nigelgame.Screen.prototype.fitElement = function() {
   }
 };
 
+nigelgame.Screen.prototype.getRect = function() {
+  return new nigelgame.Rect({
+    left: -this.width/2,
+    top: -this.height/2,
+    width: this.width,
+    height: this.height
+  });
+};
+
 nigelgame.Screen.prototype.clear = function() {
   this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 };
@@ -76,10 +82,10 @@ nigelgame.Screen.prototype.fill = function(color, rect) {
   this.context.fillStyle = color;
   //draw the rectangle
   this.context.fillRect(
-    rect.leftFor(this) * this.drawScale + this.width / 2,
-    rect.topFor(this) * this.drawScale + this.height / 2,
-    rect.widthFor(this) * this.drawScale,
-    rect.heightFor(this) * this.drawScale
+    Math.round(rect.leftFor(this) + this.width / 2) * this.drawScale,
+    Math.round(rect.topFor(this) + this.height / 2) * this.drawScale,
+    Math.round(rect.widthFor(this)) * this.drawScale,
+    Math.round(rect.heightFor(this)) * this.drawScale
   );
   //set color back
   this.context.fillStyle = temp;
