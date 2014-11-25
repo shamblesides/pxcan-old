@@ -7,6 +7,11 @@ nigelgame.start = function(options) {
     startPoint: null,
     lastPoint: null
   }
+  var touchState = {
+    id: null,
+    startPoint: null,
+    lastPoint: null
+  }
   var view = options.view;
   var logicReady = true;
   var doingFrame = false;
@@ -31,11 +36,14 @@ nigelgame.start = function(options) {
       options.element.addEventListener("keydown", gotKeyDown, false);
       options.element.addEventListener("keyup", gotKeyUp, false);
     }
-    //mouse listeners
+    //mouse/touch listeners
     if(options.useTouch) {
       options.element.addEventListener("mousedown", gotMouseDown, false);
       options.element.addEventListener("mouseup", gotMouseUp, false);
       options.element.addEventListener("mousemove", gotMouseMove, false);
+      options.element.addEventListener("touchstart", gotTouchStart, false);
+      options.element.addEventListener("touchmove", gotTouchMove, false);
+      options.element.addEventListener("touchend", gotTouchEnd, false);
     }
     // begin doing frame actions
     window.requestAnimationFrame(reqAnim);
@@ -69,6 +77,7 @@ nigelgame.start = function(options) {
     window.requestAnimationFrame(reqAnim);
   }
   
+  //keyboard event handlers
   function gotKeyDown(evt) {
     var key = options.keyBinds[evt.keyCode];
     if(key === undefined) return;
@@ -89,6 +98,7 @@ nigelgame.start = function(options) {
     }
   }
   
+  //mouse event handlers
   function gotMouseDown(evt) {
     var point = mousePoint(evt);
     mouseState.startPoint = point;
@@ -123,11 +133,104 @@ nigelgame.start = function(options) {
     mouseState.startPoint = null;
     mouseState.lastPoint = null;
   }
-  
-  //auxilliary functions for touches
   function mousePoint(evt) {
     var x = evt.clientX - (options.element.clientLeft || 0) - (options.element.offsetLeft || 0);
     var y = evt.clientY - (options.element.clientTop || 0) - (options.element.offsetTop || 0);
+    var elw = options.element.clientWidth || options.element.innerWidth;
+    var elh = options.element.clientHeight || options.element.innerHeight;
+    return new nigelgame.Point({
+      x: Math.floor(x/elw*screen.width - screen.width/2),
+      y: Math.floor(y/elh*screen.height - screen.height/2)
+    });
+  }
+  
+  //touch events handlers
+  function gotTouchStart(evt) {
+    // prevent default
+    evt.preventDefault();
+    // if this isn't the first touch, ignore it
+    if(evt.touches.length !== evt.changedTouches.length) return;
+    // get point
+    var point = touchPoint(evt.changedTouches[0]);
+    // register touchState
+    touchState = {
+      id: evt.changedTouches[0].identifier,
+      startPoint: point,
+      lastPoint: point
+    };
+    //do action if any
+    if(view.touch) view.touch({
+      point: point,
+      type: "touch",
+      screenRect: screen.getRect()
+    });
+  }
+  function gotTouchMove(evt) {
+    // prevent default
+    evt.preventDefault();
+    //ignore if we didn't get the start
+    if(!touchState.startPoint) return;
+    //look at all moved touches
+    for(var i = 0; i < evt.changedTouches.length; ++i) {
+      //if one of them is the current touch, ok!
+      if(evt.changedTouches[i].identifier === touchState.id) {
+        var point = touchPoint(evt.changedTouches[i]);
+        if(view.drag) view.drag({
+          point: point,
+          lastPoint: touchState.lastPoint,
+          startPoint: touchState.startPoint,
+          type: "touch",
+          screenRect: screen.getRect()
+        });
+        touchState.lastPoint = point;
+        return;
+      }
+    }
+  }
+  function gotTouchEnd(evt) {
+    // prevent default
+    evt.preventDefault();
+    //ignore if we didn't get the start
+    if(!touchState.startPoint) return;
+    //look at all released touches
+    for(var i = 0; i < evt.changedTouches.length; ++i) {
+      //if one of them is the current touch, ok!
+      if(evt.changedTouches[i].identifier === touchState.id) {
+        //no more touches: release
+        if(evt.targetTouches.length===0) {
+          if(view.release) view.release({
+            point: touchPoint(evt.changedTouches[i]),
+            startPoint: touchState.startPoint,
+            type: "touch",
+            screenRect: screen.getRect()
+          });
+          touchState.id = null;
+          touchState.startPoint = null;
+          touchState.lastPoint = null;
+        }
+        //there are still other touches; drag to it
+        else {
+          var nextTouch = evt.targetTouches[evt.targetTouches.length-1];
+          var point = touchPoint(nextTouch);
+          if(view.drag) view.drag({
+            point: point,
+            lastPoint: touchState.lastPoint,
+            startPoint: touchState.startPoint,
+            type: "touch",
+            screenRect: screen.getRect()
+          });
+          touchState.id = nextTouch.identifier;
+          touchState.lastPoint = point;
+        }
+        //done.
+        return;
+      }
+    }
+    //if it wasn't our touch, just ignore it. done.
+  }
+  function touchPoint(touch) { //TODO the same?????
+    var x = touch.clientX - (options.element.clientLeft || 0) - (options.element.offsetLeft || 0);
+    var y = touch.clientY - (options.element.clientTop || 0) - (options.element.offsetTop || 0);
     var elw = options.element.clientWidth || options.element.innerWidth;
     var elh = options.element.clientHeight || options.element.innerHeight;
     return new nigelgame.Point({

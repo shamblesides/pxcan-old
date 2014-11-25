@@ -121,6 +121,12 @@ GameView.prototype.keyup = function(key) {
   else if(key === "right" && this.chara.xDir === 1) this.chara.xDir = 0;
 };
 
-GameView.prototype.touch = function(evt) {
+GameView.prototype.touch =
+GameView.prototype.drag = function(evt) {
   this.target = { x: evt.point.x, y: evt.point.y };
 };
+GameView.prototype.release = function() {
+  this.target = null;
+  this.chara.xDir = 0;
+  this.chara.yDir = 0;
+}
