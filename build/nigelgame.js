@@ -368,7 +368,6 @@ nigelgame.Screen = function(element, mode, mw, mh, scale) {
   this.canvas.style.display = "block";
   this.canvas.style.width = "100%";
   this.canvas.style.height = "100%";
-  this.canvas.style.backgroundColor = "#000";
   //drawing context
   this.context = this.canvas.getContext("2d");
   //put canvas on page
