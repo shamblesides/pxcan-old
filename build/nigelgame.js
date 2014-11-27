@@ -477,7 +477,7 @@ nigelgame.Screen.prototype.drawString = function(text, font, point, options) {
     { x: 0, y: 0 };
   //how to align the text?
   var align = 0;
-  if(options.align === "left" || options.align === undefined) align = 0;
+  if(!options || !options.align || options.align === "left") align = 0;
   else if(options.align === "center") align = 0.5;
   else if(options.align === "right") align = 1;
   else throw "unknown text alignment: " + options.align;
