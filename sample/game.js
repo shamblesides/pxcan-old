@@ -4,6 +4,8 @@ function init(el) {
     element: el,
     width: 172,
     height: 144,
+    scale: 2,
+    scaleMode: "scale-adapt",
     sheets: [
       { src: "img/chara.png", alias: "chara", spriteWidth: 20, spriteHeight: 20 },
       { src: "img/bg.png", alias: "bg" },

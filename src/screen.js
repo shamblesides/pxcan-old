@@ -1,11 +1,17 @@
-nigelgame.Screen = function(element, mw, mh) {
+nigelgame.Screen = function(element, mode, mw, mh, scale) {
+  //robust
+  if(!mode)
+    mode = "scale-adapt";
+  else if(nigelgame.Screen.MODES.indexOf(mode.toLowerCase()) === -1)
+    throw "unsupported screen mode: " + mode;
   //vars
   this.element = element;
+  this.mode = mode.toLowerCase();
   this.minWidth = mw || element.clientWidth || element.innerWidth;
   this.minHeight = mh || element.clientHeight || element.innerWidth;
   this.width = undefined;
   this.height = undefined;
-  this.drawScale = undefined;
+  this.drawScale = scale || 1;
   
   //create canvas element
   this.canvas = document.createElement("canvas");
@@ -22,12 +28,48 @@ nigelgame.Screen = function(element, mw, mh) {
   if(this.element !== window && this.element.tabIndex < 0) this.element.tabIndex = 0;
 };
 
+nigelgame.Screen.MODES = [ "none", "adapt", "scale-adapt" ];
+
 nigelgame.Screen.prototype.fitElement = function() {
+  //get the current width/height of the elemnt
   var w = this.element.clientWidth || this.element.innerWidth;
   var h = this.element.clientHeight || this.element.innerHeight;
   //if it hasn't changed, skip this step.
-  this.wasResized = !this.prevDims || this.prevDims.width !== w || this.prevDims.height !== h;
+  this.wasResized =
+    !this.prevDims ||
+    this.prevDims.width !== w ||
+    this.prevDims.height !== h;
   if(!this.wasResized) return;
+  //otherwise, do the correct resize function for the mode
+  if(this.mode === "none")
+    this.fitElementModeNone(w, h);
+  else if(this.mode === "adapt")
+    this.fitElementModeAdapt(w, h);
+  else if(this.mode === "scale-adapt")
+    this.fitElementModeScaleAdapt(w, h);
+  //record previous dimensions
+  this.prevDims = { height: h, width: w };
+}
+
+nigelgame.Screen.prototype.fitElementModeNone = function(w, h) {
+  //only resize if the size hasnt yet been set
+  if(this.prevDims) return;
+  //set the sizes just once
+  this.canvas.width = (this.width = this.minWidth) * this.drawScale;
+  this.canvas.height = (this.height = this.minHeight) * this.drawScale;
+  //crispy if scaled up
+  if(this.drawScale > 1) this.crispy();
+}
+
+nigelgame.Screen.prototype.fitElementModeAdapt = function(w, h) {
+  //resize
+  this.canvas.width = (this.width = Math.floor(w/this.drawScale)) * this.drawScale;
+  this.canvas.height = (this.height = Math.floor(h/this.drawScale)) * this.drawScale;
+  //crispy if scaled up
+  if(this.drawScale > 1) this.crispy();
+}
+
+nigelgame.Screen.prototype.fitElementModeScaleAdapt = function(w, h) {
   //if the desired aspect ratio is equal
   if(this.minWidth * h === this.minHeight * w) {
     this.width = this.minWidth;
@@ -49,17 +91,19 @@ nigelgame.Screen.prototype.fitElement = function() {
   this.canvas.width = this.width * this.drawScale;
   this.canvas.height =  this.height * this.drawScale;
   //crispy
-  this.context.webkitImageSmoothingEnabled =
-    this.context.imageSmoothingEnabled =
-    this.context.mozImageSmoothingEnabled =
-    this.context.oImageSmoothingEnabled = false;
-  //remember this so it doesn't have to do it again
-  this.prevDims = { height: h, width: w };
+  this.crispy();
   //if the view is the whole window, then keep it at the right location
   if(this.element === window) {
     window.scrollTo(0, 0);
   }
 };
+
+nigelgame.Screen.prototype.crispy = function() {
+  this.context.webkitImageSmoothingEnabled =
+    this.context.imageSmoothingEnabled =
+    this.context.mozImageSmoothingEnabled =
+    this.context.oImageSmoothingEnabled = false;
+}
 
 nigelgame.Screen.prototype.getRect = function() {
   return new nigelgame.Rect({

@@ -19,7 +19,11 @@ nigelgame.start = function(options) {
   var viewClock = 0;
   //setup screen
   var screen = new nigelgame.Screen(
-    options.element, options.width || null, options.height || null
+    options.element,
+    options.scaleMode,
+    options.width,
+    options.height,
+    options.scale
   );
   
   //load images
