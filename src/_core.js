@@ -34,7 +34,17 @@ nigelgame.start = function(options) {
     loadedImages();
   }
   
+  //load json files
   function loadedImages() {
+    if(options.json && options.json.length > 0) {
+      nigelgame.loadJSON(options.json, loadedJSON);
+    }
+    else {
+      loadedJSON();
+    }
+  }
+  
+  function loadedJSON() {
     //key listeners
     if(options.keyBinds) {
       options.element.addEventListener("keydown", gotKeyDown, false);

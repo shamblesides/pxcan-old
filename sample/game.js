@@ -12,6 +12,9 @@ function init(el) {
       { src: "img/ascii.png", alias: "ascii", spriteWidth: 8, spriteHeight: 8 },
       { src: "img/uibox.png", alias: "uibox", spriteWidth: 8, spriteHeight: 8 }
     ],
+    json: [
+      { src: "data/data.json", alias: "gameobj" }
+    ],
     keyBinds: {
       //d, right
       68: "right",
@@ -61,7 +64,7 @@ TitleView.prototype.touch = function() {
 }
 
 function GameView() {
-  this.chara = { x: 0, y: 0, xDir: 0, yDir: 0, speed: 3, frame: 0 };
+  this.chara = { x: 0, y: 0, xDir: 0, yDir: 0, speed: nigelgame.json.gameobj.speed, frame: 0 };
   this.target = null;
 }
 
@@ -96,7 +99,7 @@ GameView.prototype.draw = function(screen, clocks) {
     { anchor: { x: 0, y: 1 } }
   );
   screen.drawStringBox(
-    "hello,\nnigelgame!",
+    nigelgame.json.gameobj.message,
     nigelgame.sheets.ascii,
     nigelgame.sheets.uibox,
     {xAnchor: 1, yAnchor: -1},
