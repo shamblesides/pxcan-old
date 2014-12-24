@@ -68,7 +68,7 @@ function GameView() {
   this.target = null;
 }
 
-GameView.prototype.update = function(frameInfo) {
+GameView.prototype.update = function() {
   if(this.target) {
     var movex = Math.abs(this.chara.x - this.target.x) >= this.chara.speed;
     var movey = Math.abs(this.chara.y - this.target.y) >= this.chara.speed;
@@ -83,8 +83,6 @@ GameView.prototype.update = function(frameInfo) {
   if(this.chara.xDir || this.chara.yDir) {
     this.chara.frame = (this.chara.frame+1)%3;
   }
-  this.viewFrames = frameInfo.viewClock;
-  this.totalFrames = frameInfo.clock;
 };
 
 GameView.prototype.draw = function(screen, clocks) {
