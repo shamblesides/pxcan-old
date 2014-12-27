@@ -286,6 +286,14 @@ nigelgame.Point.prototype.translate = function(params) {
     yAnchor: this.yAnchor + (params.yAnchor || 0)
   });
 };
+nigelgame.Point.prototype.untranslate = function(params) {
+  return new nigelgame.Point({
+    x: this.x - (params.x || 0),
+    y: this.y - (params.y || 0),
+    xAnchor: this.xAnchor - (params.xAnchor || 0),
+    yAnchor: this.yAnchor - (params.yAnchor || 0)
+  });
+};
 
 nigelgame.Rect = function(p) {
   //make sure boundaries are well-defined for vertical & horizontal
