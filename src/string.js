@@ -19,4 +19,4 @@ nigelgame.Nstring = function(text, cols, rows) {
   this.maxcol = maxcol;
   //how many rows
   this.rows = this.lines.length;
-}
+};

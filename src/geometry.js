@@ -4,12 +4,15 @@ nigelgame.Point = function(params) {
   this.xAnchor = params.xAnchor || 0;
   this.yAnchor = params.yAnchor || 0;
 };
+
 nigelgame.Point.prototype.xFor = function(outer) {
   return this.xAnchor * outer.width / 2 + this.x;
 };
+
 nigelgame.Point.prototype.yFor = function(outer) {
   return this.yAnchor * outer.height / 2 + this.y;
 };
+
 nigelgame.Point.prototype.translate = function(params) {
   return new nigelgame.Point({
     x: this.x + (params.x || 0),
@@ -18,6 +21,7 @@ nigelgame.Point.prototype.translate = function(params) {
     yAnchor: this.yAnchor + (params.yAnchor || 0)
   });
 };
+
 nigelgame.Point.prototype.untranslate = function(params) {
   return new nigelgame.Point({
     x: this.x - (params.x || 0),
@@ -63,24 +67,31 @@ nigelgame.Rect = function(p) {
   this.widthPerc = (this.rightAnchor - this.leftAnchor)/2;
   this.heightPerc = (this.bottomAnchor - this.topAnchor)/2;
 };
+
 nigelgame.Rect.prototype.leftFor = function(outer) {
   return this.left + this.leftAnchor * outer.width / 2;
 };
+
 nigelgame.Rect.prototype.rightFor = function(outer) {
   return this.right + this.rightAnchor * outer.width / 2;
 };
+
 nigelgame.Rect.prototype.topFor = function(outer) {
   return this.top + this.topAnchor * outer.height / 2;
 };
+
 nigelgame.Rect.prototype.bottomFor = function(outer) {
   return this.bottom + this.bottomAnchor * outer.height / 2;
 };
+
 nigelgame.Rect.prototype.widthFor = function(outer) {
   return this.width + this.widthPerc * outer.width;
 };
+
 nigelgame.Rect.prototype.heightFor = function(outer) {
   return this.height + this.heightPerc * outer.height;
 };
+
 nigelgame.Rect.prototype.contains = function(point, outer) {
   if(!(point instanceof nigelgame.Point)) point = new nigelgame.Point(point);
   var px = point.xFor(outer);
@@ -88,6 +99,7 @@ nigelgame.Rect.prototype.contains = function(point, outer) {
   return px >= this.leftFor(outer) && px <= this.rightFor(outer)
     && py >= this.topFor(outer) && py <= this.bottomFor(outer);
 };
+
 nigelgame.Rect.prototype.pointIn = function(point) {
   if(!(point instanceof nigelgame.Point)) point = new nigelgame.Point(point);
   return new nigelgame.Point({

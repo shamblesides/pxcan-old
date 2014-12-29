@@ -56,7 +56,7 @@ nigelgame.Sheet = function(alias, img, src, spriteWidth, spriteHeight) {
 
 nigelgame.Sheet.prototype.getSprite = function(frame) {
   return new nigelgame.Sprite(this, frame);
-}
+};
 
 nigelgame.Sprite = function(sheet, frame) {
   if((typeof frame === "number") && (frame%1)===0) {
@@ -74,4 +74,4 @@ nigelgame.Sprite = function(sheet, frame) {
     width: fw,
     height: fh
   });
-}
+};

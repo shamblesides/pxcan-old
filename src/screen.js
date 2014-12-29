@@ -48,7 +48,7 @@ nigelgame.Screen.prototype.fitElement = function() {
     this.fitElementModeScaleAdapt(w, h);
   //record previous dimensions
   this.prevDims = { height: h, width: w };
-}
+};
 
 nigelgame.Screen.prototype.fitElementModeNone = function(w, h) {
   //only resize if the size hasnt yet been set
@@ -58,7 +58,7 @@ nigelgame.Screen.prototype.fitElementModeNone = function(w, h) {
   this.canvas.height = (this.height = this.minHeight) * this.drawScale;
   //crispy if scaled up
   if(this.drawScale > 1) this.crispy();
-}
+};
 
 nigelgame.Screen.prototype.fitElementModeAdapt = function(w, h) {
   //resize
@@ -66,7 +66,7 @@ nigelgame.Screen.prototype.fitElementModeAdapt = function(w, h) {
   this.canvas.height = (this.height = Math.floor(h/this.drawScale)) * this.drawScale;
   //crispy if scaled up
   if(this.drawScale > 1) this.crispy();
-}
+};
 
 nigelgame.Screen.prototype.fitElementModeScaleAdapt = function(w, h) {
   //if the desired aspect ratio is equal
@@ -102,7 +102,7 @@ nigelgame.Screen.prototype.crispy = function() {
     this.context.imageSmoothingEnabled =
     this.context.mozImageSmoothingEnabled =
     this.context.oImageSmoothingEnabled = false;
-}
+};
 
 nigelgame.Screen.prototype.getRect = function() {
   return new nigelgame.Rect({
