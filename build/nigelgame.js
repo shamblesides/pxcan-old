@@ -272,12 +272,15 @@ nigelgame.Point = function(params) {
   this.xAnchor = params.xAnchor || 0;
   this.yAnchor = params.yAnchor || 0;
 };
+
 nigelgame.Point.prototype.xFor = function(outer) {
   return this.xAnchor * outer.width / 2 + this.x;
 };
+
 nigelgame.Point.prototype.yFor = function(outer) {
   return this.yAnchor * outer.height / 2 + this.y;
 };
+
 nigelgame.Point.prototype.translate = function(params) {
   return new nigelgame.Point({
     x: this.x + (params.x || 0),
@@ -286,6 +289,7 @@ nigelgame.Point.prototype.translate = function(params) {
     yAnchor: this.yAnchor + (params.yAnchor || 0)
   });
 };
+
 nigelgame.Point.prototype.untranslate = function(params) {
   return new nigelgame.Point({
     x: this.x - (params.x || 0),
@@ -331,24 +335,31 @@ nigelgame.Rect = function(p) {
   this.widthPerc = (this.rightAnchor - this.leftAnchor)/2;
   this.heightPerc = (this.bottomAnchor - this.topAnchor)/2;
 };
+
 nigelgame.Rect.prototype.leftFor = function(outer) {
   return this.left + this.leftAnchor * outer.width / 2;
 };
+
 nigelgame.Rect.prototype.rightFor = function(outer) {
   return this.right + this.rightAnchor * outer.width / 2;
 };
+
 nigelgame.Rect.prototype.topFor = function(outer) {
   return this.top + this.topAnchor * outer.height / 2;
 };
+
 nigelgame.Rect.prototype.bottomFor = function(outer) {
   return this.bottom + this.bottomAnchor * outer.height / 2;
 };
+
 nigelgame.Rect.prototype.widthFor = function(outer) {
   return this.width + this.widthPerc * outer.width;
 };
+
 nigelgame.Rect.prototype.heightFor = function(outer) {
   return this.height + this.heightPerc * outer.height;
 };
+
 nigelgame.Rect.prototype.contains = function(point, outer) {
   if(!(point instanceof nigelgame.Point)) point = new nigelgame.Point(point);
   var px = point.xFor(outer);
@@ -356,6 +367,7 @@ nigelgame.Rect.prototype.contains = function(point, outer) {
   return px >= this.leftFor(outer) && px <= this.rightFor(outer)
     && py >= this.topFor(outer) && py <= this.bottomFor(outer);
 };
+
 nigelgame.Rect.prototype.pointIn = function(point) {
   if(!(point instanceof nigelgame.Point)) point = new nigelgame.Point(point);
   return new nigelgame.Point({
@@ -364,6 +376,40 @@ nigelgame.Rect.prototype.pointIn = function(point) {
     xAnchor: this.leftAnchor + (this.widthPerc * 2) * (point.xAnchor + 1) / 2,
     yAnchor: this.topAnchor + (this.heightPerc * 2) * (point.yAnchor + 1) / 2,
   });
+};
+
+nigelgame.Rect.prototype.expand = function(params) {
+  // add to sides
+  this.top -= params.top || 0;
+  this.bottom += params.bottom || 0;
+  this.left -= params.left || 0;
+  this.right += params.right || 0;
+  this.topAnchor -= params.topAnchor || 0;
+  this.bottomAnchor += params.bottomAnchor || 0;
+  this.leftAnchor -= params.leftAnchor || 0;
+  this.rightAnchor += params.rightAnchor || 0;
+  // adjust these
+  this.width = this.right - this.left;
+  this.height = this.bottom - this.top;
+  this.widthPerc = (this.rightAnchor - this.leftAnchor)/2;
+  this.heightPerc = (this.bottomAnchor - this.topAnchor)/2;
+};
+
+nigelgame.Rect.prototype.shrink = function(params) {
+  // remove from sides
+  this.top += params.top || 0;
+  this.bottom -= params.bottom || 0;
+  this.left += params.left || 0;
+  this.right -= params.right || 0;
+  this.topAnchor += params.topAnchor || 0;
+  this.bottomAnchor -= params.bottomAnchor || 0;
+  this.leftAnchor += params.leftAnchor || 0;
+  this.rightAnchor -= params.rightAnchor || 0;
+  // adjust these
+  this.width = this.right - this.left;
+  this.height = this.bottom - this.top;
+  this.widthPerc = (this.rightAnchor - this.leftAnchor)/2;
+  this.heightPerc = (this.bottomAnchor - this.topAnchor)/2;
 };
 
 nigelgame.json = {};
@@ -459,7 +505,7 @@ nigelgame.Screen.prototype.fitElement = function() {
     this.fitElementModeScaleAdapt(w, h);
   //record previous dimensions
   this.prevDims = { height: h, width: w };
-}
+};
 
 nigelgame.Screen.prototype.fitElementModeNone = function(w, h) {
   //only resize if the size hasnt yet been set
@@ -469,7 +515,7 @@ nigelgame.Screen.prototype.fitElementModeNone = function(w, h) {
   this.canvas.height = (this.height = this.minHeight) * this.drawScale;
   //crispy if scaled up
   if(this.drawScale > 1) this.crispy();
-}
+};
 
 nigelgame.Screen.prototype.fitElementModeAdapt = function(w, h) {
   //resize
@@ -477,7 +523,7 @@ nigelgame.Screen.prototype.fitElementModeAdapt = function(w, h) {
   this.canvas.height = (this.height = Math.floor(h/this.drawScale)) * this.drawScale;
   //crispy if scaled up
   if(this.drawScale > 1) this.crispy();
-}
+};
 
 nigelgame.Screen.prototype.fitElementModeScaleAdapt = function(w, h) {
   //if the desired aspect ratio is equal
@@ -513,7 +559,7 @@ nigelgame.Screen.prototype.crispy = function() {
     this.context.imageSmoothingEnabled =
     this.context.mozImageSmoothingEnabled =
     this.context.oImageSmoothingEnabled = false;
-}
+};
 
 nigelgame.Screen.prototype.getRect = function() {
   return new nigelgame.Rect({
@@ -724,7 +770,7 @@ nigelgame.Sheet = function(alias, img, src, spriteWidth, spriteHeight) {
 
 nigelgame.Sheet.prototype.getSprite = function(frame) {
   return new nigelgame.Sprite(this, frame);
-}
+};
 
 nigelgame.Sprite = function(sheet, frame) {
   if((typeof frame === "number") && (frame%1)===0) {
@@ -742,7 +788,7 @@ nigelgame.Sprite = function(sheet, frame) {
     width: fw,
     height: fh
   });
-}
+};
 
 nigelgame.Nstring = function(text, cols, rows) {
   //separate into lines
@@ -765,4 +811,4 @@ nigelgame.Nstring = function(text, cols, rows) {
   this.maxcol = maxcol;
   //how many rows
   this.rows = this.lines.length;
-}
+};

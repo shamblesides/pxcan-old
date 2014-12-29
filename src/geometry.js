@@ -109,3 +109,37 @@ nigelgame.Rect.prototype.pointIn = function(point) {
     yAnchor: this.topAnchor + (this.heightPerc * 2) * (point.yAnchor + 1) / 2,
   });
 };
+
+nigelgame.Rect.prototype.expand = function(params) {
+  // add to sides
+  this.top -= params.top || 0;
+  this.bottom += params.bottom || 0;
+  this.left -= params.left || 0;
+  this.right += params.right || 0;
+  this.topAnchor -= params.topAnchor || 0;
+  this.bottomAnchor += params.bottomAnchor || 0;
+  this.leftAnchor -= params.leftAnchor || 0;
+  this.rightAnchor += params.rightAnchor || 0;
+  // adjust these
+  this.width = this.right - this.left;
+  this.height = this.bottom - this.top;
+  this.widthPerc = (this.rightAnchor - this.leftAnchor)/2;
+  this.heightPerc = (this.bottomAnchor - this.topAnchor)/2;
+};
+
+nigelgame.Rect.prototype.shrink = function(params) {
+  // remove from sides
+  this.top += params.top || 0;
+  this.bottom -= params.bottom || 0;
+  this.left += params.left || 0;
+  this.right -= params.right || 0;
+  this.topAnchor += params.topAnchor || 0;
+  this.bottomAnchor -= params.bottomAnchor || 0;
+  this.leftAnchor += params.leftAnchor || 0;
+  this.rightAnchor -= params.rightAnchor || 0;
+  // adjust these
+  this.width = this.right - this.left;
+  this.height = this.bottom - this.top;
+  this.widthPerc = (this.rightAnchor - this.leftAnchor)/2;
+  this.heightPerc = (this.bottomAnchor - this.topAnchor)/2;
+};
