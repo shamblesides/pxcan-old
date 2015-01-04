@@ -17,6 +17,7 @@ nigelgame.start = function(options) {
   var doingFrame = false;
   var totalClock = 0;
   var viewClock = 0;
+  var skippedFrames = 0;
   //setup screen
   var screen = new nigelgame.Screen(
     options.element,
@@ -60,35 +61,53 @@ nigelgame.start = function(options) {
       options.element.addEventListener("touchend", gotTouchEnd, false);
     }
     // begin doing frame actions
+    if(options.framerate) {
+      window.setInterval(function() {
+        logicReady = true;
+      }, options.framerate);
+    }
     window.requestAnimationFrame(reqAnim);
-    window.setInterval(function() {
-      logicReady = true;
-    }, options.minFreq || 33);
   }
   
   function reqAnim() {
+    //don't accidentally call this method twice at once
     if(doingFrame) return;
     doingFrame = true;
-    if(logicReady) {
+    //if we have a specific framerate to target, skip some frames
+    if(!options.framerate || logicReady) {
       logicReady = false;
-      if(view.nextView) {
-        var next = view.nextView;
-        view.nextView = null;
-        view = next;
-        viewClock = 0;
+      if(options.frameskip) {
+        ++skippedFrames;
+        if(skippedFrames > options.frameskip) {
+          skippedFrames = 0;
+          doFrame();
+        }
       }
-      var clocks = {
-        total: totalClock,
-        view: viewClock
-      };
-      if(view.update) view.update(clocks);
-      screen.fitElement();
-      if(view.draw) view.draw(screen, clocks);
-      ++viewClock;
-      ++totalClock;
+      else {
+        doFrame();
+      }
     }
+    //done. unlock method
     doingFrame = false;
     window.requestAnimationFrame(reqAnim);
+  }
+  
+  function doFrame() {
+    if(view.nextView) {
+      var next = view.nextView;
+      view.nextView = null;
+      view = next;
+      viewClock = 0;
+    }
+    var clocks = {
+      total: totalClock,
+      view: viewClock
+    };
+    if(view.update) view.update(clocks);
+    screen.fitElement();
+    if(view.draw) view.draw(screen, clocks);
+    ++viewClock;
+    ++totalClock;
   }
   
   //keyboard event handlers
