@@ -159,12 +159,8 @@ nigelgame.Screen.prototype.drawSprite = function(sprite, point, options) {
 
 nigelgame.Screen.prototype.drawString = function(text, font, point, options) {
   //robust arguments
-  var ns;
-  if(text instanceof nigelgame.Nstring) ns = text;
-  else {
-    if(typeof(text) !== "string") text = text + "";
-    ns = new nigelgame.Nstring(text, options.cols, options.rows);
-  }
+  if(options.cols || options.rows)
+    text = nigelgame.wrapString(text, options.cols, options.rows);
   if(!(font instanceof nigelgame.Sheet)) throw "invalid font in drawString.";
   if(!(point instanceof nigelgame.Point)) point = new nigelgame.Point(point);
   point = point || new nigelgame.Point({ x: 0, y: 0 });
@@ -172,6 +168,10 @@ nigelgame.Screen.prototype.drawString = function(text, font, point, options) {
   var anchor = options.anchor ?
     { x: options.anchor.x || 0, y: options.anchor.y || 0 } :
     { x: 0, y: 0 };
+  //format text into lines & get max column width
+  var lines = text.split('\n');
+  var maxcol = 0;
+  for(var i = 0; i < lines.length; ++i) maxcol = Math.max(lines[i].length, maxcol);
   //how to align the text?
   var align = 0;
   if(!options || !options.align || options.align === "left") align = 0;
@@ -180,16 +180,16 @@ nigelgame.Screen.prototype.drawString = function(text, font, point, options) {
   else throw "unknown text alignment: " + options.align;
   //top left text point
   var tl = point.translate({
-    x: -ns.maxcol * font.spriteWidth * (anchor.x+1) / 2,
-    y: -ns.lines.length * font.spriteHeight * (anchor.y+1) / 2
+    x: -maxcol * font.spriteWidth * (anchor.x+1) / 2,
+    y: -lines.length * font.spriteHeight * (anchor.y+1) / 2
   });
   //print all characters
-  for(var r = 0; r < ns.lines.length; ++r) {
-    var indent = Math.floor((ns.maxcol-ns.lines[r].length)*align);
+  for(var r = 0; r < lines.length; ++r) {
+    var indent = (maxcol-lines[r].length)*align;
     var pt = tl.translate({ x: indent*font.spriteWidth, y: r*font.spriteHeight });
-    for(var c = 0; c < ns.lines[r].length; ++c) {
+    for(var c = 0; c < lines[r].length; ++c) {
       //get character and draw it
-      var ch = ns.lines[r].charCodeAt(c) - 32;
+      var ch = lines[r].charCodeAt(c) - 32;
       this.drawSprite(font.getSprite(ch), pt, { anchor: { x: -1, y: -1 } });
       pt = pt.translate({ x: font.spriteWidth });
     }
@@ -235,10 +235,12 @@ nigelgame.Screen.prototype.drawStringBox = function(text, font, box, point, opti
     { x: options.anchor.x || 0, y: options.anchor.y || 0 } :
     { x: 0, y: 0 };
   //format string
-  var nstr = new nigelgame.Nstring(text, options.cols, options.rows);
+  var lines = text.split('\n');
+  var maxcol = 0;
+  for(var i = 0; i < lines.length; ++i) maxcol = Math.max(lines[i].length, maxcol);
   //figure out size of box
-  var w = (options.cols || nstr.maxcol) * font.spriteWidth + 2 * box.spriteWidth;
-  var h = (options.rows || nstr.rows) * font.spriteHeight + 2 * box.spriteHeight;
+  var w = (options.cols || maxcol) * font.spriteWidth + 2 * box.spriteWidth;
+  var h = (options.rows || lines.length) * font.spriteHeight + 2 * box.spriteHeight;
   var rect = {
     left: point.x - w * (anchor.x+1)/2,
     width: w,
