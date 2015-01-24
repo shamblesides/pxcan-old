@@ -12,7 +12,7 @@ nigelgame.start = function(options) {
     startPoint: null,
     lastPoint: null
   }
-  var view = options.view;
+  var view;
   var logicReady = true;
   var doingFrame = false;
   var totalClock = 0;
@@ -60,6 +60,8 @@ nigelgame.start = function(options) {
       options.element.addEventListener("touchmove", gotTouchMove, false);
       options.element.addEventListener("touchend", gotTouchEnd, false);
     }
+    // create the view object
+    view = new options.view();
     // begin doing frame actions
     if(options.framerate) {
       window.setInterval(function() {
