@@ -5,7 +5,8 @@ nigelgame.start = function(options) {
   var buttons = {};
   var mouseState = {
     startPoint: null,
-    lastPoint: null
+    lastPoint: null,
+    button: null
   }
   var touchState = {
     id: null,
@@ -59,6 +60,8 @@ nigelgame.start = function(options) {
       options.element.addEventListener("touchstart", gotTouchStart, false);
       options.element.addEventListener("touchmove", gotTouchMove, false);
       options.element.addEventListener("touchend", gotTouchEnd, false);
+      //disable right click
+      options.element.addEventListener("contextmenu", function(evt) { evt.preventDefault(); return false; }, false);
     }
     // create the view object
     view = new options.view();
@@ -138,9 +141,10 @@ nigelgame.start = function(options) {
     var point = mousePoint(evt);
     mouseState.startPoint = point;
     mouseState.lastPoint = point;
+    mouseState.button = mouseWhich(evt);
     if(view.touch) view.touch({
       point: point,
-      type: "mouse",
+      type: mouseState.button,
       screenRect: screen.getRect()
     });
   }
@@ -151,17 +155,17 @@ nigelgame.start = function(options) {
       point: point,
       lastPoint: mouseState.lastPoint,
       startPoint: mouseState.startPoint,
-      type: "mouse",
+      type: mouseState.button,
       screenRect: screen.getRect()
     });
     mouseState.lastPoint = point;
   }
   function gotMouseUp(evt) {
-    if(view.release && mouseState.startPoint) {
+    if(view.release && mouseState.startPoint && mouseState.button === mouseWhich(evt)) {
       view.release({
         point: mousePoint(evt),
         startPoint: mouseState.startPoint,
-        type: "mouse",
+        type: mouseState.button,
         screenRect: screen.getRect()
       });
     }
@@ -177,6 +181,9 @@ nigelgame.start = function(options) {
       x: Math.floor(x/elw*screen.width - screen.width/2),
       y: Math.floor(y/elh*screen.height - screen.height/2)
     });
+  }
+  function mouseWhich(evt) {
+    return (evt.button === 2)? "rightmouse": "mouse";
   }
   
   //touch events handlers
