@@ -151,6 +151,7 @@ nigelgame.start = function(options) {
   function gotMouseMove(evt) {
     if(!mouseState.startPoint) return;
     var point = mousePoint(evt);
+    if(point.equals(mouseState.lastPoint)) return;
     if(view.drag) view.drag({
       point: point,
       lastPoint: mouseState.lastPoint,
@@ -217,6 +218,7 @@ nigelgame.start = function(options) {
       //if one of them is the current touch, ok!
       if(evt.changedTouches[i].identifier === touchState.id) {
         var point = touchPoint(evt.changedTouches[i]);
+        if(point.equals(touchState.lastPoint)) return;
         if(view.drag) view.drag({
           point: point,
           lastPoint: touchState.lastPoint,
