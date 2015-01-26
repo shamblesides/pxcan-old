@@ -31,37 +31,48 @@ nigelgame.Point.prototype.untranslate = function(params) {
   });
 };
 
+nigelgame.Point.prototype.equals = function(params) {
+  return this.x == params.x
+    && this.y == params.y
+    && this.xAnchor == params.xAnchor
+    && this.yAnchor == params.yAnchor;
+}
+
 nigelgame.Rect = function(p) {
   //make sure boundaries are well-defined for vertical & horizontal
-  var hdef = 0;
-  if(p.left !== undefined || p.leftAnchor !== undefined) ++hdef;
-  if(p.right !== undefined || p.rightAnchor !== undefined) ++hdef;
-  if(p.width !== undefined || p.widthPerc !== undefined) ++hdef;
-  if(hdef < 2) throw "Horizontal boundaries are not well defined.";
-  else if(hdef > 2) throw "Too many arguments for horizontal boundaries.";
-  var vdef = 0;
-  if(p.top !== undefined || p.topAnchor !== undefined) ++vdef;
-  if(p.bottom !== undefined || p.bottomAnchor !== undefined) ++vdef;
-  if(p.height !== undefined || p.heightPerc !== undefined) ++vdef;
-  if(vdef < 2) throw "Vertical boundaries are not well defined.";
-  else if(vdef > 2) throw "Too many arguments for vertical boundaries.";
+  var ldef=0, rdef=0, wdef=0;
+  if(p.left !== undefined || p.leftAnchor !== undefined) ldef = 1;
+  if(p.right !== undefined || p.rightAnchor !== undefined) rdef = 1;
+  if(p.width !== undefined || p.widthPerc !== undefined) wdef = 1;
+  if(ldef + rdef + wdef < 2)
+    throw "Horizontal boundaries are not well defined.";
+  else if(ldef + rdef + wdef > 2)
+    throw "Too many arguments for horizontal boundaries.";
+  var tdef=0, bdef=0, hdef=0;
+  if(p.top !== undefined || p.topAnchor !== undefined) tdef = 1;
+  if(p.bottom !== undefined || p.bottomAnchor !== undefined) bdef = 1;
+  if(p.height !== undefined || p.heightPerc !== undefined) hdef = 1;
+  if(tdef + bdef + hdef < 2)
+    throw "Vertical boundaries are not well defined.";
+  else if(tdef + bdef + hdef > 2)
+    throw "Too many arguments for vertical boundaries.";
   //assign all fields from info provided
-  this.left = (p.left !== undefined || p.leftAnchor !== undefined)? 
-    (p.left || p.right || 0): (p.right || 0) - (p.width || 0);
-  this.right = (p.right !== undefined || p.rightAnchor !== undefined)?
-    (p.right || p.left || 0): (p.left || 0) + (p.width || 0);
-  this.top = (p.top !== undefined || p.topAnchor !== undefined)?
-    (p.top || p.bottom || 0): (p.bottom || 0) - (p.height || 0);
-  this.bottom = (p.bottom !== undefined || p.bottomAnchor !== undefined)?
-    (p.bottom || p.top || 0): (p.top || 0) + (p.height || 0);
-  this.leftAnchor = (p.leftAnchor !== undefined || p.left !== undefined)?
-    (p.leftAnchor || p.rightAnchor || 0): (p.rightAnchor || 0) - (p.widthPerc*2 || 0);
-  this.rightAnchor = (p.rightAnchor !== undefined || p.right !== undefined)?
-    (p.rightAnchor || p.leftAnchor || 0): (p.leftAnchor || 0) + (p.widthPerc*2 || 0);
-  this.topAnchor = (p.topAnchor !== undefined || p.left !== undefined)?
-    (p.topAnchor || p.bottomAnchor || 0): (p.bottomAnchor || 0) - (p.heightPerc*2 || 0);
-  this.bottomAnchor = (p.bottomAnchor !== undefined || p.right !== undefined)?
-    (p.bottomAnchor || p.topAnchor || 0): (p.topAnchor || 0) + (p.heightPerc*2 || 0);
+  this.left = ldef? (p.left !== undefined?p.left: (p.right || 0)):
+    (p.right || 0) - (p.width || 0);
+  this.right = rdef? (p.right !== undefined?p.right: (p.left || 0)):
+    (p.left || 0) + (p.width || 0);
+  this.top = tdef? (p.top !== undefined?p.top: (p.bottom || 0)):
+    (p.bottom || 0) - (p.height || 0);
+  this.bottom = bdef? (p.bottom !== undefined?p.bottom: (p.top || 0)):
+    (p.top || 0) + (p.height || 0);
+  this.leftAnchor = ldef? (p.leftAnchor !== undefined?p.leftAnchor: (p.rightAnchor || 0)):
+    (p.rightAnchor || 0) - (p.widthPerc*2 || 0);
+  this.rightAnchor = rdef? (p.rightAnchor !== undefined?p.rightAnchor: (p.leftAnchor || 0)):
+    (p.leftAnchor || 0) + (p.widthPerc*2 || 0);
+  this.topAnchor = tdef? (p.topAnchor !== undefined?p.topAnchor: (p.bottomAnchor || 0)):
+    (p.bottomAnchor || 0) - (p.heightPerc*2 || 0);
+  this.bottomAnchor = bdef? (p.bottomAnchor !== undefined?p.bottomAnchor: (p.topAnchor || 0)):
+    (p.topAnchor || 0) + (p.heightPerc*2 || 0);
   this.width = this.right - this.left;
   this.height = this.bottom - this.top;
   this.widthPerc = (this.rightAnchor - this.leftAnchor)/2;
@@ -111,35 +122,53 @@ nigelgame.Rect.prototype.pointIn = function(point) {
 };
 
 nigelgame.Rect.prototype.expand = function(params) {
-  // add to sides
-  this.top -= params.top || 0;
-  this.bottom += params.bottom || 0;
-  this.left -= params.left || 0;
-  this.right += params.right || 0;
-  this.topAnchor -= params.topAnchor || 0;
-  this.bottomAnchor += params.bottomAnchor || 0;
-  this.leftAnchor -= params.leftAnchor || 0;
-  this.rightAnchor += params.rightAnchor || 0;
-  // adjust these
-  this.width = this.right - this.left;
-  this.height = this.bottom - this.top;
-  this.widthPerc = (this.rightAnchor - this.leftAnchor)/2;
-  this.heightPerc = (this.bottomAnchor - this.topAnchor)/2;
+  return new nigelgame.Rect({
+    top: this.top - (params.top || 0),
+    bottom: this.bottom + (params.bottom || 0),
+    left: this.left - (params.left || 0),
+    right: this.right + (params.right || 0),
+    leftAnchor: this.leftAnchor - (params.leftAnchor || 0),
+    rightAnchor: this.rightAnchor + (params.rightAnchor || 0),
+    topAnchor: this.topAnchor - (params.topAnchor || 0),
+    bottomAnchor: this.bottomAnchor + (params.bottomAnchor || 0)
+  });
 };
 
 nigelgame.Rect.prototype.shrink = function(params) {
-  // remove from sides
-  this.top += params.top || 0;
-  this.bottom -= params.bottom || 0;
-  this.left += params.left || 0;
-  this.right -= params.right || 0;
-  this.topAnchor += params.topAnchor || 0;
-  this.bottomAnchor -= params.bottomAnchor || 0;
-  this.leftAnchor += params.leftAnchor || 0;
-  this.rightAnchor -= params.rightAnchor || 0;
-  // adjust these
-  this.width = this.right - this.left;
-  this.height = this.bottom - this.top;
-  this.widthPerc = (this.rightAnchor - this.leftAnchor)/2;
-  this.heightPerc = (this.bottomAnchor - this.topAnchor)/2;
+  return new nigelgame.Rect({
+    top: this.top + (params.top || 0),
+    bottom: this.bottom - (params.bottom || 0),
+    left: this.left + (params.left || 0),
+    right: this.right - (params.right || 0),
+    leftAnchor: this.leftAnchor + (params.leftAnchor || 0),
+    rightAnchor: this.rightAnchor - (params.rightAnchor || 0),
+    topAnchor: this.topAnchor + (params.topAnchor || 0),
+    bottomAnchor: this.bottomAnchor - (params.bottomAnchor || 0)
+  });
+};
+
+nigelgame.Rect.prototype.translate = function(params) {
+  return new nigelgame.Rect({
+    top: this.top + (params.y || 0),
+    bottom: this.bottom + (params.y || 0),
+    left: this.left + (params.x || 0),
+    right: this.right + (params.x || 0),
+    leftAnchor: this.leftAnchor + (params.xAnchor || 0),
+    rightAnchor: this.rightAnchor + (params.xAnchor || 0),
+    topAnchor: this.topAnchor + (params.yAnchor || 0),
+    bottomAnchor: this.bottomAnchor + (params.yAnchor || 0)
+  });
+};
+
+nigelgame.Rect.prototype.untranslate = function(params) {
+  return new nigelgame.Rect({
+    top: this.top - (params.y || 0),
+    bottom: this.bottom - (params.y || 0),
+    left: this.left - (params.x || 0),
+    right: this.right - (params.x || 0),
+    leftAnchor: this.leftAnchor - (params.xAnchor || 0),
+    rightAnchor: this.rightAnchor - (params.xAnchor || 0),
+    topAnchor: this.topAnchor - (params.yAnchor || 0),
+    bottomAnchor: this.bottomAnchor - (params.yAnchor || 0)
+  });
 };
