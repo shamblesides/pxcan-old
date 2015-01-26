@@ -140,8 +140,8 @@ nigelgame.Screen.prototype.drawSprite = function(sprite, point, options) {
   else if(!sprite.sheet || !sprite.rect) throw "invalid sprite.";
   if(!(point instanceof nigelgame.Point)) point = new nigelgame.Point(point);
   anchor = (options && options.anchor) || {}
-  anchor.x = anchor.x || 0;
-  anchor.y = anchor.y || 0;
+  if(anchor.x === undefined) anchor.x = point.xAnchor || 0;
+  if(anchor.y === undefined) anchor.y = point.yAnchor || 0;
   //onscreen location
   var sx = point.xFor(this) + this.width / 2 - (anchor.x + 1) / 2 * sprite.rect.width;
   var sy = point.yFor(this) + this.height / 2 - (anchor.y + 1) / 2 * sprite.rect.height;
