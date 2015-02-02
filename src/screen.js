@@ -113,8 +113,17 @@ nigelgame.Screen.prototype.getRect = function() {
   });
 };
 
-nigelgame.Screen.prototype.clear = function() {
-  this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+nigelgame.Screen.prototype.clear = function(color) {
+  //by default just clear
+  if(!color) {
+    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    return;
+  }
+  //with the color option specified, just clear the whole screen to that color
+  var temp = this.context.fillStyle;
+  this.context.fillStyle = color;
+  this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+  this.context.fillStyle = temp;
 };
 
 nigelgame.Screen.prototype.fill = function(color, rect) {
