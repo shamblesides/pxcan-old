@@ -103,24 +103,6 @@ nigelgame.Rect.prototype.heightFor = function(outer) {
   return this.height + this.heightPerc * outer.height;
 };
 
-nigelgame.Rect.prototype.contains = function(point, outer) {
-  if(!(point instanceof nigelgame.Point)) point = new nigelgame.Point(point);
-  var px = point.xFor(outer);
-  var py = point.yFor(outer);
-  return px >= this.leftFor(outer) && px <= this.rightFor(outer)
-    && py >= this.topFor(outer) && py <= this.bottomFor(outer);
-};
-
-nigelgame.Rect.prototype.pointIn = function(point) {
-  if(!(point instanceof nigelgame.Point)) point = new nigelgame.Point(point);
-  return new nigelgame.Point({
-    x: this.left + this.width * (point.xAnchor+1) / 2 + point.x,
-    y: this.top + this.height * (point.yAnchor+1) / 2 + point.y,
-    xAnchor: this.leftAnchor + (this.widthPerc * 2) * (point.xAnchor + 1) / 2,
-    yAnchor: this.topAnchor + (this.heightPerc * 2) * (point.yAnchor + 1) / 2,
-  });
-};
-
 nigelgame.Rect.prototype.expand = function(params) {
   return new nigelgame.Rect({
     top: this.top - (params.top || 0),
@@ -170,5 +152,38 @@ nigelgame.Rect.prototype.untranslate = function(params) {
     rightAnchor: this.rightAnchor - (params.xAnchor || 0),
     topAnchor: this.topAnchor - (params.yAnchor || 0),
     bottomAnchor: this.bottomAnchor - (params.yAnchor || 0)
+  });
+};
+
+nigelgame.Rect.prototype.contains = function(point, outer) {
+  if(!(point instanceof nigelgame.Point)) point = new nigelgame.Point(point);
+  var px = point.xFor(outer);
+  var py = point.yFor(outer);
+  return px >= this.leftFor(outer) && px <= this.rightFor(outer)
+    && py >= this.topFor(outer) && py <= this.bottomFor(outer);
+};
+
+nigelgame.Rect.prototype.pointIn = function(point) {
+  if(!(point instanceof nigelgame.Point)) point = new nigelgame.Point(point);
+  return new nigelgame.Point({
+    x: this.left + this.width * (point.xAnchor+1) / 2 + point.x,
+    y: this.top + this.height * (point.yAnchor+1) / 2 + point.y,
+    xAnchor: this.leftAnchor + (this.widthPerc * 2) * (point.xAnchor + 1) / 2,
+    yAnchor: this.topAnchor + (this.heightPerc * 2) * (point.yAnchor + 1) / 2
+  });
+};
+
+nigelgame.Point.prototype.rectFrom = function(params) {
+  var anchor = {
+    x: (params.anchor && params.anchor.x) || 0,
+    y: (params.anchor && params.anchor.y) || 0
+  };
+  return new nigelgame.Rect({
+    width: params.width,
+    height: params.height,
+    left: this.x - params.width * (anchor.x + 1) / 2,
+    top: this.y - params.height * (anchor.y + 1) / 2,
+    leftAnchor: anchor.x,
+    topAnchor: anchor.y
   });
 };
