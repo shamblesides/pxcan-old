@@ -5,13 +5,20 @@ nigelgame.Screen = function(element, mode, mw, mh, scale) {
   else if(nigelgame.Screen.MODES.indexOf(mode.toLowerCase()) === -1)
     throw "unsupported screen mode: " + mode;
   //vars
-  this.element = element;
-  this.mode = mode.toLowerCase();
-  this.minWidth = mw || element.clientWidth || element.innerWidth;
-  this.minHeight = mh || element.clientHeight || element.innerWidth;
+  mode = mode.toLowerCase();
+  mw = mw || element.clientWidth || element.innerWidth;
+  mh = mh || element.clientHeight || element.innerWidth;
+  Object.defineProperty(this, 'element', { get: function() { return element; } });
+  Object.defineProperty(this, 'mode', { get: function() { return mode; } });
+  Object.defineProperty(this, 'minWidth', { get: function() { return mw; } });
+  Object.defineProperty(this, 'minHeight', { get: function() { return mw; } });
   this.width = undefined;
   this.height = undefined;
   this.drawScale = scale || 1;
+  
+  //section (the whole thing)
+  var subrect = new nigelgame.Rect({ leftAnchor: -1, rightAnchor: 1, topAnchor: -1, bottomAnchor: 1 });
+  Object.defineProperty(this, 'subRect', { get: function() { return subrect; } });
   
   //create canvas element
   this.canvas = document.createElement("canvas");
@@ -21,13 +28,22 @@ nigelgame.Screen = function(element, mode, mw, mh, scale) {
   //drawing context
   this.context = this.canvas.getContext("2d");
   //put canvas on page
-  var parent = (element !== window)? element: document.getElementsByTagName("body")[0];
-  parent.appendChild(this.canvas);
+  ((element !== window)? element: document.getElementsByTagName("body")[0]).appendChild(this.canvas);
   //make it selectable (if it's not just in the window)
   if(this.element !== window && this.element.tabIndex < 0) this.element.tabIndex = 0;
 };
 
 nigelgame.Screen.MODES = [ "none", "adapt", "scale-adapt" ];
+
+nigelgame.Panel = function(parent, rect) {
+  this.subRect = parent.subRect.rectIn(rect);
+  this.screen = parent.screen || parent;
+  Object.defineProperty(this, 'canvas', { get: function() { return this.screen.canvas; } });
+};
+
+nigelgame.Screen.prototype.panel = function(rect) {
+  return new nigelgame.Panel(this, rect);
+}
 
 nigelgame.Screen.prototype.fitElement = function() {
   //get the current width/height of the elemnt
@@ -113,60 +129,110 @@ nigelgame.Screen.prototype.getRect = function() {
   });
 };
 
-nigelgame.Screen.prototype.clear = function(color) {
-  //by default just clear
-  if(!color) {
+nigelgame.Screen.prototype.clear = 
+nigelgame.Panel.prototype.clear = function(rect) {
+  //basic screen, just clear the whole thing quickly
+  if(!rect && !this.screen) {
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     return;
   }
-  //with the color option specified, just clear the whole screen to that color
-  var temp = this.context.fillStyle;
-  this.context.fillStyle = color;
-  this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
-  this.context.fillStyle = temp;
+  //rect position
+  var scr = this.screen || this;
+  var w2 = scr.width/2, h2 = scr.height/2;
+  var w = Math.round(rect.widthFor(scr));
+  var h = Math.round(rect.heightFor(scr));
+  var l = Math.round(rect.leftFor(scr) + w2);
+  var t = Math.round(rect.topFor(scr) + h2);
+  var ll = Math.round(this.subRect.leftFor(scr) + w2);
+  var lt = Math.round(this.subRect.topFor(scr) + h2);
+  if(l < ll) { w -= ll - l; l = ll; }
+  if(t < lt) { h -= lt - t; t = lt; }
+  var lr = Math.round(this.subRect.rightFor(scr) + w2);
+  var lb = Math.round(this.subRect.bottomFor(scr) + h2);
+  if(l + w > lr) w = lr - l;
+  if(t + h > lb) h = lb - t;
+  if(w <= 0 || h <= 0) return;
+  //clear it
+  scr.context.clearRect(
+    l * scr.drawScale, t * scr.drawScale,
+    w * scr.drawScale, h * scr.drawScale
+  );
 };
 
-nigelgame.Screen.prototype.fill = function(color, rect) {
+nigelgame.Screen.prototype.fill =
+nigelgame.Panel.prototype.fill = function(color, rect) {
   //robust arguments
-  if(!(rect instanceof nigelgame.Rect)) rect = new nigelgame.Rect(rect);
+  if(rect && !(rect instanceof nigelgame.Rect)) rect = new nigelgame.Rect(rect);
+  var scr = this.screen || this;
   //set color
-  var temp = this.context.fillStyle;
-  this.context.fillStyle = color;
+  var temp = scr.context.fillStyle;
+  scr.context.fillStyle = color;
+  //rect
+  rect = rect? this.subRect.rectIn(rect): this.subRect;
+  //rect position
+  var w2 = scr.width/2, h2 = scr.height/2;
+  var w = Math.round(rect.widthFor(scr));
+  var h = Math.round(rect.heightFor(scr));
+  var l = Math.round(rect.leftFor(scr) + w2);
+  var t = Math.round(rect.topFor(scr) + h2);
+  var ll = Math.round(this.subRect.leftFor(scr) + w2);
+  var lt = Math.round(this.subRect.topFor(scr) + h2);
+  if(l < ll) { w -= ll - l; l = ll; }
+  if(t < lt) { h -= lt - t; t = lt; }
+  var lr = Math.round(this.subRect.rightFor(scr) + w2);
+  var lb = Math.round(this.subRect.bottomFor(scr) + h2);
+  if(l + w > lr) w = lr - l;
+  if(t + h > lb) h = lb - t;
+  if(w <= 0 || h <= 0) return;
   //draw the rectangle
-  this.context.fillRect(
-    Math.round(rect.leftFor(this) + this.width / 2) * this.drawScale,
-    Math.round(rect.topFor(this) + this.height / 2) * this.drawScale,
-    Math.round(rect.widthFor(this)) * this.drawScale,
-    Math.round(rect.heightFor(this)) * this.drawScale
+  scr.context.fillRect(
+    l * scr.drawScale, t * scr.drawScale,
+    w * scr.drawScale, h * scr.drawScale
   );
   //set color back
-  this.context.fillStyle = temp;
+  scr.context.fillStyle = temp;
 };
 
-nigelgame.Screen.prototype.drawSprite = function(sprite, point, options) {
+nigelgame.Screen.prototype.drawSprite =
+nigelgame.Panel.prototype.drawSprite = function(sprite, point, options) {
   //robust arguments
   if(sprite instanceof nigelgame.Sheet) sprite = sprite.getSprite();
   else if(!sprite.sheet || !sprite.rect) throw "invalid sprite.";
-  if(!(point instanceof nigelgame.Point)) point = new nigelgame.Point(point);
   anchor = (options && options.anchor) || {}
   if(anchor.x === undefined) anchor.x = point.xAnchor || 0;
   if(anchor.y === undefined) anchor.y = point.yAnchor || 0;
+  //point relative to Panel rect
+  point = this.subRect.pointIn(point);
   //onscreen location
-  var sx = point.xFor(this) + this.width / 2 - (anchor.x + 1) / 2 * sprite.rect.width;
-  var sy = point.yFor(this) + this.height / 2 - (anchor.y + 1) / 2 * sprite.rect.height;
+  var scr = this.screen || this;
+  var w2 = scr.width/2, h2 = scr.height/2;
+  var w = sprite.rect.widthFor(sprite.sheet);
+  var h = sprite.rect.heightFor(sprite.sheet);
+  var l = Math.round(point.xFor(scr) + w2 - (anchor.x + 1) / 2 * w);
+  var t = Math.round(point.yFor(scr) + h2 - (anchor.y + 1) / 2 * h);
+  var ll = Math.round(this.subRect.leftFor(scr) + w2);
+  var lt = Math.round(this.subRect.topFor(scr) + h2);
+  var offx = 0, offy = 0;
+  if(l < ll) { offx = ll - l; w -= offx; l = ll; }
+  if(t < lt) { offy = lt - t; h -= offy; t = lt; }
+  var lr = Math.round(this.subRect.rightFor(scr) + w2);
+  var lb = Math.round(this.subRect.bottomFor(scr) + h2);
+  if(l + w > lr) w = lr - l;
+  if(t + h > lb) h = lb - t;
+  if(w <= 0 || h <= 0) return;
   //draw it to the screen
-  this.context.drawImage(sprite.sheet.img,
+  scr.context.drawImage(sprite.sheet.img,
     //location on the spritesheet
-    sprite.rect.leftFor(sprite.sheet), sprite.rect.topFor(sprite.sheet),
-    sprite.rect.widthFor(sprite.sheet), sprite.rect.heightFor(sprite.sheet),
+    sprite.rect.leftFor(sprite.sheet) + offx, sprite.rect.topFor(sprite.sheet) + offy,
+    w, h,
     //location on screen
-    Math.round(sx) * this.drawScale, Math.round(sy) * this.drawScale,
-    sprite.rect.widthFor(sprite.sheet) * this.drawScale,
-    sprite.rect.heightFor(sprite.sheet) * this.drawScale
+    l * scr.drawScale, t * scr.drawScale,
+    w * scr.drawScale, h * scr.drawScale
   );
 };
 
-nigelgame.Screen.prototype.drawString = function(text, font, point, options) {
+nigelgame.Screen.prototype.drawString =
+nigelgame.Panel.prototype.drawString = function(text, font, point, options) {
   //robust arguments
   if(options.cols || options.rows)
     text = nigelgame.wrapString(text, options.cols, options.rows);
@@ -205,7 +271,8 @@ nigelgame.Screen.prototype.drawString = function(text, font, point, options) {
   }
 };
 
-nigelgame.Screen.prototype.drawBox = function(box, rect, color) {
+nigelgame.Screen.prototype.drawBox =
+nigelgame.Panel.prototype.drawBox = function(box, rect, color) {
   //robust arguments
   if(!(rect instanceof nigelgame.Rect)) rect = new nigelgame.Rect(rect);
   //fill background first, maybe.
@@ -236,7 +303,8 @@ nigelgame.Screen.prototype.drawBox = function(box, rect, color) {
   this.drawSprite(box.getSprite(8), rect.pointIn({ xAnchor: 1, yAnchor: 1 }), { anchor: {x: 1, y: 1}});
 };
 
-nigelgame.Screen.prototype.drawStringBox = function(text, font, box, point, options) {
+nigelgame.Screen.prototype.drawStringBox =
+nigelgame.Panel.prototype.drawStringBox = function(text, font, box, point, options) {
   //robust args
   if(!(point instanceof nigelgame.Point)) point = new nigelgame.Point(point);
   options = options || {};
@@ -250,14 +318,7 @@ nigelgame.Screen.prototype.drawStringBox = function(text, font, box, point, opti
   //figure out size of box
   var w = (options.cols || maxcol) * font.spriteWidth + 2 * box.spriteWidth;
   var h = (options.rows || lines.length) * font.spriteHeight + 2 * box.spriteHeight;
-  var rect = {
-    left: point.x - w * (anchor.x+1)/2,
-    width: w,
-    top: point.y - h * (anchor.y+1)/2,
-    height: h,
-    leftAnchor: point.xAnchor,
-    topAnchor: point.yAnchor
-  };
+  var rect = point.rectFrom({ width: w, height: h, anchor: anchor });
   //draw rect
   this.drawBox(box, rect, options.color);
   //draw the string
