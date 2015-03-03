@@ -52,6 +52,9 @@ nigelgame.start = function(options) {
       options.element.addEventListener("keydown", gotKeyDown, false);
       options.element.addEventListener("keyup", gotKeyUp, false);
     }
+    if(options.useKeyboard) {
+      options.element.addEventListener("keypress", gotKeyPress, false);
+    }
     //mouse/touch listeners
     if(options.useTouch) {
       options.element.addEventListener("mousedown", gotMouseDown, false);
@@ -115,25 +118,32 @@ nigelgame.start = function(options) {
     ++totalClock;
   }
   
-  //keyboard event handlers
+  //game button event handlers
   function gotKeyDown(evt) {
+    if(!options.useKeyboard) evt.preventDefault();
     var key = options.keyBinds[evt.keyCode];
-    if(key === undefined) return;
+    if(key === undefined) return true;
     
-    evt.preventDefault();
     if(!buttons[key]) {
       buttons[key] = true;
-      if(view.keydown) view.keydown(key);
+      if(view.buttondown) return view.buttondown(key);
     }
   }
   function gotKeyUp(evt) {
     var key = options.keyBinds[evt.keyCode];
-    if(key === undefined) return;
+    if(key === undefined) return true;
     
     if(buttons[key]) {
       buttons[key] = false;
-      if(view.keyup) view.keyup(key);
+      if(view.buttonup) return view.buttonup(key);
     }
+  }
+  
+  //manual keyboard event handlers
+  function gotKeyPress(evt) {
+    if(view.keypress)
+      if(!view.keypress(evt)) return;
+    evt.preventDefault();
   }
   
   //mouse event handlers
