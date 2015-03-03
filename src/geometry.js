@@ -168,8 +168,32 @@ nigelgame.Rect.prototype.pointIn = function(point) {
   return new nigelgame.Point({
     x: this.left + this.width * (point.xAnchor+1) / 2 + point.x,
     y: this.top + this.height * (point.yAnchor+1) / 2 + point.y,
-    xAnchor: this.leftAnchor + (this.widthPerc * 2) * (point.xAnchor + 1) / 2,
-    yAnchor: this.topAnchor + (this.heightPerc * 2) * (point.yAnchor + 1) / 2
+    xAnchor: this.leftAnchor + this.widthPerc * (point.xAnchor + 1),
+    yAnchor: this.topAnchor + this.heightPerc * (point.yAnchor + 1)
+  });
+};
+
+nigelgame.Rect.prototype.pointOut = function(point) {
+  if(!(point instanceof nigelgame.Point)) point = new nigelgame.Point(point);
+  return new nigelgame.Point({
+    x: point.x - this.left - this.width * (point.xAnchor+1) / 2,
+    y: point.y - this.top - this.height * (point.yAnchor+1) / 2,
+    xAnchor: (point.xAnchor - this.leftAnchor) / (this.widthPerc) - 1,
+    yAnchor: (point.yAnchor - this.topAnchor) / (this.heightPerc) - 1
+  });
+};
+
+nigelgame.Rect.prototype.rectIn = function(rect) {
+  if(!(rect instanceof nigelgame.Rect)) rect = new nigelgame.Rect(rect);
+  return new nigelgame.Rect({
+    left: this.left + this.width * (rect.leftAnchor+1) / 2 + rect.left,
+    right: this.left + this.width * (rect.rightAnchor+1) / 2 + rect.right,
+    top: this.top + this.height * (rect.topAnchor+1) / 2 + rect.top,
+    bottom: this.top + this.height * (rect.bottomAnchor+1) / 2 + rect.bottom,
+    leftAnchor: this.leftAnchor + (this.widthPerc * 2) * (rect.leftAnchor + 1) / 2,
+    rightAnchor: this.leftAnchor + (this.widthPerc * 2) * (rect.rightAnchor + 1) / 2,
+    topAnchor: this.topAnchor + (this.heightPerc * 2) * (rect.topAnchor + 1) / 2,
+    bottomAnchor: this.topAnchor + (this.heightPerc * 2) * (rect.bottomAnchor + 1) / 2
   });
 };
 
