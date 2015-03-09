@@ -198,7 +198,7 @@ nigelgame.Panel.prototype.drawSprite = function(sprite, point, options) {
   //robust arguments
   if(sprite instanceof nigelgame.Sheet) sprite = sprite.getSprite();
   else if(!sprite.sheet || !sprite.rect) throw "invalid sprite.";
-  anchor = (options && options.anchor) || {}
+  var anchor = (options && options.anchor) || {};
   if(anchor.x === undefined) anchor.x = point.xAnchor || 0;
   if(anchor.y === undefined) anchor.y = point.yAnchor || 0;
   //point relative to Panel rect
@@ -233,16 +233,16 @@ nigelgame.Panel.prototype.drawSprite = function(sprite, point, options) {
 
 nigelgame.Screen.prototype.drawString =
 nigelgame.Panel.prototype.drawString = function(text, font, point, options) {
-  //robust arguments
-  if(options.cols || options.rows)
-    text = nigelgame.wrapString(text, options.cols, options.rows);
   if(!(font instanceof nigelgame.Sheet)) throw "invalid font in drawString.";
   if(!(point instanceof nigelgame.Point)) point = new nigelgame.Point(point);
-  point = point || new nigelgame.Point({ x: 0, y: 0 });
+  //robust arguments
   options = options || {};
-  var anchor = options.anchor ?
-    { x: options.anchor.x || 0, y: options.anchor.y || 0 } :
-    { x: 0, y: 0 };
+  if(options.cols || options.rows)
+    text = nigelgame.wrapString(text, options.cols, options.rows);
+  point = point || new nigelgame.Point({ x: 0, y: 0 });
+  var anchor = (options && options.anchor) || {};
+  if(anchor.x === undefined) anchor.x = point.xAnchor || 0;
+  if(anchor.y === undefined) anchor.y = point.yAnchor || 0;
   //format text into lines & get max column width
   var lines = text.split('\n');
   var maxcol = 0;
@@ -308,9 +308,9 @@ nigelgame.Panel.prototype.drawStringBox = function(text, font, box, point, optio
   //robust args
   if(!(point instanceof nigelgame.Point)) point = new nigelgame.Point(point);
   options = options || {};
-  var anchor = options.anchor ?
-    { x: options.anchor.x || 0, y: options.anchor.y || 0 } :
-    { x: 0, y: 0 };
+  var anchor = (options && options.anchor) || {};
+  if(anchor.x === undefined) anchor.x = point.xAnchor || 0;
+  if(anchor.y === undefined) anchor.y = point.yAnchor || 0;
   //format string
   var lines = text.split('\n');
   var maxcol = 0;
@@ -322,7 +322,10 @@ nigelgame.Panel.prototype.drawStringBox = function(text, font, box, point, optio
   //draw rect
   this.drawBox(box, rect, options.color);
   //draw the string
-  this.drawString(text, font, point.translate({ x: -box.spriteWidth * anchor.x, y: -box.spriteHeight * anchor.y }),
+  this.drawString(text, font,
+    point.translate({
+      x: -box.spriteWidth * anchor.x, y: -box.spriteHeight * anchor.y
+    }),
     { cols: options.cols, rows: options.rows, anchor: anchor, align: options.align }
   );
 };
