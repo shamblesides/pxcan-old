@@ -31,6 +31,15 @@ nigelgame.Point.prototype.untranslate = function(params) {
   });
 };
 
+nigelgame.Point.prototype.inverse = function() {
+  return new nigelgame.Point({
+    x: -this.x,
+    y: -this.y,
+    xAnchor: -this.xAnchor,
+    yAnchor: -this.yAnchor
+  });
+}
+
 nigelgame.Point.prototype.equals = function(params) {
   return this.x == params.x
     && this.y == params.y
