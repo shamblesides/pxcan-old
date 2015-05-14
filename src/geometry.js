@@ -216,7 +216,7 @@ nigelgame.Point.prototype.rectFrom = function(params) {
     height: params.height,
     left: this.x - params.width * (anchor.x + 1) / 2,
     top: this.y - params.height * (anchor.y + 1) / 2,
-    leftAnchor: anchor.x,
-    topAnchor: anchor.y
+    leftAnchor: this.xAnchor,
+    topAnchor: this.yAnchor
   });
 };
