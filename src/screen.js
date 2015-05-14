@@ -43,7 +43,7 @@ nigelgame.Panel = function(parent, rect) {
 
 nigelgame.Screen.prototype.panel = function(rect) {
   return new nigelgame.Panel(this, rect);
-}
+};
 
 nigelgame.Screen.prototype.fitElement = function() {
   //get the current width/height of the elemnt
