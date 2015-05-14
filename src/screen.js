@@ -136,6 +136,11 @@ nigelgame.Panel.prototype.clear = function(rect) {
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     return;
   }
+  //for panels, if no rect provided, assume full panel
+  if(!rect) {
+    rect = this.subRect;
+  }
+  if(!(rect instanceof nigelgame.Rect)) rect = new nigelgame.Rect(rect);
   //rect position
   var scr = this.screen || this;
   var w2 = scr.width/2, h2 = scr.height/2;
