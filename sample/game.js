@@ -1,6 +1,6 @@
 function init(el) {
   nigelgame.start({
-    view: new TitleView(),
+    view: TitleView,
     element: el,
     width: 172,
     height: 144,
