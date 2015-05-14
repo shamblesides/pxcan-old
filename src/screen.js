@@ -39,6 +39,8 @@ nigelgame.Panel = function(parent, rect) {
   this.subRect = parent.subRect.rectIn(rect);
   this.screen = parent.screen || parent;
   Object.defineProperty(this, 'canvas', { get: function() { return this.screen.canvas; } });
+  Object.defineProperty(this, 'width', { get: function() { return this.subRect.widthFor(parent); } });
+  Object.defineProperty(this, 'height', { get: function() { return this.subRect.heightFor(parent); } });
 };
 
 nigelgame.Screen.prototype.panel = function(rect) {
