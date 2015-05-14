@@ -5,18 +5,20 @@ nigelgame.start = function(options) {
   var buttons = {};
   var mouseState = {
     startPoint: null,
-    lastPoint: null
+    lastPoint: null,
+    button: null
   }
   var touchState = {
     id: null,
     startPoint: null,
     lastPoint: null
   }
-  var view = options.view;
+  var view;
   var logicReady = true;
   var doingFrame = false;
   var totalClock = 0;
   var viewClock = 0;
+  var skippedFrames = 0;
   //setup screen
   var screen = new nigelgame.Screen(
     options.element,
@@ -50,6 +52,9 @@ nigelgame.start = function(options) {
       options.element.addEventListener("keydown", gotKeyDown, false);
       options.element.addEventListener("keyup", gotKeyUp, false);
     }
+    if(options.useKeyboard) {
+      options.element.addEventListener("keypress", gotKeyPress, false);
+    }
     //mouse/touch listeners
     if(options.useTouch) {
       options.element.addEventListener("mousedown", gotMouseDown, false);
@@ -58,58 +63,87 @@ nigelgame.start = function(options) {
       options.element.addEventListener("touchstart", gotTouchStart, false);
       options.element.addEventListener("touchmove", gotTouchMove, false);
       options.element.addEventListener("touchend", gotTouchEnd, false);
+      //disable right click
+      options.element.addEventListener("contextmenu", function(evt) { evt.preventDefault(); return false; }, false);
     }
+    // create the view object
+    view = new options.view();
     // begin doing frame actions
+    if(options.framerate) {
+      window.setInterval(function() {
+        logicReady = true;
+      }, options.framerate);
+    }
     window.requestAnimationFrame(reqAnim);
-    window.setInterval(function() {
-      logicReady = true;
-    }, options.minFreq || 33);
   }
   
   function reqAnim() {
+    //don't accidentally call this method twice at once
     if(doingFrame) return;
     doingFrame = true;
-    if(logicReady) {
+    //if we have a specific framerate to target, skip some frames
+    if(!options.framerate || logicReady) {
       logicReady = false;
-      if(view.nextView) {
-        var next = view.nextView;
-        view.nextView = null;
-        view = next;
-        viewClock = 0;
+      if(options.frameskip) {
+        ++skippedFrames;
+        if(skippedFrames > options.frameskip) {
+          skippedFrames = 0;
+          doFrame();
+        }
       }
-      var clocks = {
-        total: totalClock,
-        view: viewClock
-      };
-      if(view.update) view.update(clocks);
-      screen.fitElement();
-      if(view.draw) view.draw(screen, clocks);
-      ++viewClock;
-      ++totalClock;
+      else {
+        doFrame();
+      }
     }
+    //done. unlock method
     doingFrame = false;
     window.requestAnimationFrame(reqAnim);
   }
   
-  //keyboard event handlers
+  function doFrame() {
+    if(view.nextView) {
+      var next = view.nextView;
+      view.nextView = null;
+      view = next;
+      viewClock = 0;
+    }
+    var clocks = {
+      total: totalClock,
+      view: viewClock
+    };
+    if(view.update) view.update(clocks);
+    screen.fitElement();
+    if(view.draw) view.draw(screen, clocks);
+    ++viewClock;
+    ++totalClock;
+  }
+  
+  //game button event handlers
   function gotKeyDown(evt) {
+    if(!options.useKeyboard) evt.preventDefault();
     var key = options.keyBinds[evt.keyCode];
-    if(key === undefined) return;
+    if(key === undefined) return true;
     
-    evt.preventDefault();
     if(!buttons[key]) {
       buttons[key] = true;
-      if(view.keydown) view.keydown(key);
+      if(view.buttondown) return view.buttondown(key);
     }
   }
   function gotKeyUp(evt) {
     var key = options.keyBinds[evt.keyCode];
-    if(key === undefined) return;
+    if(key === undefined) return true;
     
     if(buttons[key]) {
       buttons[key] = false;
-      if(view.keyup) view.keyup(key);
+      if(view.buttonup) return view.buttonup(key);
     }
+  }
+  
+  //manual keyboard event handlers
+  function gotKeyPress(evt) {
+    if(view.keypress)
+      if(!view.keypress(evt)) return;
+    evt.preventDefault();
   }
   
   //mouse event handlers
@@ -117,30 +151,32 @@ nigelgame.start = function(options) {
     var point = mousePoint(evt);
     mouseState.startPoint = point;
     mouseState.lastPoint = point;
+    mouseState.button = mouseWhich(evt);
     if(view.touch) view.touch({
       point: point,
-      type: "mouse",
+      type: mouseState.button,
       screenRect: screen.getRect()
     });
   }
   function gotMouseMove(evt) {
     if(!mouseState.startPoint) return;
     var point = mousePoint(evt);
+    if(point.equals(mouseState.lastPoint)) return;
     if(view.drag) view.drag({
       point: point,
       lastPoint: mouseState.lastPoint,
       startPoint: mouseState.startPoint,
-      type: "mouse",
+      type: mouseState.button,
       screenRect: screen.getRect()
     });
     mouseState.lastPoint = point;
   }
   function gotMouseUp(evt) {
-    if(view.release && mouseState.startPoint) {
+    if(view.release && mouseState.startPoint && mouseState.button === mouseWhich(evt)) {
       view.release({
         point: mousePoint(evt),
         startPoint: mouseState.startPoint,
-        type: "mouse",
+        type: mouseState.button,
         screenRect: screen.getRect()
       });
     }
@@ -156,6 +192,9 @@ nigelgame.start = function(options) {
       x: Math.floor(x/elw*screen.width - screen.width/2),
       y: Math.floor(y/elh*screen.height - screen.height/2)
     });
+  }
+  function mouseWhich(evt) {
+    return (evt.button === 2)? "rightmouse": "mouse";
   }
   
   //touch events handlers
@@ -189,6 +228,7 @@ nigelgame.start = function(options) {
       //if one of them is the current touch, ok!
       if(evt.changedTouches[i].identifier === touchState.id) {
         var point = touchPoint(evt.changedTouches[i]);
+        if(point.equals(touchState.lastPoint)) return;
         if(view.drag) view.drag({
           point: point,
           lastPoint: touchState.lastPoint,
@@ -299,37 +339,57 @@ nigelgame.Point.prototype.untranslate = function(params) {
   });
 };
 
+nigelgame.Point.prototype.inverse = function() {
+  return new nigelgame.Point({
+    x: -this.x,
+    y: -this.y,
+    xAnchor: -this.xAnchor,
+    yAnchor: -this.yAnchor
+  });
+}
+
+nigelgame.Point.prototype.equals = function(params) {
+  return this.x == params.x
+    && this.y == params.y
+    && this.xAnchor == params.xAnchor
+    && this.yAnchor == params.yAnchor;
+}
+
 nigelgame.Rect = function(p) {
   //make sure boundaries are well-defined for vertical & horizontal
-  var hdef = 0;
-  if(p.left !== undefined || p.leftAnchor !== undefined) ++hdef;
-  if(p.right !== undefined || p.rightAnchor !== undefined) ++hdef;
-  if(p.width !== undefined || p.widthPerc !== undefined) ++hdef;
-  if(hdef < 2) throw "Horizontal boundaries are not well defined.";
-  else if(hdef > 2) throw "Too many arguments for horizontal boundaries.";
-  var vdef = 0;
-  if(p.top !== undefined || p.topAnchor !== undefined) ++vdef;
-  if(p.bottom !== undefined || p.bottomAnchor !== undefined) ++vdef;
-  if(p.height !== undefined || p.heightPerc !== undefined) ++vdef;
-  if(vdef < 2) throw "Vertical boundaries are not well defined.";
-  else if(vdef > 2) throw "Too many arguments for vertical boundaries.";
+  var ldef=0, rdef=0, wdef=0;
+  if(p.left !== undefined || p.leftAnchor !== undefined) ldef = 1;
+  if(p.right !== undefined || p.rightAnchor !== undefined) rdef = 1;
+  if(p.width !== undefined || p.widthPerc !== undefined) wdef = 1;
+  if(ldef + rdef + wdef < 2)
+    throw "Horizontal boundaries are not well defined.";
+  else if(ldef + rdef + wdef > 2)
+    throw "Too many arguments for horizontal boundaries.";
+  var tdef=0, bdef=0, hdef=0;
+  if(p.top !== undefined || p.topAnchor !== undefined) tdef = 1;
+  if(p.bottom !== undefined || p.bottomAnchor !== undefined) bdef = 1;
+  if(p.height !== undefined || p.heightPerc !== undefined) hdef = 1;
+  if(tdef + bdef + hdef < 2)
+    throw "Vertical boundaries are not well defined.";
+  else if(tdef + bdef + hdef > 2)
+    throw "Too many arguments for vertical boundaries.";
   //assign all fields from info provided
-  this.left = (p.left !== undefined || p.leftAnchor !== undefined)? 
-    (p.left || p.right || 0): (p.right || 0) - (p.width || 0);
-  this.right = (p.right !== undefined || p.rightAnchor !== undefined)?
-    (p.right || p.left || 0): (p.left || 0) + (p.width || 0);
-  this.top = (p.top !== undefined || p.topAnchor !== undefined)?
-    (p.top || p.bottom || 0): (p.bottom || 0) - (p.height || 0);
-  this.bottom = (p.bottom !== undefined || p.bottomAnchor !== undefined)?
-    (p.bottom || p.top || 0): (p.top || 0) + (p.height || 0);
-  this.leftAnchor = (p.leftAnchor !== undefined || p.left !== undefined)?
-    (p.leftAnchor || p.rightAnchor || 0): (p.rightAnchor || 0) - (p.widthPerc*2 || 0);
-  this.rightAnchor = (p.rightAnchor !== undefined || p.right !== undefined)?
-    (p.rightAnchor || p.leftAnchor || 0): (p.leftAnchor || 0) + (p.widthPerc*2 || 0);
-  this.topAnchor = (p.topAnchor !== undefined || p.left !== undefined)?
-    (p.topAnchor || p.bottomAnchor || 0): (p.bottomAnchor || 0) - (p.heightPerc*2 || 0);
-  this.bottomAnchor = (p.bottomAnchor !== undefined || p.right !== undefined)?
-    (p.bottomAnchor || p.topAnchor || 0): (p.topAnchor || 0) + (p.heightPerc*2 || 0);
+  this.left = ldef? (p.left !== undefined?p.left: (p.right || 0)):
+    (p.right || 0) - (p.width || 0);
+  this.right = rdef? (p.right !== undefined?p.right: (p.left || 0)):
+    (p.left || 0) + (p.width || 0);
+  this.top = tdef? (p.top !== undefined?p.top: (p.bottom || 0)):
+    (p.bottom || 0) - (p.height || 0);
+  this.bottom = bdef? (p.bottom !== undefined?p.bottom: (p.top || 0)):
+    (p.top || 0) + (p.height || 0);
+  this.leftAnchor = ldef? (p.leftAnchor !== undefined?p.leftAnchor: (p.rightAnchor || 0)):
+    (p.rightAnchor || 0) - (p.widthPerc*2 || 0);
+  this.rightAnchor = rdef? (p.rightAnchor !== undefined?p.rightAnchor: (p.leftAnchor || 0)):
+    (p.leftAnchor || 0) + (p.widthPerc*2 || 0);
+  this.topAnchor = tdef? (p.topAnchor !== undefined?p.topAnchor: (p.bottomAnchor || 0)):
+    (p.bottomAnchor || 0) - (p.heightPerc*2 || 0);
+  this.bottomAnchor = bdef? (p.bottomAnchor !== undefined?p.bottomAnchor: (p.topAnchor || 0)):
+    (p.topAnchor || 0) + (p.heightPerc*2 || 0);
   this.width = this.right - this.left;
   this.height = this.bottom - this.top;
   this.widthPerc = (this.rightAnchor - this.leftAnchor)/2;
@@ -360,6 +420,58 @@ nigelgame.Rect.prototype.heightFor = function(outer) {
   return this.height + this.heightPerc * outer.height;
 };
 
+nigelgame.Rect.prototype.expand = function(params) {
+  return new nigelgame.Rect({
+    top: this.top - (params.top || 0),
+    bottom: this.bottom + (params.bottom || 0),
+    left: this.left - (params.left || 0),
+    right: this.right + (params.right || 0),
+    leftAnchor: this.leftAnchor - (params.leftAnchor || 0),
+    rightAnchor: this.rightAnchor + (params.rightAnchor || 0),
+    topAnchor: this.topAnchor - (params.topAnchor || 0),
+    bottomAnchor: this.bottomAnchor + (params.bottomAnchor || 0)
+  });
+};
+
+nigelgame.Rect.prototype.shrink = function(params) {
+  return new nigelgame.Rect({
+    top: this.top + (params.top || 0),
+    bottom: this.bottom - (params.bottom || 0),
+    left: this.left + (params.left || 0),
+    right: this.right - (params.right || 0),
+    leftAnchor: this.leftAnchor + (params.leftAnchor || 0),
+    rightAnchor: this.rightAnchor - (params.rightAnchor || 0),
+    topAnchor: this.topAnchor + (params.topAnchor || 0),
+    bottomAnchor: this.bottomAnchor - (params.bottomAnchor || 0)
+  });
+};
+
+nigelgame.Rect.prototype.translate = function(params) {
+  return new nigelgame.Rect({
+    top: this.top + (params.y || 0),
+    bottom: this.bottom + (params.y || 0),
+    left: this.left + (params.x || 0),
+    right: this.right + (params.x || 0),
+    leftAnchor: this.leftAnchor + (params.xAnchor || 0),
+    rightAnchor: this.rightAnchor + (params.xAnchor || 0),
+    topAnchor: this.topAnchor + (params.yAnchor || 0),
+    bottomAnchor: this.bottomAnchor + (params.yAnchor || 0)
+  });
+};
+
+nigelgame.Rect.prototype.untranslate = function(params) {
+  return new nigelgame.Rect({
+    top: this.top - (params.y || 0),
+    bottom: this.bottom - (params.y || 0),
+    left: this.left - (params.x || 0),
+    right: this.right - (params.x || 0),
+    leftAnchor: this.leftAnchor - (params.xAnchor || 0),
+    rightAnchor: this.rightAnchor - (params.xAnchor || 0),
+    topAnchor: this.topAnchor - (params.yAnchor || 0),
+    bottomAnchor: this.bottomAnchor - (params.yAnchor || 0)
+  });
+};
+
 nigelgame.Rect.prototype.contains = function(point, outer) {
   if(!(point instanceof nigelgame.Point)) point = new nigelgame.Point(point);
   var px = point.xFor(outer);
@@ -373,43 +485,48 @@ nigelgame.Rect.prototype.pointIn = function(point) {
   return new nigelgame.Point({
     x: this.left + this.width * (point.xAnchor+1) / 2 + point.x,
     y: this.top + this.height * (point.yAnchor+1) / 2 + point.y,
-    xAnchor: this.leftAnchor + (this.widthPerc * 2) * (point.xAnchor + 1) / 2,
-    yAnchor: this.topAnchor + (this.heightPerc * 2) * (point.yAnchor + 1) / 2,
+    xAnchor: this.leftAnchor + this.widthPerc * (point.xAnchor + 1),
+    yAnchor: this.topAnchor + this.heightPerc * (point.yAnchor + 1)
   });
 };
 
-nigelgame.Rect.prototype.expand = function(params) {
-  // add to sides
-  this.top -= params.top || 0;
-  this.bottom += params.bottom || 0;
-  this.left -= params.left || 0;
-  this.right += params.right || 0;
-  this.topAnchor -= params.topAnchor || 0;
-  this.bottomAnchor += params.bottomAnchor || 0;
-  this.leftAnchor -= params.leftAnchor || 0;
-  this.rightAnchor += params.rightAnchor || 0;
-  // adjust these
-  this.width = this.right - this.left;
-  this.height = this.bottom - this.top;
-  this.widthPerc = (this.rightAnchor - this.leftAnchor)/2;
-  this.heightPerc = (this.bottomAnchor - this.topAnchor)/2;
+nigelgame.Rect.prototype.pointOut = function(point) {
+  if(!(point instanceof nigelgame.Point)) point = new nigelgame.Point(point);
+  return new nigelgame.Point({
+    x: point.x - this.left - this.width * (point.xAnchor+1) / 2,
+    y: point.y - this.top - this.height * (point.yAnchor+1) / 2,
+    xAnchor: (point.xAnchor - this.leftAnchor) / (this.widthPerc) - 1,
+    yAnchor: (point.yAnchor - this.topAnchor) / (this.heightPerc) - 1
+  });
 };
 
-nigelgame.Rect.prototype.shrink = function(params) {
-  // remove from sides
-  this.top += params.top || 0;
-  this.bottom -= params.bottom || 0;
-  this.left += params.left || 0;
-  this.right -= params.right || 0;
-  this.topAnchor += params.topAnchor || 0;
-  this.bottomAnchor -= params.bottomAnchor || 0;
-  this.leftAnchor += params.leftAnchor || 0;
-  this.rightAnchor -= params.rightAnchor || 0;
-  // adjust these
-  this.width = this.right - this.left;
-  this.height = this.bottom - this.top;
-  this.widthPerc = (this.rightAnchor - this.leftAnchor)/2;
-  this.heightPerc = (this.bottomAnchor - this.topAnchor)/2;
+nigelgame.Rect.prototype.rectIn = function(rect) {
+  if(!(rect instanceof nigelgame.Rect)) rect = new nigelgame.Rect(rect);
+  return new nigelgame.Rect({
+    left: this.left + this.width * (rect.leftAnchor+1) / 2 + rect.left,
+    right: this.left + this.width * (rect.rightAnchor+1) / 2 + rect.right,
+    top: this.top + this.height * (rect.topAnchor+1) / 2 + rect.top,
+    bottom: this.top + this.height * (rect.bottomAnchor+1) / 2 + rect.bottom,
+    leftAnchor: this.leftAnchor + (this.widthPerc * 2) * (rect.leftAnchor + 1) / 2,
+    rightAnchor: this.leftAnchor + (this.widthPerc * 2) * (rect.rightAnchor + 1) / 2,
+    topAnchor: this.topAnchor + (this.heightPerc * 2) * (rect.topAnchor + 1) / 2,
+    bottomAnchor: this.topAnchor + (this.heightPerc * 2) * (rect.bottomAnchor + 1) / 2
+  });
+};
+
+nigelgame.Point.prototype.rectFrom = function(params) {
+  var anchor = {
+    x: (params.anchor && params.anchor.x) || 0,
+    y: (params.anchor && params.anchor.y) || 0
+  };
+  return new nigelgame.Rect({
+    width: params.width,
+    height: params.height,
+    left: this.x - params.width * (anchor.x + 1) / 2,
+    top: this.y - params.height * (anchor.y + 1) / 2,
+    leftAnchor: this.xAnchor,
+    topAnchor: this.yAnchor
+  });
 };
 
 nigelgame.json = {};
@@ -462,13 +579,20 @@ nigelgame.Screen = function(element, mode, mw, mh, scale) {
   else if(nigelgame.Screen.MODES.indexOf(mode.toLowerCase()) === -1)
     throw "unsupported screen mode: " + mode;
   //vars
-  this.element = element;
-  this.mode = mode.toLowerCase();
-  this.minWidth = mw || element.clientWidth || element.innerWidth;
-  this.minHeight = mh || element.clientHeight || element.innerWidth;
+  mode = mode.toLowerCase();
+  mw = mw || element.clientWidth || element.innerWidth;
+  mh = mh || element.clientHeight || element.innerWidth;
+  Object.defineProperty(this, 'element', { get: function() { return element; } });
+  Object.defineProperty(this, 'mode', { get: function() { return mode; } });
+  Object.defineProperty(this, 'minWidth', { get: function() { return mw; } });
+  Object.defineProperty(this, 'minHeight', { get: function() { return mw; } });
   this.width = undefined;
   this.height = undefined;
   this.drawScale = scale || 1;
+  
+  //section (the whole thing)
+  var subrect = new nigelgame.Rect({ leftAnchor: -1, rightAnchor: 1, topAnchor: -1, bottomAnchor: 1 });
+  Object.defineProperty(this, 'subRect', { get: function() { return subrect; } });
   
   //create canvas element
   this.canvas = document.createElement("canvas");
@@ -478,13 +602,24 @@ nigelgame.Screen = function(element, mode, mw, mh, scale) {
   //drawing context
   this.context = this.canvas.getContext("2d");
   //put canvas on page
-  var parent = (element !== window)? element: document.getElementsByTagName("body")[0];
-  parent.appendChild(this.canvas);
+  ((element !== window)? element: document.getElementsByTagName("body")[0]).appendChild(this.canvas);
   //make it selectable (if it's not just in the window)
   if(this.element !== window && this.element.tabIndex < 0) this.element.tabIndex = 0;
 };
 
 nigelgame.Screen.MODES = [ "none", "adapt", "scale-adapt" ];
+
+nigelgame.Panel = function(parent, rect) {
+  this.subRect = parent.subRect.rectIn(rect);
+  this.screen = parent.screen || parent;
+  Object.defineProperty(this, 'canvas', { get: function() { return this.screen.canvas; } });
+  Object.defineProperty(this, 'width', { get: function() { return this.subRect.widthFor(parent); } });
+  Object.defineProperty(this, 'height', { get: function() { return this.subRect.heightFor(parent); } });
+};
+
+nigelgame.Screen.prototype.panel = function(rect) {
+  return new nigelgame.Panel(this, rect);
+};
 
 nigelgame.Screen.prototype.fitElement = function() {
   //get the current width/height of the elemnt
@@ -570,65 +705,129 @@ nigelgame.Screen.prototype.getRect = function() {
   });
 };
 
-nigelgame.Screen.prototype.clear = function() {
-  this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+nigelgame.Screen.prototype.clear = 
+nigelgame.Panel.prototype.clear = function(rect) {
+  //basic screen, just clear the whole thing quickly
+  if(!rect && !this.screen) {
+    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    return;
+  }
+  //for panels, if no rect provided, assume full panel
+  if(!rect) {
+    rect = this.subRect;
+  }
+  if(!(rect instanceof nigelgame.Rect)) rect = new nigelgame.Rect(rect);
+  //rect position
+  var scr = this.screen || this;
+  var w2 = scr.width/2, h2 = scr.height/2;
+  var w = Math.round(rect.widthFor(scr));
+  var h = Math.round(rect.heightFor(scr));
+  var l = Math.round(rect.leftFor(scr) + w2);
+  var t = Math.round(rect.topFor(scr) + h2);
+  var ll = Math.round(this.subRect.leftFor(scr) + w2);
+  var lt = Math.round(this.subRect.topFor(scr) + h2);
+  if(l < ll) { w -= ll - l; l = ll; }
+  if(t < lt) { h -= lt - t; t = lt; }
+  var lr = Math.round(this.subRect.rightFor(scr) + w2);
+  var lb = Math.round(this.subRect.bottomFor(scr) + h2);
+  if(l + w > lr) w = lr - l;
+  if(t + h > lb) h = lb - t;
+  if(w <= 0 || h <= 0) return;
+  //clear it
+  scr.context.clearRect(
+    l * scr.drawScale, t * scr.drawScale,
+    w * scr.drawScale, h * scr.drawScale
+  );
 };
 
-nigelgame.Screen.prototype.fill = function(color, rect) {
+nigelgame.Screen.prototype.fill =
+nigelgame.Panel.prototype.fill = function(color, rect) {
   //robust arguments
-  if(!(rect instanceof nigelgame.Rect)) rect = new nigelgame.Rect(rect);
+  if(rect && !(rect instanceof nigelgame.Rect)) rect = new nigelgame.Rect(rect);
+  var scr = this.screen || this;
   //set color
-  var temp = this.context.fillStyle;
-  this.context.fillStyle = color;
+  var temp = scr.context.fillStyle;
+  scr.context.fillStyle = color;
+  //rect
+  rect = rect? this.subRect.rectIn(rect): this.subRect;
+  //rect position
+  var w2 = scr.width/2, h2 = scr.height/2;
+  var w = Math.round(rect.widthFor(scr));
+  var h = Math.round(rect.heightFor(scr));
+  var l = Math.round(rect.leftFor(scr) + w2);
+  var t = Math.round(rect.topFor(scr) + h2);
+  var ll = Math.round(this.subRect.leftFor(scr) + w2);
+  var lt = Math.round(this.subRect.topFor(scr) + h2);
+  if(l < ll) { w -= ll - l; l = ll; }
+  if(t < lt) { h -= lt - t; t = lt; }
+  var lr = Math.round(this.subRect.rightFor(scr) + w2);
+  var lb = Math.round(this.subRect.bottomFor(scr) + h2);
+  if(l + w > lr) w = lr - l;
+  if(t + h > lb) h = lb - t;
+  if(w <= 0 || h <= 0) return;
   //draw the rectangle
-  this.context.fillRect(
-    Math.round(rect.leftFor(this) + this.width / 2) * this.drawScale,
-    Math.round(rect.topFor(this) + this.height / 2) * this.drawScale,
-    Math.round(rect.widthFor(this)) * this.drawScale,
-    Math.round(rect.heightFor(this)) * this.drawScale
+  scr.context.fillRect(
+    l * scr.drawScale, t * scr.drawScale,
+    w * scr.drawScale, h * scr.drawScale
   );
   //set color back
-  this.context.fillStyle = temp;
+  scr.context.fillStyle = temp;
 };
 
-nigelgame.Screen.prototype.drawSprite = function(sprite, point, options) {
+nigelgame.Screen.prototype.drawSprite =
+nigelgame.Panel.prototype.drawSprite = function(sprite, point, options) {
   //robust arguments
   if(sprite instanceof nigelgame.Sheet) sprite = sprite.getSprite();
   else if(!sprite.sheet || !sprite.rect) throw "invalid sprite.";
-  if(!(point instanceof nigelgame.Point)) point = new nigelgame.Point(point);
-  anchor = (options && options.anchor) || {}
-  anchor.x = anchor.x || 0;
-  anchor.y = anchor.y || 0;
+  var anchor = (options && options.anchor) || {};
+  if(anchor.x === undefined) anchor.x = point.xAnchor || 0;
+  if(anchor.y === undefined) anchor.y = point.yAnchor || 0;
+  //point relative to Panel rect
+  point = this.subRect.pointIn(point);
   //onscreen location
-  var sx = point.xFor(this) + this.width / 2 - (anchor.x + 1) / 2 * sprite.rect.width;
-  var sy = point.yFor(this) + this.height / 2 - (anchor.y + 1) / 2 * sprite.rect.height;
+  var scr = this.screen || this;
+  var w2 = scr.width/2, h2 = scr.height/2;
+  var w = sprite.rect.widthFor(sprite.sheet);
+  var h = sprite.rect.heightFor(sprite.sheet);
+  var l = Math.round(point.xFor(scr) + w2 - (anchor.x + 1) / 2 * w);
+  var t = Math.round(point.yFor(scr) + h2 - (anchor.y + 1) / 2 * h);
+  var ll = Math.round(this.subRect.leftFor(scr) + w2);
+  var lt = Math.round(this.subRect.topFor(scr) + h2);
+  var offx = 0, offy = 0;
+  if(l < ll) { offx = ll - l; w -= offx; l = ll; }
+  if(t < lt) { offy = lt - t; h -= offy; t = lt; }
+  var lr = Math.round(this.subRect.rightFor(scr) + w2);
+  var lb = Math.round(this.subRect.bottomFor(scr) + h2);
+  if(l + w > lr) w = lr - l;
+  if(t + h > lb) h = lb - t;
+  if(w <= 0 || h <= 0) return;
   //draw it to the screen
-  this.context.drawImage(sprite.sheet.img,
+  scr.context.drawImage(sprite.sheet.img,
     //location on the spritesheet
-    sprite.rect.leftFor(sprite.sheet), sprite.rect.topFor(sprite.sheet),
-    sprite.rect.widthFor(sprite.sheet), sprite.rect.heightFor(sprite.sheet),
+    sprite.rect.leftFor(sprite.sheet) + offx, sprite.rect.topFor(sprite.sheet) + offy,
+    w, h,
     //location on screen
-    Math.round(sx) * this.drawScale, Math.round(sy) * this.drawScale,
-    sprite.rect.widthFor(sprite.sheet) * this.drawScale,
-    sprite.rect.heightFor(sprite.sheet) * this.drawScale
+    l * scr.drawScale, t * scr.drawScale,
+    w * scr.drawScale, h * scr.drawScale
   );
 };
 
-nigelgame.Screen.prototype.drawString = function(text, font, point, options) {
-  //robust arguments
-  var ns;
-  if(text instanceof nigelgame.Nstring) ns = text;
-  else {
-    if(typeof(text) !== "string") text = text + "";
-    ns = new nigelgame.Nstring(text, options.cols, options.rows);
-  }
+nigelgame.Screen.prototype.drawString =
+nigelgame.Panel.prototype.drawString = function(text, font, point, options) {
   if(!(font instanceof nigelgame.Sheet)) throw "invalid font in drawString.";
   if(!(point instanceof nigelgame.Point)) point = new nigelgame.Point(point);
-  point = point || new nigelgame.Point({ x: 0, y: 0 });
+  //robust arguments
   options = options || {};
-  var anchor = options.anchor ?
-    { x: options.anchor.x || 0, y: options.anchor.y || 0 } :
-    { x: 0, y: 0 };
+  if(options.cols || options.rows)
+    text = nigelgame.wrapString(text, options.cols, options.rows);
+  point = point || new nigelgame.Point({ x: 0, y: 0 });
+  var anchor = (options && options.anchor) || {};
+  if(anchor.x === undefined) anchor.x = point.xAnchor || 0;
+  if(anchor.y === undefined) anchor.y = point.yAnchor || 0;
+  //format text into lines & get max column width
+  var lines = text.split('\n');
+  var maxcol = 0;
+  for(var i = 0; i < lines.length; ++i) maxcol = Math.max(lines[i].length, maxcol);
   //how to align the text?
   var align = 0;
   if(!options || !options.align || options.align === "left") align = 0;
@@ -637,23 +836,24 @@ nigelgame.Screen.prototype.drawString = function(text, font, point, options) {
   else throw "unknown text alignment: " + options.align;
   //top left text point
   var tl = point.translate({
-    x: -ns.maxcol * font.spriteWidth * (anchor.x+1) / 2,
-    y: -ns.lines.length * font.spriteHeight * (anchor.y+1) / 2
+    x: -maxcol * font.spriteWidth * (anchor.x+1) / 2,
+    y: -lines.length * font.spriteHeight * (anchor.y+1) / 2
   });
   //print all characters
-  for(var r = 0; r < ns.lines.length; ++r) {
-    var indent = Math.floor((ns.maxcol-ns.lines[r].length)*align);
+  for(var r = 0; r < lines.length; ++r) {
+    var indent = (maxcol-lines[r].length)*align;
     var pt = tl.translate({ x: indent*font.spriteWidth, y: r*font.spriteHeight });
-    for(var c = 0; c < ns.lines[r].length; ++c) {
+    for(var c = 0; c < lines[r].length; ++c) {
       //get character and draw it
-      var ch = ns.lines[r].charCodeAt(c) - 32;
+      var ch = lines[r].charCodeAt(c) - 32;
       this.drawSprite(font.getSprite(ch), pt, { anchor: { x: -1, y: -1 } });
       pt = pt.translate({ x: font.spriteWidth });
     }
   }
 };
 
-nigelgame.Screen.prototype.drawBox = function(box, rect, color) {
+nigelgame.Screen.prototype.drawBox =
+nigelgame.Panel.prototype.drawBox = function(box, rect, color) {
   //robust arguments
   if(!(rect instanceof nigelgame.Rect)) rect = new nigelgame.Rect(rect);
   //fill background first, maybe.
@@ -684,30 +884,29 @@ nigelgame.Screen.prototype.drawBox = function(box, rect, color) {
   this.drawSprite(box.getSprite(8), rect.pointIn({ xAnchor: 1, yAnchor: 1 }), { anchor: {x: 1, y: 1}});
 };
 
-nigelgame.Screen.prototype.drawStringBox = function(text, font, box, point, options) {
+nigelgame.Screen.prototype.drawStringBox =
+nigelgame.Panel.prototype.drawStringBox = function(text, font, box, point, options) {
   //robust args
   if(!(point instanceof nigelgame.Point)) point = new nigelgame.Point(point);
   options = options || {};
-  var anchor = options.anchor ?
-    { x: options.anchor.x || 0, y: options.anchor.y || 0 } :
-    { x: 0, y: 0 };
+  var anchor = (options && options.anchor) || {};
+  if(anchor.x === undefined) anchor.x = point.xAnchor || 0;
+  if(anchor.y === undefined) anchor.y = point.yAnchor || 0;
   //format string
-  var nstr = new nigelgame.Nstring(text, options.cols, options.rows);
+  var lines = text.split('\n');
+  var maxcol = 0;
+  for(var i = 0; i < lines.length; ++i) maxcol = Math.max(lines[i].length, maxcol);
   //figure out size of box
-  var w = (options.cols || nstr.maxcol) * font.spriteWidth + 2 * box.spriteWidth;
-  var h = (options.rows || nstr.rows) * font.spriteHeight + 2 * box.spriteHeight;
-  var rect = {
-    left: point.x - w * (anchor.x+1)/2,
-    width: w,
-    top: point.y - h * (anchor.y+1)/2,
-    height: h,
-    leftAnchor: point.xAnchor,
-    topAnchor: point.yAnchor
-  };
+  var w = (options.cols || maxcol) * font.spriteWidth + 2 * box.spriteWidth;
+  var h = (options.rows || lines.length) * font.spriteHeight + 2 * box.spriteHeight;
+  var rect = point.rectFrom({ width: w, height: h, anchor: anchor });
   //draw rect
   this.drawBox(box, rect, options.color);
   //draw the string
-  this.drawString(text, font, point.translate({ x: -box.spriteWidth * anchor.x, y: -box.spriteHeight * anchor.y }),
+  this.drawString(text, font,
+    point.translate({
+      x: -box.spriteWidth * anchor.x, y: -box.spriteHeight * anchor.y
+    }),
     { cols: options.cols, rows: options.rows, anchor: anchor, align: options.align }
   );
 };
@@ -790,25 +989,14 @@ nigelgame.Sprite = function(sheet, frame) {
   });
 };
 
-nigelgame.Nstring = function(text, cols, rows) {
-  //separate into lines
-  //if no column limit, just split by newline
-  if(!cols) {
-    this.lines = text.split('\n');
-  }
-  //otherwise, split by newline OR line too long
-  else {
-    this.lines = [];
-    var s = text;
-    for(var r = 0; s.length > 0 && !(r >= rows); ++r) {
-      this.lines.push(s.substr(0, Math.min(s.indexOf('\n'), cols)));
-      s = s.substr(Math.min(s.indexOf('\n')+1, cols));
-    }
-  }
-  //max line length, needed to format text
-  var maxcol = 0;
-  this.lines.forEach(function(x){if(x.length>maxcol)maxcol=x.length;});
-  this.maxcol = maxcol;
-  //how many rows
-  this.rows = this.lines.length;
+// word wrap function by james padolsey
+// modified from original
+// http://james.padolsey.com/javascript/wordwrap-for-javascript/
+nigelgame.wrapString = function(str, width, maxLines) {
+  if (!str) return str;
+  var regex = '.{1,' +width+ '}(\\s|$)|.{' +width+ '}|.+$';
+  var lines = str.match(RegExp(regex, 'g'));
+  if(maxLines) lines = lines.slice(0, maxLines);
+  for(var i = 0; i < lines.length; ++i) lines[i] = lines[i].trim();
+  return lines.join('\n');
 };
