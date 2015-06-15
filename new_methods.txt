@@ -1,0 +1,20 @@
+
+screen.clear(void)
+screen.clear(x, y, w, h)
+screen.fill(color)
+screen.fill(color, x, y, w, h)
+screen.blit(sheet, x, y, [xAnchor, yAnchor])
+screen.blitSprite(sheet, frame, x, y, [xAnchor, yAnchor])
+screen.write(text, x, y, [xAnchor, yAnchor, align, cols, rows]
+??? screen.box(text, x, y, [xAnchor, yAnchor, align, cols, rows, width, height])
+
+screen.getPanel(x, y, width, height, [xAnchor, yAnchor])
+
+screen.setWidth(width)
+screen.setHeight(height)
+screen.setOrigin(x, y)
+screen.setOffset(x, y)
+screen.setFont(sheet)
+screen.setBoxType(sheet)
+??? screen.setMode(???)
+screen.setScale(scale)

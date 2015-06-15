@@ -188,10 +188,10 @@ nigelgame.start = function(options) {
     var y = evt.clientY - (options.element.clientTop || 0) - (options.element.offsetTop || 0);
     var elw = options.element.clientWidth || options.element.innerWidth;
     var elh = options.element.clientHeight || options.element.innerHeight;
-    return new nigelgame.Point({
+    return {
       x: Math.floor(x/elw*screen.width - screen.width/2),
       y: Math.floor(y/elh*screen.height - screen.height/2)
-    });
+    };
   }
   function mouseWhich(evt) {
     return (evt.button === 2)? "rightmouse": "mouse";
@@ -287,9 +287,9 @@ nigelgame.start = function(options) {
     var y = touch.clientY - (options.element.clientTop || 0) - (options.element.offsetTop || 0);
     var elw = options.element.clientWidth || options.element.innerWidth;
     var elh = options.element.clientHeight || options.element.innerHeight;
-    return new nigelgame.Point({
+    return {
       x: Math.floor(x/elw*screen.width - screen.width/2),
       y: Math.floor(y/elh*screen.height - screen.height/2)
-    });
+    };
   }
 };
