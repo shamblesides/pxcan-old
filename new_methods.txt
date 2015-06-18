@@ -12,15 +12,15 @@ game.setScale(scale) // not for scaling modes
 game.start(view)
 game.stop()
 
-// (view).frame({
-  viewFrames
-  gameFrames
+(view).update({
+  viewClock
+  gameClock
   buttons
   screen
 })
-// (view).buttondown
-// (view).buttonup
-// (view).keypress
+(view).buttondown(button)
+(view).buttonup(button)
+(view).keypress(keypressEvt)
 // (view).touch
 // (view).drag
 // (view).release

@@ -151,15 +151,20 @@ function nigelgame(element) {
         view = next;
         viewClock = 0;
       }
-      var clocks = {
-        total: totalClock,
-        view: viewClock
-      };
-      if(view.update) view.update(clocks);
       screen.fitElement();
-      if(view.draw) view.draw(screen, clocks);
+      if(view.update) view.update({
+        viewClock: viewClock,
+        gameClock: totalClock,
+        screen: screen,
+        buttons: buttons
+      });
       ++viewClock;
       ++totalClock;
+      for(var key in buttons) {
+        if(buttons.hasOwnProperty(key)) {
+          ++buttons[key].length;
+        }
+      }
     }
     
     // game button event handlers
@@ -169,7 +174,7 @@ function nigelgame(element) {
       if(key === undefined) return true;
       
       if(!buttons[key]) {
-        buttons[key] = true;
+        buttons[key] = { length: 0 };
         if(view.buttondown) return view.buttondown(key);
       }
     }
@@ -186,8 +191,8 @@ function nigelgame(element) {
     //manual keyboard event handlers
     function gotKeyPress(evt) {
       if(view.keypress)
-        if(!view.keypress(evt)) return;
-      evt.preventDefault();
+        if(view.keypress(evt))
+          evt.preventDefault();
     }
     
     //mouse event handlers
