@@ -40,7 +40,15 @@ nigelgame.Screen = function(element, mode, mw, mh, scale) {
   } });
   Object.defineProperty(this, 'right', { get: function() { return this.left + this.width; } });
   Object.defineProperty(this, 'bottom', { get: function() { return this.top + this.height; } });
-  this.font = null;
+  var fontSheet = null;
+  this.setFont = function(f) {
+    fontSheet = nigelgame.sheets[f] || null;
+    if(!fontSheet) throw new Error('invalid font: ' + f);
+  };
+  this.getFontSheet = function() {
+    if(!fontSheet) throw new Error('font has not been set.');
+    return fontSheet;
+  };
   
   // methods
   var _origin = { x: 0, y: 0 };

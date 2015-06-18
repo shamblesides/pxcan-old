@@ -1,20 +1,59 @@
 
-screen.clear(void)
+new game(element)
+game.addSheet(filepath, alias, cellWidth, cellHeight)
+game.addJSON(filepath, alias)
+game.bind(keyName, keyCode, [keyCode, ...])
+game.activateTouch()
+game.setScreenMode('adapt')
+game.setScreenMode('fixed', width, height)
+game.setScreenMode('scale', width, height)
+game.setScreenMode('scale-overflow', width, height)
+game.setScale(scale) // not for scaling modes
+game.start(view)
+game.stop()
+
+// (view).frame({
+  viewFrames
+  gameFrames
+  buttons
+  screen
+})
+// (view).buttondown
+// (view).buttonup
+// (view).keypress
+// (view).touch
+// (view).drag
+// (view).release
+
+screen.element
+screen.canvas
+screen.context
+screen.mode
+screen.minWidth
+screen.minHeight
+screen.width
+screen.height
+screen.left
+screen.top
+screen.right
+screen.bottom
+screen.drawScale
+screen.wasResized
+screen.prevDims
+
+screen.reset()
+screen.clear()
 screen.clear(x, y, w, h)
 screen.fill(color)
 screen.fill(color, x, y, w, h)
-screen.blit(sheet, x, y, [xAnchor, yAnchor])
-screen.blitSprite(sheet, frame, x, y, [xAnchor, yAnchor])
-screen.write(text, x, y, [xAnchor, yAnchor, align, cols, rows]
-??? screen.box(text, x, y, [xAnchor, yAnchor, align, cols, rows, width, height])
+screen.blit(sheet, frame, x, y)
+screen.write(text, x, y, {align, cols, rows})
+// screen.box(text, x, y, {align, cols, rows, width, height})
+// screen.getPanel(x, y, width, height, [xAnchor, yAnchor])
 
-screen.getPanel(x, y, width, height, [xAnchor, yAnchor])
-
-screen.setWidth(width)
-screen.setHeight(height)
-screen.setOrigin(x, y)
-screen.setOffset(x, y)
-screen.setFont(sheet)
-screen.setBoxType(sheet)
-??? screen.setMode(???)
-screen.setScale(scale)
+screen.origin()
+screen.origin(x, y)
+screen.offset()
+screen.offset(x, y)
+screen.setFont(sheetName)
+screen.getFontSheet()

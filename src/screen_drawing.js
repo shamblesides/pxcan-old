@@ -37,7 +37,7 @@ nigelgame.Screen.prototype.reset = function() {
   this.clear();
   this.origin(0, 0);
   this.offset(0, 0);
-}
+};
 
 nigelgame.Screen.prototype.fill =
 nigelgame.Panel.prototype.fill = function(color, x, y, w, h) {
@@ -90,9 +90,7 @@ nigelgame.Panel.prototype.blit = function(sheetName, frame, x, y) {
 nigelgame.Screen.prototype.write =
 nigelgame.Panel.prototype.write = function(text, x, y, options) {
   // verify font
-  if(!this.font) throw new Error('font has not been set.');
-  var font = nigelgame.sheets[this.font];
-  if(!font) throw new Error('invalid font: ' + this.font);
+  var font = this.getFontSheet();
   // options
   options = options || {};
   if(options.cols || options.rows)
