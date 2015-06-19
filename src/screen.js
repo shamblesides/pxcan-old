@@ -14,8 +14,7 @@ nigelgame.Screen = function(element) {
   // create canvas element
   var canvas = document.createElement('canvas');
   canvas.style.display = 'block';
-  canvas.style.width = '100%';
-  canvas.style.height = '100%';
+  canvas.style.margin = 'auto';
   // drawing context
   var context = canvas.getContext('2d');
   // put canvas on page
@@ -28,10 +27,10 @@ nigelgame.Screen = function(element) {
   Object.defineProperty(this, 'canvas', { get: function() { return canvas; } });
   Object.defineProperty(this, 'context', { get: function() { return context; } });
   Object.defineProperty(this, 'left', { get: function() {
-    return Math.round(this._offset.x - (width * (this._origin.x + 1) / 2));
+    return Math.round(_offset.x - (width * (_origin.x + 1) / 2));
   } });
   Object.defineProperty(this, 'top', { get: function() {
-    return Math.round(this._offset.y - (height * (this._origin.y + 1) / 2));
+    return Math.round(_offset.y - (height * (_origin.y + 1) / 2));
   } });
   Object.defineProperty(this, 'right', { get: function() { return this.left + width; } });
   Object.defineProperty(this, 'bottom', { get: function() { return this.top + height; } });
@@ -64,10 +63,12 @@ nigelgame.Screen = function(element) {
     if(newMode === 'adapt') {
       mode = { name: 'adapt' };
       scale = arguments[1] || 1;
+      canvas.style.width = '';
+      canvas.style.height = '';
     }
     else if(newMode === 'fixed') {
       mode = { name: 'fixed' };
-      if(arguments.length <= 1) {
+      if(arguments.length <= 2) {
         scale = arguments[1] || 1;
         width = Math.floor((element.clientWidth || element.innerWidth) / scale);
         height = Math.floor((element.clientHeight || element.innerHeight) / scale);
@@ -77,6 +78,8 @@ nigelgame.Screen = function(element) {
         height = arguments[2];
         scale = arguments[3] || 1;
       }
+      canvas.style.width = '';
+      canvas.style.height = '';
     }
     else if(newMode === 'scale-overflow') {
       mode = {
@@ -84,6 +87,8 @@ nigelgame.Screen = function(element) {
         minWidth: arguments[1] || element.clientWidth || element.innerWidth,
         minHeight: arguments[2] || element.clientHeight || element.innerHeight
       };
+      canvas.style.width = '100%';
+      canvas.style.height = '100%';
     }
     else if(newMode === 'scale') {
       throw new Error('not yet supported.');

@@ -10,8 +10,9 @@ function init(el) {
   game.bind('up', 87, 38);
   game.bind('down', 83, 40);
   game.bind('start', 32);
-  game.setFrameSkip(1);
-  game.setScreenMode('scale-overflow', 172, 144);
+  // game.setFrameSkip(1);
+  // game.setScreenMode('adapt');
+  game.setScreenScale(2);
   game.start(new DemoView());
 }
 
@@ -31,7 +32,7 @@ DemoView.prototype.update = function(e) {
   e.screen.origin(0, 1);
   e.screen.setFont('ascii');
   e.screen.write('this is my new invention\nhow do u liek\n????????', -1, -21, {align:'center'});
-  e.screen.write('this is my new invention\nhow do u liek\n????????', 0, -20, {align:'center'});
+  // e.screen.write('this is my new invention\nhow do u liek\n????????', 0, -20, {align:'center'});
 };
 
 DemoView.prototype.buttondown = function(button) {
