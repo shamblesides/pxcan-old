@@ -2,6 +2,12 @@ function nigelgame(element) {
   var resourceReqs = 0;
   var resourceCallback = null;
   
+  // setup screen
+  var screen = new nigelgame.Screen(element);
+  this.setScreenMode = function() { screen.mode.apply(screen, arguments); };
+  this.setScreenSize = function() { screen.setSize.apply(screen, arguments); };
+  this.setScreenScale = function() { screen.setScale.apply(screen, arguments); };
+  
   this.addSheet = function(src, alias, w, h) {
     if(!src) throw "missing source image";
     if(!alias) throw "missing alias";
@@ -84,7 +90,6 @@ function nigelgame(element) {
   
   function reallyStart(view) {
     //initialize some things
-    var screen = null;
     var buttons = {};
     var mouseState = {
       startPoint: null,
@@ -101,8 +106,6 @@ function nigelgame(element) {
     var viewClock = 0;
     var skippedFrames = 0;
     
-    // setup screen
-    screen = new nigelgame.Screen(element, 'adapt');
     // key listeners
     if(binds) {
       element.addEventListener("keydown", gotKeyDown, false);
@@ -359,15 +362,18 @@ Math.sign = function sign(x) {
   return !(x= parseFloat(x)) ? x : x > 0 ? 1 : -1;
 };
 
-nigelgame.Screen = function(element, mode, mw, mh, scale) {
-  // robust arguments
-  if(!element) throw new Error('provide element');
-  mode = (mode && mode.toLowerCase()) || 'none';
-  if(nigelgame.Screen.MODES.indexOf(mode) === -1)
-    throw new Error('unsupported screen mode: ' + mode);
-  mw = mw || element.clientWidth || element.innerWidth;
-  mh = mh || element.clientHeight || element.innerWidth;
-  if(scale < 1) throw new Error('invalid scale');
+nigelgame.Screen = function(element) {
+  // vars
+  element = element || window;
+  var mode = { name: 'adapt' };
+  var width = element.clientWidth || element.innerWidth;
+  var height = element.clientHeight || element.innerWidth;
+  var scale = 1;
+  var needsRepaint = true;
+  var prevDims = null;
+  var fontSheet = null;
+  var _origin = { x: 0, y: 0 };
+  var _offset = { x: 0, y: 0 };
   
   // create canvas element
   var canvas = document.createElement('canvas');
@@ -381,27 +387,21 @@ nigelgame.Screen = function(element, mode, mw, mh, scale) {
   // make it selectable (if it's not just in the window)
   if(element !== window && element.tabIndex < 0) element.tabIndex = 0;
   
-  // public properties
+  // public properties and methods
   Object.defineProperty(this, 'element', { get: function() { return element; } });
   Object.defineProperty(this, 'canvas', { get: function() { return canvas; } });
   Object.defineProperty(this, 'context', { get: function() { return context; } });
-  Object.defineProperty(this, 'mode', { get: function() { return mode; } });
-  Object.defineProperty(this, 'minWidth', { get: function() { return mw; } });
-  Object.defineProperty(this, 'minHeight', { get: function() { return mh; } });
-  this.width = undefined;
-  this.height = undefined;
-  this.drawScale = scale || 1;
-  this.wasResized = false;
-  this.prevDims = null;
   Object.defineProperty(this, 'left', { get: function() {
-    return Math.round(this.offset.x - (this.width * (this.origin.x + 1) / 2));
+    return Math.round(this._offset.x - (width * (this._origin.x + 1) / 2));
   } });
   Object.defineProperty(this, 'top', { get: function() {
-    return Math.round(this.offset.y - (this.height * (this.origin.y + 1) / 2));
+    return Math.round(this._offset.y - (height * (this._origin.y + 1) / 2));
   } });
-  Object.defineProperty(this, 'right', { get: function() { return this.left + this.width; } });
-  Object.defineProperty(this, 'bottom', { get: function() { return this.top + this.height; } });
-  var fontSheet = null;
+  Object.defineProperty(this, 'right', { get: function() { return this.left + width; } });
+  Object.defineProperty(this, 'bottom', { get: function() { return this.top + height; } });
+  Object.defineProperty(this, 'width', { get: function() { return width; } });
+  Object.defineProperty(this, 'height', { get: function() { return height; } });
+  Object.defineProperty(this, 'drawScale', { get: function() { return scale; } });
   this.setFont = function(f) {
     fontSheet = nigelgame.sheets[f] || null;
     if(!fontSheet) throw new Error('invalid font: ' + f);
@@ -410,10 +410,6 @@ nigelgame.Screen = function(element, mode, mw, mh, scale) {
     if(!fontSheet) throw new Error('font has not been set.');
     return fontSheet;
   };
-  
-  // methods
-  var _origin = { x: 0, y: 0 };
-  var _offset = { x: 0, y: 0 };
   this.origin = function(x, y) {
     if(arguments.length === 0) return { x: _origin.x, y: _origin.y };
     if(arguments.length === 2) _origin = { x: x, y: y };
@@ -424,83 +420,131 @@ nigelgame.Screen = function(element, mode, mw, mh, scale) {
     if(arguments.length === 2) _offset = { x: x, y: y };
     else throw new Error('invalid arguments for offset');
   };
-};
-
-nigelgame.Screen.MODES = [ 'none', 'adapt', 'scale-adapt' ];
-
-nigelgame.Screen.prototype.fitElement = function() {
-  // get the current width/height of the elemnt
-  var w = this.element.clientWidth || this.element.innerWidth;
-  var h = this.element.clientHeight || this.element.innerHeight;
-  // if it hasn't changed, skip this step.
-  this.wasResized =
-    !this.prevDims ||
-    this.prevDims.width !== w ||
-    this.prevDims.height !== h;
-  if(!this.wasResized) return;
-  // otherwise, do the correct resize function for the mode
-  if(this.mode === 'none')
-    this.fitElementModeNone(w, h);
-  else if(this.mode === 'adapt')
-    this.fitElementModeAdapt(w, h);
-  else if(this.mode === 'scale-adapt')
-    this.fitElementModeScaleAdapt(w, h);
-  // record previous dimensions
-  this.prevDims = { height: h, width: w };
-};
-
-nigelgame.Screen.prototype.fitElementModeNone = function(w, h) {
-  // only resize if the size hasnt yet been set
-  if(this.prevDims) return;
-  // set the sizes just once
-  this.canvas.width = (this.width = this.minWidth) * this.drawScale;
-  this.canvas.height = (this.height = this.minHeight) * this.drawScale;
-  // crispy if scaled up
-  if(this.drawScale > 1) this.crispy();
-};
-
-nigelgame.Screen.prototype.fitElementModeAdapt = function(w, h) {
-  // resize
-  this.canvas.width = (this.width = Math.floor(w/this.drawScale)) * this.drawScale;
-  this.canvas.height = (this.height = Math.floor(h/this.drawScale)) * this.drawScale;
-  // crispy if scaled up
-  if(this.drawScale > 1) this.crispy();
-};
-
-nigelgame.Screen.prototype.fitElementModeScaleAdapt = function(w, h) {
-  // if the desired aspect ratio is equal
-  if(this.minWidth * h === this.minHeight * w) {
-    this.width = this.minWidth;
-    this.height = this.minHeight;
+  
+  this.mode = function(newMode) {
+    // if no arguments are given, treat as getter function
+    if(arguments.length === 0) return mode.name;
+    // otherwise set appropriately
+    if(newMode === 'adapt') {
+      mode = { name: 'adapt' };
+      scale = arguments[1] || 1;
+    }
+    else if(newMode === 'fixed') {
+      mode = { name: 'fixed' };
+      if(arguments.length <= 1) {
+        scale = arguments[1] || 1;
+        width = Math.floor((element.clientWidth || element.innerWidth) / scale);
+        height = Math.floor((element.clientHeight || element.innerHeight) / scale);
+      }
+      else {
+        width = arguments[1];
+        height = arguments[2];
+        scale = arguments[3] || 1;
+      }
+    }
+    else if(newMode === 'scale-overflow') {
+      mode = {
+        name: 'scale-overflow',
+        minWidth: arguments[1] || element.clientWidth || element.innerWidth,
+        minHeight: arguments[2] || element.clientHeight || element.innerHeight
+      };
+    }
+    else if(newMode === 'scale') {
+      throw new Error('not yet supported.');
+    }
+    else {
+      throw new Error('unknown mode type.');
+    }
+    // reset these
+    needsRepaint = true;
+    prevDims = null;
+  };
+  
+  this.setSize = function(w, h) {
+    if(mode.name === 'fixed' || mode.name === 'scale') {
+      width = w;
+      height = h;
+    }
+    else if(mode.name === 'scale-overflow') {
+      mode.minWidth = w;
+      mode.minHeight = h;
+    }
+    else {
+      throw new Error('screen mode does not support setSize: ' + mode.name);
+    }
+  };
+  
+  this.setScale = function(s) {
+    if(mode.name === 'adapt' || mode.name === 'fixed') {
+      scale = s;
+    }
+    else {
+      throw new Error('screen mode does not support setScale: ' + mode.name);
+    }
+  };
+  
+  // screen fitting
+  this.fitElement = function() {
+    // get the current width/height of the elemnt
+    var w = element.clientWidth || element.innerWidth;
+    var h = element.clientHeight || element.innerHeight;
+    // has it actually changed? if not, no need to fit it.
+    needsRepaint = !prevDims || (prevDims.w !== w) || (prevDims.h !== h);
+    if(!needsRepaint) return;
+    // otherwise, do the correct resize function for the mode
+    if(mode.name === 'adapt') fitAdapt(w, h);
+    else if(mode.name === 'fixed') fitFixed(w, h);
+    else if(mode.name === 'scale-overflow') fitScaleOverflow(w, h);
+    // make sure the pixels are crispy if it's scaled up
+    if(scale > 1) {
+      this.context.webkitImageSmoothingEnabled =
+        this.context.imageSmoothingEnabled =
+        this.context.mozImageSmoothingEnabled =
+        this.context.oImageSmoothingEnabled = false;
+    }
+    // if the view is the whole window, then keep it at the right location
+    if(element === window) {
+      window.scrollTo(0, 0);
+    }
+    // record previous dimensions
+    prevDims = { w: w, h: h };
+  };
+  
+  function fitAdapt(w, h) {
+    // resize canvas to fill window
+    canvas.width = (width = Math.floor(w/scale)) * scale;
+    canvas.height = (height = Math.floor(h/scale)) * scale;
   }
-  // if it needs to be WIDER
-  else if(this.minWidth * h < this.minHeight * w) {
-    this.width = Math.floor(w / h * this.minHeight);
-    this.height = this.minHeight;
+  
+  function fitFixed(w, h) {
+    // just resize to the expected dimensions if it's not already that
+    if(canvas.width !== width * scale) canvas.width = width * scale;
+    if(canvas.height !== height * scale) canvas.height = height * scale;
   }
-  // if it needs to be TALLER
-  else {
-    this.width = this.minWidth;
-    this.height = Math.floor(h / w * this.minWidth);
+  
+  function fitScaleOverflow(w, h) {
+    // if the desired aspect ratio is equal
+    if(mode.minWidth * h === mode.minHeight * w) {
+      width = mode.minWidth;
+      height = mode.minHeight;
+    }
+    // if it needs to be WIDER
+    else if(mode.minWidth * h < mode.minHeight * w) {
+      width = Math.floor(w / h * mode.minHeight);
+      height = mode.minHeight;
+    }
+    // if it needs to be TALLER
+    else {
+      width = mode.minWidth;
+      height = Math.floor(h / w * mode.minWidth);
+    }
+    // draw at a lower scale...
+    scale = Math.floor(Math.min(h/height, w/width));
+    if(scale < 1) scale = 1; //unless it's smaller than minimum
+    canvas.width = width * scale;
+    canvas.height = height * scale;
   }
-  // draw at a lower scale...
-  this.drawScale = Math.floor(Math.min(h/this.height, w/this.width));
-  if(this.drawScale < 1) this.drawScale = 1; //unless it's smaller than minimum
-  this.canvas.width = this.width * this.drawScale;
-  this.canvas.height =  this.height * this.drawScale;
-  // crispy
-  this.crispy();
-  // if the view is the whole window, then keep it at the right location
-  if(this.element === window) {
-    window.scrollTo(0, 0);
-  }
-};
-
-nigelgame.Screen.prototype.crispy = function() {
-  this.context.webkitImageSmoothingEnabled =
-    this.context.imageSmoothingEnabled =
-    this.context.mozImageSmoothingEnabled =
-    this.context.oImageSmoothingEnabled = false;
+  
 };
 
 nigelgame.Panel = function(parent, x, y, w, h, xAnchor, yAnchor) {

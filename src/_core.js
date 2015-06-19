@@ -2,6 +2,12 @@ function nigelgame(element) {
   var resourceReqs = 0;
   var resourceCallback = null;
   
+  // setup screen
+  var screen = new nigelgame.Screen(element);
+  this.setScreenMode = function() { screen.mode.apply(screen, arguments); };
+  this.setScreenSize = function() { screen.setSize.apply(screen, arguments); };
+  this.setScreenScale = function() { screen.setScale.apply(screen, arguments); };
+  
   this.addSheet = function(src, alias, w, h) {
     if(!src) throw "missing source image";
     if(!alias) throw "missing alias";
@@ -84,7 +90,6 @@ function nigelgame(element) {
   
   function reallyStart(view) {
     //initialize some things
-    var screen = null;
     var buttons = {};
     var mouseState = {
       startPoint: null,
@@ -101,8 +106,6 @@ function nigelgame(element) {
     var viewClock = 0;
     var skippedFrames = 0;
     
-    // setup screen
-    screen = new nigelgame.Screen(element, 'adapt');
     // key listeners
     if(binds) {
       element.addEventListener("keydown", gotKeyDown, false);

@@ -11,10 +11,10 @@ function init(el) {
   game.bind('down', 83, 40);
   game.bind('start', 32);
   game.setFrameSkip(1);
-  // game.setScreenMode('scale-overflow', 172, 144);
-  game.start(new TitleView());
+  game.setScreenMode('scale-overflow', 172, 144);
+  game.start(new DemoView());
 }
-/*
+
 function DemoView() {
   this.amp = 15;
   this.tri = 8;
@@ -25,8 +25,8 @@ DemoView.prototype.update = function(e) {
   e.screen.blit('bg', null, 0, 0);
   e.screen.origin(-1, 0);
   for(var i = -5; i < e.screen.width; ++i) {
-    e.screen.fill('#fa5', i, Math.sin((clocks.total*0.3 + i*1.05) / this.amp) * this.amp, 1, (i+clocks.total*0.7)%this.tri + 2);
-    e.screen.fill('#000', i, Math.sin((clocks.total*0.3 + i*1.05) / this.amp) * this.amp, 1, (i+clocks.total*0.7)%this.tri);
+    e.screen.fill('#fa5', i, Math.sin((e.viewClock*0.3 + i*1.05) / this.amp) * this.amp, 1, (i+e.viewClock*0.7)%this.tri + 2);
+    e.screen.fill('#000', i, Math.sin((e.viewClock*0.3 + i*1.05) / this.amp) * this.amp, 1, (i+e.viewClock*0.7)%this.tri);
   }
   e.screen.origin(0, 1);
   e.screen.setFont('ascii');
@@ -39,8 +39,7 @@ DemoView.prototype.buttondown = function(button) {
   else if(button === 'right') ++this.tri;
   else if(button === 'up') ++this.amp;
   else if(button === 'down') --this.amp;
-}
-*/
+};
 
 function TitleView() {}
 
