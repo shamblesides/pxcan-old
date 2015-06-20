@@ -30,7 +30,7 @@ DemoView.prototype.update = function(e) {
     e.screen.fill('#000', i, Math.sin((e.viewClock*0.3 + i*1.05) / this.amp) * this.amp, 1, (i+e.viewClock*0.7)%this.tri);
   }
   e.screen.origin(0, 1);
-  e.screen.setFont('ascii');
+  e.screen.font = 'ascii';
   e.screen.write('this is my new invention\nhow do u liek\n????????', -1, -21, {align:'center'});
   // e.screen.write('this is my new invention\nhow do u liek\n????????', 0, -20, {align:'center'});
 };
@@ -50,7 +50,7 @@ TitleView.prototype.update = function(e) {
   //draw title elements
   e.screen.reset();
   // screen.setBoxType(nigelgame.sheets.uibox, '#000');
-  e.screen.setFont('ascii');
+  e.screen.font = 'ascii';
   // screen.box("NIGELGAME", 0, -20, { yAnchor: 1, color: '#666' });
   e.screen.write(
     "press space or touch\nanywhere to play\n\n(must have\nkeyboard focus)",

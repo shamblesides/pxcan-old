@@ -97,7 +97,7 @@ nigelgame.Panel.prototype.blit = function(sheetName, frame, x, y, xAnc, yAnc) {
 nigelgame.Screen.prototype.write =
 nigelgame.Panel.prototype.write = function(text, x, y, options) {
   // verify font
-  var font = this.getFontSheet();
+  var font = nigelgame.sheets[this.font];
   // options
   options = options || {};
   if(options.cols || options.rows)

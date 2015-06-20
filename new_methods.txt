@@ -4,7 +4,11 @@ game.addSheet(filepath, alias, cellWidth, cellHeight)
 game.addJSON(filepath, alias)
 game.bind(keyName, keyCode, [keyCode, ...])
 game.activateTouch()
+game.activateKeyboard()
+game.setFrameSkip(frameSkip)
 game.setScreenMode(...)
+game.setScreenSize(...)
+game.setScreenScale(...)
 game.start(view)
 // game.stop()
 
@@ -24,18 +28,16 @@ game.start(view)
 screen.element
 screen.canvas
 screen.context
-screen.mode
-screen.minWidth
-screen.minHeight
-screen.width
-screen.height
+
 screen.left
 screen.top
 screen.right
 screen.bottom
+screen.width
+screen.height
 screen.drawScale
-screen.wasResized
-screen.prevDims
+
+screen.font
 
 screen.reset()
 screen.clear()
@@ -54,21 +56,22 @@ screen.origin()
 screen.origin(x, y)
 screen.offset()
 screen.offset(x, y)
-screen.setFont(sheetName)
-screen.getFontSheet()
 
-screen.setMode('adapt')
-screen.setMode('adapt', scale)
+screen.mode()
+screen.mode('adapt')
+screen.mode('adapt', scale)
   screen.setScale(scale)
-screen.setMode('fixed')
-screen.setMode('fixed', scale)
-screen.setMode('fixed', width, height, scale)
+screen.mode('fixed')
+screen.mode('fixed', scale)
+screen.mode('fixed', width, height, scale)
   screen.setSize(width, height)
   screen.setScale(scale)
-// screen.setMode('scale')
-// screen.setMode('scale', width, height)
+// screen.mode('scale')
+// screen.mode('scale', width, height)
   // screen.setSize(width, height)
-screen.setMode('scale-overflow')
-screen.setMode('scale-overflow', width, height)
+screen.mode('scale-overflow')
+screen.mode('scale-overflow', width, height)
   screen.setSize(width, height)
   // screen.setMaxOverflow(width, height)
+
+screen.fitElement()

@@ -371,7 +371,7 @@ nigelgame.Screen = function(element) {
   var scale = 1;
   var needsRepaint = true;
   var prevDims = null;
-  var fontSheet = null;
+  var font = null;
   var _origin = { x: 0, y: 0 };
   var _offset = { x: 0, y: 0 };
   
@@ -386,7 +386,7 @@ nigelgame.Screen = function(element) {
   // make it selectable (if it's not just in the window)
   if(element !== window && element.tabIndex < 0) element.tabIndex = 0;
   
-  // public properties and methods
+  // public properties
   Object.defineProperty(this, 'element', { get: function() { return element; } });
   Object.defineProperty(this, 'canvas', { get: function() { return canvas; } });
   Object.defineProperty(this, 'context', { get: function() { return context; } });
@@ -401,14 +401,17 @@ nigelgame.Screen = function(element) {
   Object.defineProperty(this, 'width', { get: function() { return width; } });
   Object.defineProperty(this, 'height', { get: function() { return height; } });
   Object.defineProperty(this, 'drawScale', { get: function() { return scale; } });
-  this.setFont = function(f) {
-    fontSheet = nigelgame.sheets[f] || null;
-    if(!fontSheet) throw new Error('invalid font: ' + f);
-  };
-  this.getFontSheet = function() {
-    if(!fontSheet) throw new Error('font has not been set.');
-    return fontSheet;
-  };
+  Object.defineProperty(this, 'font', {
+    set: function(x) {
+      if(!nigelgame.sheets[x]) throw new Error('invalid font: ' + x);
+      font = x;
+    },
+    get: function() {
+      if(!font) throw new Error('font has not been set.');
+      return font;
+    }
+  });
+  
   this.origin = function(x, y) {
     if(arguments.length === 0) return { x: _origin.x, y: _origin.y };
     if(arguments.length === 2) _origin = { x: x, y: y };
@@ -659,7 +662,7 @@ nigelgame.Panel.prototype.blit = function(sheetName, frame, x, y, xAnc, yAnc) {
 nigelgame.Screen.prototype.write =
 nigelgame.Panel.prototype.write = function(text, x, y, options) {
   // verify font
-  var font = this.getFontSheet();
+  var font = nigelgame.sheets[this.font];
   // options
   options = options || {};
   if(options.cols || options.rows)
