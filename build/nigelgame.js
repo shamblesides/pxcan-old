@@ -561,13 +561,16 @@ nigelgame.Screen.prototype.panel = function(x, y, w, h, xAnchor, yAnchor) {
 };
 
 /* global nigelgame */
-nigelgame.Screen.prototype.toCanvasCoords = function(x, y, w, h) {
+nigelgame.Screen.prototype.toCanvasCoords = function(x, y, w, h, xAnc, yAnc) {
   // make sure we got the right number of args
-  if(arguments.length !== 2 && arguments.length !== 4)
+  if([2,4,6].indexOf(arguments.length) === -1)
     throw new Error('bad number of arguments to toCanvasCoords');
+  // define xAnc and yAnc if not defined
+  if(xAnc === undefined || xAnc === null) xAnc = this.origin().x;
+  if(yAnc === undefined || yAnc === null) yAnc = this.origin().y;
   // translate x and y into LEFT and TOP
-  var l = Math.round(x + this.offset().x + (this.width - (w || 0)) * (this.origin().x + 1)/2);
-  var t = Math.round(y + this.offset().y + (this.height - (h || 0)) * (this.origin().y + 1)/2);
+  var l = Math.round(x + this.offset().x + this.width * (this.origin().x+1)/2 - (w || 0) * (xAnc+1)/2);
+  var t = Math.round(y + this.offset().y + this.height * (this.origin().y+1)/2 - (h || 0) * (yAnc+1)/2);
   // convenient drawScale alias
   var s = this.drawScale;
   // return width and height if it's 4 args. otherwise it's a point with 2
@@ -576,7 +579,10 @@ nigelgame.Screen.prototype.toCanvasCoords = function(x, y, w, h) {
 };
 
 nigelgame.Screen.prototype.clear = 
-nigelgame.Panel.prototype.clear = function(x, y, w, h) {
+nigelgame.Panel.prototype.clear = function(x, y, w, h, xAnc, yAnc) {
+  // verify valid arguments
+  if([0, 4, 6].indexOf(arguments.length) === -1)
+    throw new Error('bad arguments for clear');
   // if no arguments are provided, clear the whole area
   if(arguments.length === 0) {
     if(this instanceof nigelgame.Screen) {
@@ -587,11 +593,9 @@ nigelgame.Panel.prototype.clear = function(x, y, w, h) {
     }
     return;
   }
-  // make sure it's 4 arguments like it should be
-  if(arguments.length !== 4) throw new Error('bad arguments for clear');
-  // translate x and y into LEFT and TOP
-  var coords = this.toCanvasCoords(x, y, w, h);
-  //clear it
+  // translate to coordinates on canvas element
+  var coords = this.toCanvasCoords(x, y, w, h, xAnc, yAnc);
+  // clear canvas
   this.context.clearRect(coords.x, coords.y, coords.width, coords.height);
 };
 
@@ -602,9 +606,9 @@ nigelgame.Screen.prototype.reset = function() {
 };
 
 nigelgame.Screen.prototype.fill =
-nigelgame.Panel.prototype.fill = function(color, x, y, w, h) {
-  // ensure valid arguments
-  if(arguments.length !== 1 && arguments.length !== 5)
+nigelgame.Panel.prototype.fill = function(color, x, y, w, h, xAnc, yAnc) {
+  // verify valid arguments
+  if([1, 5, 7].indexOf(arguments.length) === -1)
     throw new Error('bad arguments for fill');
   // set color
   var temp = this.context.fillStyle;
@@ -620,16 +624,19 @@ nigelgame.Panel.prototype.fill = function(color, x, y, w, h) {
     this.context.fillStyle = temp;
     return;
   }
-  // translate x and y into LEFT and TOP
+  // translate to coordinates on canvas element
   var coords = this.toCanvasCoords(x, y, w, h);
-  // clear it
+  // do fill on canvas
   this.context.fillRect(coords.x, coords.y, coords.width, coords.height);
   // set color back
   this.context.fillStyle = temp;
 };
 
 nigelgame.Screen.prototype.blit =
-nigelgame.Panel.prototype.blit = function(sheetName, frame, x, y) {
+nigelgame.Panel.prototype.blit = function(sheetName, frame, x, y, xAnc, yAnc) {
+  // verify valid arguments
+  if([4, 6].indexOf(arguments.length) === -1)
+    throw new Error('bad arguments for blit');
   // get the sheet
   var sheet = nigelgame.sheets[sheetName];
   if(!sheet) throw new Error('unknown sheet: ' + sheetName);
@@ -637,7 +644,7 @@ nigelgame.Panel.prototype.blit = function(sheetName, frame, x, y) {
   var sprite = (frame !== undefined && frame !== null)?
     sheet.getSprite(frame): sheet;
   // coooordinates
-  var coords = this.toCanvasCoords(x, y, sprite.width, sprite.height);
+  var coords = this.toCanvasCoords(x, y, sprite.width, sprite.height, xAnc, yAnc);
   // draw it to the screen
   this.context.drawImage(
     // image

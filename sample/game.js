@@ -13,7 +13,7 @@ function init(el) {
   // game.setFrameSkip(1);
   // game.setScreenMode('adapt');
   game.setScreenScale(2);
-  game.start(new DemoView());
+  game.start(new TitleView());
 }
 
 function DemoView() {
@@ -97,7 +97,7 @@ GameView.prototype.update = function(e) {
   // draw
   e.screen.reset();
   e.screen.blit('bg', null, 0, 0);
-  e.screen.blit('chara', this.chara.frame, this.chara.x, this.chara.y, { yAnchor: 1 });
+  e.screen.blit('chara', this.chara.frame, this.chara.x, this.chara.y, 0, 1);
 };
 
 GameView.prototype.touch =
