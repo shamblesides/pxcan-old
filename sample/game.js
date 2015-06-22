@@ -97,7 +97,8 @@ GameView.prototype.update = function(e) {
   // draw
   e.screen.reset();
   e.screen.blit('bg', null, 0, 0);
-  e.screen.blit('chara', this.chara.frame, this.chara.x, this.chara.y, 0, 1);
+  var flip = (e.gameClock % 50 >= 25)? 'hv': '';
+  e.screen.blit('chara', this.chara.frame, flip,this.chara.x, this.chara.y, 0, 1);
 };
 
 GameView.prototype.touch =

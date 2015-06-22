@@ -71,10 +71,16 @@ nigelgame.Panel.prototype.fill = function(color, x, y, w, h, xAnc, yAnc) {
 };
 
 nigelgame.Screen.prototype.blit =
-nigelgame.Panel.prototype.blit = function(sheetName, frame, x, y, xAnc, yAnc) {
+nigelgame.Panel.prototype.blit = function(sheetName, frame /* [flip], x, y, [xAnc, yAnc] */) {
   // verify valid arguments
-  if([4, 6].indexOf(arguments.length) === -1)
+  if([4,5,6,7].indexOf(arguments.length) === -1)
     throw new Error('bad arguments for blit');
+  // get variable arguments
+  var flip = (arguments.length%2 === 1) && arguments[2] || '';
+  var x = arguments[arguments.length%2===0? 2: 3];
+  var y = arguments[arguments.length%2===0? 3: 4];
+  var xAnc = arguments.length>=6? arguments[arguments.length-2]: null;
+  var yAnc = arguments.length>=6? arguments[arguments.length-1]: null;
   // get the sheet
   var sheet = nigelgame.sheets[sheetName];
   if(!sheet) throw new Error('unknown sheet: ' + sheetName);
@@ -83,6 +89,13 @@ nigelgame.Panel.prototype.blit = function(sheetName, frame, x, y, xAnc, yAnc) {
     sheet.getSprite(frame): sheet;
   // coooordinates
   var coords = this.toCanvasCoords(x, y, sprite.width, sprite.height, xAnc, yAnc);
+  // do canvas flipping
+  var xflip = flip.contains('h')? 1:0;
+  var yflip = flip.contains('v')? 1:0;
+  if(flip) {
+    this.context.translate(this.canvas.width*xflip, this.canvas.height*yflip);
+    this.context.scale(xflip?-1:1, yflip?-1:1);
+  }
   // draw it to the screen
   this.context.drawImage(
     // image
@@ -90,8 +103,15 @@ nigelgame.Panel.prototype.blit = function(sheetName, frame, x, y, xAnc, yAnc) {
     // location on the spritesheet
     sprite.left, sprite.top, sprite.width, sprite.height,
     // location on screen
-    coords.x, coords.y, coords.width, coords.height
+    (this.canvas.width-coords.width)*xflip + coords.x*(xflip?-1:1),
+    (this.canvas.height-coords.height)*yflip + coords.y*(yflip?-1:1),
+    coords.width, coords.height
   );
+  // undo flipping
+  if(flip) {
+    this.context.translate(this.canvas.width*xflip, this.canvas.height*yflip);
+    this.context.scale(xflip?-1:1, yflip?-1:1);
+  }
 };
 
 nigelgame.Screen.prototype.write =
