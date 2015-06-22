@@ -90,8 +90,8 @@ nigelgame.Panel.prototype.blit = function(sheetName, frame /* [flip], x, y, [xAn
   // coooordinates
   var coords = this.toCanvasCoords(x, y, sprite.width, sprite.height, xAnc, yAnc);
   // do canvas flipping
-  var xflip = flip.contains('h')? 1:0;
-  var yflip = flip.contains('v')? 1:0;
+  var xflip = (flip.indexOf('h')!==-1)? 1:0;
+  var yflip = (flip.indexOf('v')!==-1)? 1:0;
   if(flip) {
     this.context.translate(this.canvas.width*xflip, this.canvas.height*yflip);
     this.context.scale(xflip?-1:1, yflip?-1:1);
