@@ -643,7 +643,7 @@ nigelgame.Panel.prototype.toCanvasCoords = function(x, y, w, h, xAnc, yAnc) {
   // otherwise return a nice object
   return {
     x: l+lcut, y: t+tcut, width: w-lcut-rcut, height: h-tcut-bcut,
-    lcut: lcut, tcut: tcut
+    lcut: lcut, tcut: tcut, rcut: rcut, bcut: bcut
   };
 };
 
@@ -745,11 +745,11 @@ nigelgame.Panel.prototype.blit = function(sheetName, frame /* [flip], x, y, [xAn
     // image
     sprite.img,
     // location on the spritesheet
-    sprite.left + coords.lcut*(xflip?-1:1), sprite.top + coords.tcut*(yflip?-1:1),
+    sprite.left + (xflip?coords.rcut:coords.lcut), sprite.top + (yflip?coords.bcut:coords.tcut),
     coords.width, coords.height,
     // location on screen
-    ((this.canvas.width-coords.width)*xflip + coords.x*(xflip?-1:1)) * this.drawScale,
-    ((this.canvas.height-coords.height)*yflip + coords.y*(yflip?-1:1)) * this.drawScale,
+    this.canvas.width*xflip + (coords.x*(xflip?-1:1) - coords.width*xflip) * this.drawScale,
+    this.canvas.height*yflip + (coords.y*(yflip?-1:1) - coords.height*yflip) * this.drawScale,
     coords.width * this.drawScale, coords.height * this.drawScale
   );
   // undo flipping

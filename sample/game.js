@@ -97,8 +97,7 @@ GameView.prototype.update = function(e) {
   }
   // draw
   e.screen.reset();
-  //var flip = (e.gameClock % 50 >= 25)? 'hv': '';
-  var flip = '';
+  var flip = (e.gameClock % 50 >= 25)? 'hv': '';
   var panels = [
     e.screen.panel(1,1,e.screen.width/2-3,e.screen.height/2-3, -1, -1),
     e.screen.panel(-1,1,e.screen.width/2-3,e.screen.height/2-3, 1, -1),
