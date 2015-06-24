@@ -12,7 +12,7 @@ function init(el) {
   game.bind('start', 32);
   // game.setFrameSkip(1);
   // game.setScreenMode('adapt');
-  game.setScreenScale(2);
+  game.setScreenScale(6);
   game.start(new TitleView());
 }
 
@@ -49,9 +49,10 @@ TitleView.prototype.update = function(e) {
   if(e.viewClock > 0 && !screen.wasResized) return;
   //draw title elements
   e.screen.reset();
-  // screen.setBoxType(nigelgame.sheets.uibox, '#000');
   e.screen.font = 'ascii';
-  // screen.box("NIGELGAME", 0, -20, { yAnchor: 1, color: '#666' });
+  var panel = e.screen.panel(0, -20, 100, 30, 0, 1);
+  panel.fill('#666');
+  panel.write('NIGELGAME', 0, 0);
   e.screen.write(
     "press space or touch\nanywhere to play\n\n(must have\nkeyboard focus)",
     0, 20, { align: 'center' }
@@ -66,7 +67,7 @@ TitleView.prototype.touch = function() {
 };
 
 function GameView() {
-  this.chara = { x: 0, y: 0, xDir: 0, yDir: 0, speed: nigelgame.json.gameobj.speed, frame: 0 };
+  this.chara = { x: 0, y: 0, xDir: 0, yDir: 0, speed: 1, frame: 0 };
   this.target = null;
 }
 
@@ -96,9 +97,19 @@ GameView.prototype.update = function(e) {
   }
   // draw
   e.screen.reset();
-  e.screen.blit('bg', null, 0, 0);
-  var flip = (e.gameClock % 50 >= 25)? 'hv': '';
-  e.screen.blit('chara', this.chara.frame, flip,this.chara.x, this.chara.y, 0, 1);
+  //var flip = (e.gameClock % 50 >= 25)? 'hv': '';
+  var flip = '';
+  var panels = [
+    e.screen.panel(1,1,e.screen.width/2-3,e.screen.height/2-3, -1, -1),
+    e.screen.panel(-1,1,e.screen.width/2-3,e.screen.height/2-3, 1, -1),
+    e.screen.panel(1,-1,e.screen.width/2-3,e.screen.height/2-3, -1, 1),
+    e.screen.panel(-1,-1,e.screen.width/2-3,e.screen.height/2-3, 1, 1),
+  ];
+  for(var i = 0; i < 4; ++i) {
+    var p = panels[i];
+    p.blit('bg', null, 0, 0);
+    p.blit('chara', 1, flip, this.chara.x, this.chara.y, 0, 1);
+  }
 };
 
 GameView.prototype.touch =

@@ -390,6 +390,8 @@ nigelgame.Screen = function(element) {
   Object.defineProperty(this, 'element', { get: function() { return element; } });
   Object.defineProperty(this, 'canvas', { get: function() { return canvas; } });
   Object.defineProperty(this, 'context', { get: function() { return context; } });
+  Object.defineProperty(this, 'canvasOffX', { get: function() { return 0; } });
+  Object.defineProperty(this, 'canvasOffY', { get: function() { return 0; } });
   Object.defineProperty(this, 'left', { get: function() {
     return Math.round(_offset.x - (width * (_origin.x + 1) / 2));
   } });
@@ -556,29 +558,93 @@ nigelgame.Screen = function(element) {
 };
 
 nigelgame.Panel = function(parent, x, y, w, h, xAnchor, yAnchor) {
-  /* TODO */
+  // verify arguments
+  if([5,7].indexOf(arguments.length)===-1)
+    throw new Error('invalid number of arguments.');
+  // vars
+  if(arguments.length < 5) {
+    xAnchor = parent.origin().x;
+    yAnchor = parent.origin().y;
+  }
+  var font = null;
+  var _origin = parent.origin();
+  var _offset = parent.offset();
+  
+  // subcanvas size
+  this.canvasOffX = Math.round(parent.canvasOffX + x + parent.width*(parent.origin().x+1)/2 - w*(xAnchor+1)/2);
+  this.canvasOffY = Math.round(parent.canvasOffY + y + parent.height*(parent.origin().y+1)/2 - h*(yAnchor+1)/2);
+  var width = Math.round(w);
+  var height = Math.round(h);
+  // verify it fits within the parent
+  if(this.canvasOffX < parent.canvasOffX) throw new Error('panel does not fit within its parent.');
+  if(this.canvasOffY < parent.canvasOffY) throw new Error('panel does not fit within its parent.');
+  if(this.canvasOffX + w > parent.canvasOffX + parent.width) throw new Error('panel does not fit within its parent.');
+  if(this.canvasOffY + h > parent.canvasOffY + parent.height) throw new Error('panel does not fit within its parent.');
+  
+  // public properties
+  Object.defineProperty(this, 'element', { get: function() { return parent.element; } });
+  Object.defineProperty(this, 'canvas', { get: function() { return parent.canvas; } });
+  Object.defineProperty(this, 'context', { get: function() { return parent.context; } });
+  Object.defineProperty(this, 'left', { get: function() {
+    return Math.round(_offset.x - (width * (_origin.x + 1) / 2));
+  } });
+  Object.defineProperty(this, 'top', { get: function() {
+    return Math.round(_offset.y - (height * (_origin.y + 1) / 2));
+  } });
+  Object.defineProperty(this, 'right', { get: function() { return this.left + width; } });
+  Object.defineProperty(this, 'bottom', { get: function() { return this.top + height; } });
+  Object.defineProperty(this, 'width', { get: function() { return width; } });
+  Object.defineProperty(this, 'height', { get: function() { return height; } });
+  Object.defineProperty(this, 'drawScale', { get: function() { return parent.drawScale; } });
+  Object.defineProperty(this, 'font', {
+    set: function(x) {
+      if(!nigelgame.sheets[x]) throw new Error('invalid font: ' + x);
+      font = x;
+    },
+    get: function() { return font || parent.font; }
+  });
+  // methods
+  this.origin = function(x, y) {
+    if(arguments.length === 0) return { x: _origin.x, y: _origin.y };
+    if(arguments.length === 2) _origin = { x: x, y: y };
+    else throw new Error('invalid arguments for origin');
+  };
+  this.offset = function(x, y) {
+    if(arguments.length === 0) return { x: _offset.x, y: _offset.y };
+    if(arguments.length === 2) _offset = { x: x, y: y };
+    else throw new Error('invalid arguments for offset');
+  };
+  
 };
 
-nigelgame.Screen.prototype.panel = function(x, y, w, h, xAnchor, yAnchor) {
+nigelgame.Screen.prototype.panel =
+nigelgame.Panel.prototype.panel = function(x, y, w, h, xAnchor, yAnchor) {
   return new nigelgame.Panel(this, x, y, w, h, xAnchor, yAnchor);
 };
 
-/* global nigelgame */
-nigelgame.Screen.prototype.toCanvasCoords = function(x, y, w, h, xAnc, yAnc) {
+nigelgame.Screen.prototype.toCanvasCoords =
+nigelgame.Panel.prototype.toCanvasCoords = function(x, y, w, h, xAnc, yAnc) {
   // make sure we got the right number of args
-  if([2,4,6].indexOf(arguments.length) === -1)
-    throw new Error('bad number of arguments to toCanvasCoords');
+  if(arguments.length !== 6)
+    throw new Error('toCanvasCoords requires 6 arguments');
   // define xAnc and yAnc if not defined
   if(xAnc === undefined || xAnc === null) xAnc = this.origin().x;
   if(yAnc === undefined || yAnc === null) yAnc = this.origin().y;
   // translate x and y into LEFT and TOP
-  var l = Math.round(x + this.offset().x + this.width * (this.origin().x+1)/2 - (w || 0) * (xAnc+1)/2);
-  var t = Math.round(y + this.offset().y + this.height * (this.origin().y+1)/2 - (h || 0) * (yAnc+1)/2);
-  // convenient drawScale alias
-  var s = this.drawScale;
-  // return width and height if it's 4 args. otherwise it's a point with 2
-  if(arguments.length === 2) return { x: l*s, y: t*s };
-  else return { x: l*s, y: t*s, width: w*s, height: h*s };
+  var l = Math.round(this.canvasOffX + x + this.offset().x + this.width * (this.origin().x+1)/2 - (w || 0) * (xAnc+1)/2);
+  var t = Math.round(this.canvasOffY + y + this.offset().y + this.height * (this.origin().y+1)/2 - (h || 0) * (yAnc+1)/2);
+  // how much may need to be cut off the sides for sprites
+  var lcut = Math.max(0, this.canvasOffX-l);
+  var tcut = Math.max(0, this.canvasOffY-t);
+  var rcut = Math.max(0, (l+w)-(this.canvasOffX+this.width));
+  var bcut = Math.max(0, (t+h)-(this.canvasOffY+this.height));
+  // return null if the object didn't make it on the screen
+  if(lcut+rcut >= w || tcut+bcut >= h) return null;
+  // otherwise return a nice object
+  return {
+    x: l+lcut, y: t+tcut, width: w-lcut-rcut, height: h-tcut-bcut,
+    lcut: lcut, tcut: tcut
+  };
 };
 
 nigelgame.Screen.prototype.clear = 
@@ -592,14 +658,20 @@ nigelgame.Panel.prototype.clear = function(x, y, w, h, xAnc, yAnc) {
       this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
     else {
-      
+      this.context.clearRect(
+        this.canvasOffX * this.drawScale,
+        this.canvasOffY * this.drawScale,
+        this.width * this.drawScale,
+        this.height * this.drawScale
+      );
     }
     return;
   }
   // translate to coordinates on canvas element
   var coords = this.toCanvasCoords(x, y, w, h, xAnc, yAnc);
+  if(!coords) return;
   // clear canvas
-  this.context.clearRect(coords.x, coords.y, coords.width, coords.height);
+  this.context.clearRect(coords.x * this.drawScale, coords.y * this.drawScale, coords.width * this.drawScale, coords.height * this.drawScale);
 };
 
 nigelgame.Screen.prototype.reset = function() {
@@ -622,15 +694,21 @@ nigelgame.Panel.prototype.fill = function(color, x, y, w, h, xAnc, yAnc) {
       this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
     }
     else {
-      
+      this.context.fillRect(
+        this.canvasOffX * this.drawScale,
+        this.canvasOffY * this.drawScale,
+        this.width * this.drawScale,
+        this.height * this.drawScale
+      );
     }
     this.context.fillStyle = temp;
     return;
   }
   // translate to coordinates on canvas element
-  var coords = this.toCanvasCoords(x, y, w, h);
+  var coords = this.toCanvasCoords(x, y, w, h, xAnc, yAnc);
+  if(!coords) return;
   // do fill on canvas
-  this.context.fillRect(coords.x, coords.y, coords.width, coords.height);
+  this.context.fillRect(coords.x * this.drawScale, coords.y * this.drawScale, coords.width * this.drawScale, coords.height * this.drawScale);
   // set color back
   this.context.fillStyle = temp;
 };
@@ -654,6 +732,7 @@ nigelgame.Panel.prototype.blit = function(sheetName, frame /* [flip], x, y, [xAn
     sheet.getSprite(frame): sheet;
   // coooordinates
   var coords = this.toCanvasCoords(x, y, sprite.width, sprite.height, xAnc, yAnc);
+  if(!coords) return;
   // do canvas flipping
   var xflip = (flip.indexOf('h')!==-1)? 1:0;
   var yflip = (flip.indexOf('v')!==-1)? 1:0;
@@ -666,11 +745,12 @@ nigelgame.Panel.prototype.blit = function(sheetName, frame /* [flip], x, y, [xAn
     // image
     sprite.img,
     // location on the spritesheet
-    sprite.left, sprite.top, sprite.width, sprite.height,
+    sprite.left + coords.lcut*(xflip?-1:1), sprite.top + coords.tcut*(yflip?-1:1),
+    coords.width, coords.height,
     // location on screen
-    (this.canvas.width-coords.width)*xflip + coords.x*(xflip?-1:1),
-    (this.canvas.height-coords.height)*yflip + coords.y*(yflip?-1:1),
-    coords.width, coords.height
+    ((this.canvas.width-coords.width)*xflip + coords.x*(xflip?-1:1)) * this.drawScale,
+    ((this.canvas.height-coords.height)*yflip + coords.y*(yflip?-1:1)) * this.drawScale,
+    coords.width * this.drawScale, coords.height * this.drawScale
   );
   // undo flipping
   if(flip) {
@@ -701,12 +781,13 @@ nigelgame.Panel.prototype.write = function(text, x, y, options) {
   else if(options.align === "right") align = 1;
   else throw "unknown text alignment: " + options.align;
   // where the top left char at
-  var coords = this.toCanvasCoords(x, y, font.spriteWidth * maxcol, font.spriteHeight * lines.length);
-  var ltrWidth = font.spriteWidth * this.drawScale;
-  var ltrHeight = font.spriteHeight * this.drawScale;
+  var coords = this.toCanvasCoords(x, y, font.spriteWidth * maxcol, font.spriteHeight * lines.length, null, null);
+  if(!coords) return;
+  var ltrWidth = font.spriteWidth;
+  var ltrHeight = font.spriteHeight;
   // iterate
   for(var r = 0; r < lines.length; ++r) {
-    var indent = Math.round((maxcol-lines[r].length)*align*font.spriteWidth) * this.drawScale;
+    var indent = Math.round((maxcol-lines[r].length)*align*font.spriteWidth);
     for(var c = 0; c < lines[r].length; ++c) {
       var ch = lines[r].charCodeAt(c) - 32;
       var sprite = font.getSprite(ch);
@@ -717,8 +798,9 @@ nigelgame.Panel.prototype.write = function(text, x, y, options) {
         // location on the spritesheet
         sprite.left, sprite.top, sprite.width, sprite.height,
         // location on screen
-        coords.x + indent + (c * ltrWidth), coords.y + (r * ltrHeight),
-        ltrWidth, ltrHeight
+        (coords.x + indent + (c * ltrWidth)) * this.drawScale,
+        (coords.y + (r * ltrHeight)) * this.drawScale,
+        ltrWidth * this.drawScale, ltrHeight * this.drawScale
       );
     }
   }
