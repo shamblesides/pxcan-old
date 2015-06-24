@@ -103,8 +103,9 @@ GameView.prototype.update = function(e) {
     e.screen.panel(-1,1,e.screen.width/2-3,e.screen.height/2-3, 1, -1),
     e.screen.panel(1,-1,e.screen.width/2-3,e.screen.height/2-3, -1, 1),
     e.screen.panel(-1,-1,e.screen.width/2-3,e.screen.height/2-3, 1, 1),
+    e.screen.panel(0,0, e.screen.width/2, e.screen.height/2)
   ];
-  for(var i = 0; i < 4; ++i) {
+  for(var i = 0; i < 5; ++i) {
     var p = panels[i];
     p.blit('bg', null, 0, 0);
     p.blit('chara', 1, flip, this.chara.x, this.chara.y, 0, 1);

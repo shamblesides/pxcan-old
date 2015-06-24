@@ -562,7 +562,7 @@ nigelgame.Panel = function(parent, x, y, w, h, xAnchor, yAnchor) {
   if([5,7].indexOf(arguments.length)===-1)
     throw new Error('invalid number of arguments.');
   // vars
-  if(arguments.length < 5) {
+  if(arguments.length === 5) {
     xAnchor = parent.origin().x;
     yAnchor = parent.origin().y;
   }
@@ -619,7 +619,12 @@ nigelgame.Panel = function(parent, x, y, w, h, xAnchor, yAnchor) {
 
 nigelgame.Screen.prototype.panel =
 nigelgame.Panel.prototype.panel = function(x, y, w, h, xAnchor, yAnchor) {
-  return new nigelgame.Panel(this, x, y, w, h, xAnchor, yAnchor);
+  if(arguments.length === 4)
+    return new nigelgame.Panel(this, x, y, w, h);
+  else if(arguments.length === 6)
+    return new nigelgame.Panel(this, x, y, w, h, xAnchor, yAnchor);
+  else
+    throw new Error('invalid number of arguments.');
 };
 
 nigelgame.Screen.prototype.toCanvasCoords =
