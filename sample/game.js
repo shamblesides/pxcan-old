@@ -12,7 +12,7 @@ function init(el) {
   game.bind('start', 32);
   // game.setFrameSkip(1);
   // game.setScreenMode('adapt');
-  game.setScreenScale(6);
+  game.setScreenScale(2);
   game.start(new TitleView());
 }
 
@@ -52,6 +52,7 @@ TitleView.prototype.update = function(e) {
   e.screen.font = 'ascii';
   var panel = e.screen.panel(0, -20, 100, 30, 0, 1);
   panel.fill('#666');
+  panel.border('uibox');
   panel.write('NIGELGAME', 0, 0);
   e.screen.write(
     "press space or touch\nanywhere to play\n\n(must have\nkeyboard focus)",

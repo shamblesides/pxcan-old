@@ -45,7 +45,7 @@ screen.fill(color, [x, y, w, h, [xAnchor, yAnchor]])
 screen.blit(sheet, frame, [flip,] x, y, [xAnchor, yAnchor])
 screen.write(text, x, y, {align, cols, rows})
 screen.panel(x, y, width, height, [xAnchor, yAnchor])
-// screen.border(borderSheet)
+screen.border(borderSheet)
 
 screen.origin()
 screen.origin(x, y)

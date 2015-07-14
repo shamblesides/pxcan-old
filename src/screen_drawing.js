@@ -181,63 +181,32 @@ nigelgame.Panel.prototype.write = function(text, x, y, options) {
     }
   }
 };
-/*
-nigelgame.Screen.prototype.drawBox =
-nigelgame.Panel.prototype.drawBox = function(box, rect, color) {
-  //robust arguments
-  if(!(rect instanceof nigelgame.Rect)) rect = new nigelgame.Rect(rect);
-  //fill background first, maybe.
-  if(color) {
-    this.fill(color, rect);
-  }
-  //draw the sprites
-  //position on screen
-  var pt = rect.pointIn({ xAnchor: -1, yAnchor: -1 });
-  //horizontal 
-  for(var di = box.spriteWidth, i = di; i < rect.widthFor(this)-di; i += di) {
-    //top
-    this.drawSprite(box.getSprite(1), pt.translate({ x: i }), {anchor: {x:-1, y:-1}});
-    //bottom
-    this.drawSprite(box.getSprite(7), pt.translate({ x: i, y: rect.heightFor(this) }), {anchor:{x:-1, y:1}});
-  }
-  //vertical
-  for(var di = box.spriteHeight, i = di; i < rect.heightFor(this)-di; i += di) {
-    //left
-    this.drawSprite(box.getSprite(3), pt.translate({ y: i }), {anchor:{x:-1,y:-1}});
-    //right
-    this.drawSprite(box.getSprite(5), pt.translate({ x: rect.widthFor(this), y: i }), {anchor:{x:1,y:-1}});
-  }
-  //corners
-  this.drawSprite(box.getSprite(0), rect.pointIn({ xAnchor: -1, yAnchor: -1 }), { anchor: {x: -1, y: -1}});
-  this.drawSprite(box.getSprite(2), rect.pointIn({ xAnchor: 1, yAnchor: -1 }), { anchor: {x: 1, y: -1}});
-  this.drawSprite(box.getSprite(6), rect.pointIn({ xAnchor: -1, yAnchor: 1 }), { anchor: {x: -1, y: 1}});
-  this.drawSprite(box.getSprite(8), rect.pointIn({ xAnchor: 1, yAnchor: 1 }), { anchor: {x: 1, y: 1}});
-};
 
-nigelgame.Screen.prototype.drawStringBox =
-nigelgame.Panel.prototype.drawStringBox = function(text, font, box, point, options) {
-  //robust args
-  if(!(point instanceof nigelgame.Point)) point = new nigelgame.Point(point);
-  options = options || {};
-  var anchor = (options && options.anchor) || {};
-  if(anchor.x === undefined) anchor.x = point.xAnchor || 0;
-  if(anchor.y === undefined) anchor.y = point.yAnchor || 0;
-  //format string
-  var lines = text.split('\n');
-  var maxcol = 0;
-  for(var i = 0; i < lines.length; ++i) maxcol = Math.max(lines[i].length, maxcol);
-  //figure out size of box
-  var w = (options.cols || maxcol) * font.spriteWidth + 2 * box.spriteWidth;
-  var h = (options.rows || lines.length) * font.spriteHeight + 2 * box.spriteHeight;
-  var rect = point.rectFrom({ width: w, height: h, anchor: anchor });
-  //draw rect
-  this.drawBox(box, rect, options.color);
-  //draw the string
-  this.drawString(text, font,
-    point.translate({
-      x: -box.spriteWidth * anchor.x, y: -box.spriteHeight * anchor.y
-    }),
-    { cols: options.cols, rows: options.rows, anchor: anchor, align: options.align }
-  );
+nigelgame.Screen.prototype.border =
+nigelgame.Panel.prototype.border = function(sheet) {
+  // temporarily store origin and offset, then set them
+  var oldOrigin = this.origin();
+  var oldOffset = this.offset();
+  this.origin(-1,-1);
+  this.offset(0,0);
+  // horizontal edges
+  var sw = nigelgame.sheets[sheet].spriteWidth;
+  for(var x = sw; x < this.width - sw; x += sw) {
+    this.blit(sheet, {col:1, row:0}, x, 0, -1, -1);
+    this.blit(sheet, {col:1, row:2}, x, this.height, -1, 1);
+  }
+  // vertical edges
+  var sh = nigelgame.sheets[sheet].spriteHeight;
+  for(var y = sh; y < this.height - sh; y += sh) {
+    this.blit(sheet, {col:0, row:1}, 0, y, -1, -1);
+    this.blit(sheet, {col:2, row:1}, this.width, y, 1, -1);
+  }
+  // corners
+  this.blit(sheet, {col:0, row:0}, 0,0, -1, -1);
+  this.blit(sheet, {col:2, row:0}, this.width,0, 1, -1);
+  this.blit(sheet, {col:0, row:2}, 0,this.height, -1, 1);
+  this.blit(sheet, {col:2, row:2}, this.width,this.height, 1, 1);
+  // return origin and offset to old values
+  this.origin(oldOrigin.x, oldOrigin.y);
+  this.offset(oldOffset.x, oldOffset.y);
 };
-*/
