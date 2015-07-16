@@ -10,6 +10,7 @@ function init(el) {
   game.bind('up', 87, 38);
   game.bind('down', 83, 40);
   game.bind('start', 32);
+  game.activateTouch();
   // game.setFrameSkip(1);
   // game.setScreenMode('adapt');
   game.setScreenScale(2);
@@ -115,7 +116,8 @@ GameView.prototype.update = function(e) {
 
 GameView.prototype.touch =
 GameView.prototype.drag = function(evt) {
-  this.target = { x: evt.point.x, y: evt.point.y };
+  var point = evt.point.relativeTo(evt.screen);
+  this.target = { x: point.x, y: point.y };
 };
 GameView.prototype.release = function() {
   this.target = null;

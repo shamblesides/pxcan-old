@@ -18,12 +18,26 @@ game.start(view)
   buttons
   screen
 })
+
 (view).buttondown(button)
 (view).buttonup(button)
+
 (view).keypress(keypressEvt)
-// (view).touch
-// (view).drag
-// (view).release
+
+(view).touch(touchEvt)
+(view).drag(touchEvt)
+(view).release(touchEvt)
+
+touchEvt.screen
+touchEvt.type
+touchEvt.point
+touchEvt.startPoint // for drag and release
+touchEvt.lastPoint // for drag
+(touchPoint).x
+(touchPoint).y
+(touchPoint).equals
+(touchPoint).inBounds
+(touchPoint).relativeTo(screen | panel)
 
 screen.element
 screen.canvas

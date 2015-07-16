@@ -198,55 +198,76 @@ function nigelgame(element) {
           evt.preventDefault();
     }
     
-    //mouse event handlers
-    function gotMouseDown(evt) {
-      var point = mousePoint(evt);
-      mouseState.startPoint = point;
-      mouseState.lastPoint = point;
-      mouseState.button = mouseWhich(evt);
-      if(view.touch) view.touch({
-        point: point,
-        type: mouseState.button,
-        screenRect: screen.getRect()
-      });
+    // utility mouse functions
+    function touchPointFromEvt(evt) {
+      return new TouchPoint(
+        Math.floor((evt.clientX - (element.clientLeft || 0) - (element.offsetLeft || 0))/(element.clientWidth || element.innerWidth)*screen.width),
+        Math.floor((evt.clientY - (element.clientTop || 0) - (element.offsetTop || 0))/(element.clientHeight || element.innerHeight)*screen.height),
+        null
+      );
     }
-    function gotMouseMove(evt) {
-      if(!mouseState.startPoint) return;
-      var point = mousePoint(evt);
-      if(point.equals(mouseState.lastPoint)) return;
-      if(view.drag) view.drag({
-        point: point,
-        lastPoint: mouseState.lastPoint,
-        startPoint: mouseState.startPoint,
-        type: mouseState.button,
-        screenRect: screen.getRect()
-      });
-      mouseState.lastPoint = point;
-    }
-    function gotMouseUp(evt) {
-      if(view.release && mouseState.startPoint && mouseState.button === mouseWhich(evt)) {
-        view.release({
-          point: mousePoint(evt),
-          startPoint: mouseState.startPoint,
-          type: mouseState.button,
-          screenRect: screen.getRect()
-        });
-      }
-      mouseState.startPoint = null;
-      mouseState.lastPoint = null;
-    }
-    function mousePoint(evt) {
-      var x = evt.clientX - (element.clientLeft || 0) - (element.offsetLeft || 0);
-      var y = evt.clientY - (element.clientTop || 0) - (element.offsetTop || 0);
-      var elw = element.clientWidth || element.innerWidth;
-      var elh = element.clientHeight || element.innerHeight;
-      return {
-        x: Math.floor(x/elw*screen.width - screen.width/2),
-        y: Math.floor(y/elh*screen.height - screen.height/2)
+    function TouchPoint(x,y,rel) {
+      this.x = x + (rel && rel.left || 0);
+      this.y = y + (rel && rel.top || 0);
+      this.equals = function(pt) {
+        return this.x === pt.x && this.y === pt.y;
+      };
+      this.inBounds = function() {
+        if(!rel) return
+          this.x >= 0 && this.y >= 0
+          && this.x < screen.width && this.y < screen.height;
+        return
+          this.x > screen.left && this.x <= screen.right
+          && this.y > screen.top && this.y <= screen.bottom;
+      };
+      this.relativeTo = function(pan) {
+        return new TouchPoint(
+          this.x - (rel && rel.left || 0),
+          this.y - (rel && rel.top || 0),
+          pan
+        );
       };
     }
     function mouseWhich(evt) {
       return (evt.button === 2)? "rightmouse": "mouse";
+    }
+    
+    // mouse event handlers
+    function gotMouseDown(mouseEvt) {
+      var evt = {
+        screen: screen,
+        type: mouseWhich(mouseEvt),
+        point: touchPointFromEvt(mouseEvt)
+      };
+      if(view.touch) view.touch(evt);
+      mouseState.startPoint = evt.point;
+      mouseState.lastPoint = evt.point;
+      mouseState.button = evt.type;
+    }
+    function gotMouseMove(mouseEvt) {
+      if(!mouseState.startPoint) return;
+      var evt = {
+        screen: screen,
+        type: mouseState.button,
+        point: touchPointFromEvt(mouseEvt),
+        lastPoint: mouseState.lastPoint,
+        startPoint: mouseState.startPoint,
+      };
+      if(evt.point.equals(evt.lastPoint)) return;
+      if(view.drag) view.drag(evt);
+      mouseState.lastPoint = evt.point;
+    }
+    function gotMouseUp(mouseEvt) {
+      if(view.release && mouseState.startPoint && mouseState.button === mouseWhich(mouseEvt)) {
+        view.release({
+          screen: screen,
+          type: mouseState.button,
+          point: touchPointFromEvt(mouseEvt),
+          startPoint: mouseState.startPoint,
+        });
+      }
+      mouseState.startPoint = null;
+      mouseState.lastPoint = null;
     }
     
     //touch events handlers
@@ -333,16 +354,6 @@ function nigelgame(element) {
         }
       }
       //if it wasn't our touch, just ignore it. done.
-    }
-    function touchPoint(touch) { //TODO the same?????
-      var x = touch.clientX - (element.clientLeft || 0) - (element.offsetLeft || 0);
-      var y = touch.clientY - (element.clientTop || 0) - (element.offsetTop || 0);
-      var elw = element.clientWidth || element.innerWidth;
-      var elh = element.clientHeight || element.innerHeight;
-      return {
-        x: Math.floor(x/elw*screen.width - screen.width/2),
-        y: Math.floor(y/elh*screen.height - screen.height/2)
-      };
     }
   };
 }
