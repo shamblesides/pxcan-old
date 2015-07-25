@@ -1,6 +1,7 @@
 nigelgame.Screen = function(element) {
   // vars
   element = element || window;
+  if(typeof(element) === 'string') element = document.querySelector(element);
   var mode = { name: 'adapt' };
   var width = element.clientWidth || element.innerWidth;
   var height = element.clientHeight || element.innerWidth;
