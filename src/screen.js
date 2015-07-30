@@ -40,6 +40,7 @@ nigelgame.Screen = function(element) {
   Object.defineProperty(this, 'width', { get: function() { return width; } });
   Object.defineProperty(this, 'height', { get: function() { return height; } });
   Object.defineProperty(this, 'drawScale', { get: function() { return scale; } });
+  Object.defineProperty(this, 'wasResized', { get: function() { return needsRepaint; } });
   Object.defineProperty(this, 'font', {
     set: function(x) {
       if(!nigelgame.sheets[x]) throw new Error('invalid font: ' + x);

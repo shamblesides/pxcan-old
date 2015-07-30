@@ -50,7 +50,7 @@ screen.bottom
 screen.width
 screen.height
 screen.drawScale
-
+screen.wasResized
 screen.font
 
 screen.reset()

@@ -46,7 +46,7 @@ function TitleView() {}
 
 TitleView.prototype.update = function(e) {
   //only draw on first frame
-  if(e.viewClock > 0 && !screen.wasResized) return;
+  if(e.viewClock > 0 && !e.screen.wasResized) return;
   //draw title elements
   e.screen.reset();
   e.screen.font = 'ascii';
