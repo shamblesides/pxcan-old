@@ -108,6 +108,7 @@ GameView.prototype.update = function(e) {
   ];
   for(var i = 0; i < 5; ++i) {
     var p = panels[i];
+    p.clear();
     p.blit('bg', null, 0, 0);
     p.blit('chara', 1, flip, this.chara.x, this.chara.y, 0, 1);
   }
