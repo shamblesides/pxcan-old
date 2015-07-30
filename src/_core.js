@@ -271,91 +271,80 @@ function nigelgame(element) {
     }
     
     //touch events handlers
-    function gotTouchStart(evt) {
-      // prevent default
-      evt.preventDefault();
+    function gotTouchStart(touchEvt) {
+      touchEvt.preventDefault();
       // if this isn't the first touch, ignore it
-      if(evt.touches.length !== evt.changedTouches.length) return;
-      // get point
-      var point = touchPoint(evt.changedTouches[0]);
-      // register touchState
-      touchState = {
-        id: evt.changedTouches[0].identifier,
-        startPoint: point,
-        lastPoint: point
+      if(touchEvt.touches.length !== touchEvt.changedTouches.length) return;
+      // issue event
+      var evt = {
+        screen: screen,
+        type: 'touch',
+        point: touchPointFromEvt(touchEvt.changedTouches[0])
       };
-      //do action if any
-      if(view.touch) view.touch({
-        point: point,
-        type: "touch",
-        screenRect: screen.getRect()
-      });
+      if(view.touch) view.touch(evt);
+      touchState.startPoint = evt.point;
+      touchState.lastPoint = evt.point;
+      touchState.id = touchEvt.changedTouches[0].identifier;
     }
-    function gotTouchMove(evt) {
-      // prevent default
-      evt.preventDefault();
-      //ignore if we didn't get the start
+    function gotTouchMove(touchEvt) {
+      touchEvt.preventDefault();
       if(!touchState.startPoint) return;
-      //look at all moved touches
-      for(var i = 0; i < evt.changedTouches.length; ++i) {
-        //if one of them is the current touch, ok!
-        if(evt.changedTouches[i].identifier === touchState.id) {
-          var point = touchPoint(evt.changedTouches[i]);
-          if(point.equals(touchState.lastPoint)) return;
-          if(view.drag) view.drag({
-            point: point,
-            lastPoint: touchState.lastPoint,
-            startPoint: touchState.startPoint,
-            type: "touch",
-            screenRect: screen.getRect()
-          });
-          touchState.lastPoint = point;
-          return;
-        }
+      // look at all moved touches
+      var i = 0;
+      for(i = 0 ;; ++i) {
+        if(i === touchEvt.changedTouches.length) return;
+        if(touchEvt.changedTouches[i].identifier === touchState.id) break;
+      }
+      // if we got to this point, do this touch
+      var evt = {
+        screen: screen,
+        type: 'touch',
+        point: touchPointFromEvt(touchEvt.changedTouches[i]),
+        lastPoint: touchState.lastPoint,
+        startPoint: touchState.startPoint
+      };
+      if(evt.point.equals(evt.lastPoint)) return;
+      if(view.drag) view.drag(evt);
+      mouseState.lastPoint = evt.point;
+    }
+    function gotTouchEnd(touchEvt) {
+      touchEvt.preventDefault();
+      if(!touchState.startPoint) return;
+      // look at all released touches
+      var i = 0;
+      for(i = 0 ;; ++i) {
+        if(i === touchEvt.changedTouches.length) return;
+        if(touchEvt.changedTouches[i].identifier === touchState.id) break;
+      }
+      // if this is the only touch, send release evt
+      if(touchEvt.targetTouches.length===0) {
+        if(view.release) view.release({
+          screen: screen,
+          type: 'touch',
+          point: touchPointFromEvt(touchEvt.changedTouches[i]),
+          startPoint: touchState.startPoint
+        });
+        touchState.id = null;
+        touchState.startPoint = null;
+        touchState.lastPoint = null;
+      }
+      // otherwise there are still other touches;
+      // treat as 'drag' event to latest touch
+      else {
+        var nextTouch = touchEvt.targetTouches[touchEvt.targetTouches.length-1];
+        var point = touchPointFromEvt(nextTouch);
+        if(view.drag) view.drag({
+          screen: screen,
+          type: 'touch',
+          point: point,
+          lastPoint: touchState.lastPoint,
+          startPoint: touchState.startPoint
+        });
+        touchState.id = nextTouch.identifier;
+        touchState.lastPoint = point;
       }
     }
-    function gotTouchEnd(evt) {
-      // prevent default
-      evt.preventDefault();
-      //ignore if we didn't get the start
-      if(!touchState.startPoint) return;
-      //look at all released touches
-      for(var i = 0; i < evt.changedTouches.length; ++i) {
-        //if one of them is the current touch, ok!
-        if(evt.changedTouches[i].identifier === touchState.id) {
-          //no more touches: release
-          if(evt.targetTouches.length===0) {
-            if(view.release) view.release({
-              point: touchPoint(evt.changedTouches[i]),
-              startPoint: touchState.startPoint,
-              type: "touch",
-              screenRect: screen.getRect()
-            });
-            touchState.id = null;
-            touchState.startPoint = null;
-            touchState.lastPoint = null;
-          }
-          //there are still other touches; drag to it
-          else {
-            var nextTouch = evt.targetTouches[evt.targetTouches.length-1];
-            var point = touchPoint(nextTouch);
-            if(view.drag) view.drag({
-              point: point,
-              lastPoint: touchState.lastPoint,
-              startPoint: touchState.startPoint,
-              type: "touch",
-              screenRect: screen.getRect()
-            });
-            touchState.id = nextTouch.identifier;
-            touchState.lastPoint = point;
-          }
-          //done.
-          return;
-        }
-      }
-      //if it wasn't our touch, just ignore it. done.
-    }
-  };
+  }
 }
 
 nigelgame.sheets = {};
