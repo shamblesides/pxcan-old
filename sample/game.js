@@ -4,7 +4,6 @@ function init(el) {
   game.addSheet("img/bg.png", "bg");
   game.addSheet("img/ascii.png", "ascii", 8, 8);
   game.addSheet("img/uibox.png", "uibox", 8, 8);
-  game.addJSON("data/data.json", "gameobj");
   game.bind('right', 68, 39);
   game.bind('left', 65, 37);
   game.bind('up', 87, 38);
