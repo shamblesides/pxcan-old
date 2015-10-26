@@ -3,7 +3,22 @@
 	<head>
 		<meta charset="utf-8">
 		<title>Sample Game</title>
-		<link rel="stylesheet" type="text/css" href="game.css">
+		<style>
+      body {
+        background-color: #303030;
+      }
+      div#game {
+        display: block;
+        width: 352px;
+        height: 288px;
+        padding: 0;
+        margin: 24px auto;
+        border: 8px solid #404040;
+      }
+      div#game:focus {
+        border: 8px solid #FFF;
+      }
+    </style>
 		<script src="../build/nigelgame.js"></script>
 		<script src="game.js"></script>
 	</head>

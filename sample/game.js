@@ -23,6 +23,7 @@ TitleView.prototype.update = function(e) {
   if(e.viewClock > 0 && !e.screen.wasResized) return;
   //draw title elements
   e.screen.reset();
+  e.screen.setBackground('black');
   e.screen.font = 'ascii';
   var panel = e.screen.panel(0, -20, 100, 30, 0, 1);
   panel.fill('#666');

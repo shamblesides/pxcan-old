@@ -1,3 +1,7 @@
+nigelgame.Screen.prototype.setBackground = function(bg) {
+  this.canvas.style.background = bg;
+};
+
 nigelgame.Screen.prototype.toCanvasCoords =
 nigelgame.Panel.prototype.toCanvasCoords = function(x, y, w, h, xAnc, yAnc) {
   // make sure we got the right number of args

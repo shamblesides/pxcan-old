@@ -451,6 +451,13 @@ nigelgame.Screen = function(element) {
   canvas.style.margin = 'auto';
   // drawing context
   var context = canvas.getContext('2d');
+  // if we're adding it to the WINDOW then make sure it is fullscreeny
+  if(element == window) {
+    var body = document.querySelector('body');
+    body.style.padding = 0;
+    body.style.margin = 0;
+    body.style.overflow = 'hidden';
+  }
   // put canvas on page
   ((element !== window)? element: document.getElementsByTagName('body')[0]).appendChild(canvas);
   // make it selectable (if it's not just in the window)
@@ -696,6 +703,10 @@ nigelgame.Panel.prototype.panel = function(x, y, w, h, xAnchor, yAnchor) {
     return new nigelgame.Panel(this, x, y, w, h, xAnchor, yAnchor);
   else
     throw new Error('invalid number of arguments.');
+};
+
+nigelgame.Screen.prototype.setBackground = function(bg) {
+  this.canvas.style.background = bg;
 };
 
 nigelgame.Screen.prototype.toCanvasCoords =
