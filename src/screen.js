@@ -214,22 +214,19 @@ nigelgame.Panel = function(parent, x, y, w, h, xAnchor, yAnchor) {
   var font = null;
   var _origin = parent.origin();
   var _offset = parent.offset();
+  var screen = parent.screen || parent;
   
   // subcanvas size
   this.canvasOffX = Math.round(parent.canvasOffX + x + parent.width*(parent.origin().x+1)/2 - w*(xAnchor+1)/2);
   this.canvasOffY = Math.round(parent.canvasOffY + y + parent.height*(parent.origin().y+1)/2 - h*(yAnchor+1)/2);
   var width = Math.round(w);
   var height = Math.round(h);
-  // verify it fits within the parent
-  if(this.canvasOffX < parent.canvasOffX) throw new Error('panel does not fit within its parent.');
-  if(this.canvasOffY < parent.canvasOffY) throw new Error('panel does not fit within its parent.');
-  if(this.canvasOffX + w > parent.canvasOffX + parent.width) throw new Error('panel does not fit within its parent.');
-  if(this.canvasOffY + h > parent.canvasOffY + parent.height) throw new Error('panel does not fit within its parent.');
   
   // public properties
-  Object.defineProperty(this, 'element', { get: function() { return parent.element; } });
-  Object.defineProperty(this, 'canvas', { get: function() { return parent.canvas; } });
-  Object.defineProperty(this, 'context', { get: function() { return parent.context; } });
+  Object.defineProperty(this, 'screen', { get: function() { return screen; } });
+  Object.defineProperty(this, 'element', { get: function() { return screen.element; } });
+  Object.defineProperty(this, 'canvas', { get: function() { return screen.canvas; } });
+  Object.defineProperty(this, 'context', { get: function() { return screen.context; } });
   Object.defineProperty(this, 'left', { get: function() {
     return Math.round(_offset.x - (width * (_origin.x + 1) / 2));
   } });
@@ -240,7 +237,7 @@ nigelgame.Panel = function(parent, x, y, w, h, xAnchor, yAnchor) {
   Object.defineProperty(this, 'bottom', { get: function() { return this.top + height; } });
   Object.defineProperty(this, 'width', { get: function() { return width; } });
   Object.defineProperty(this, 'height', { get: function() { return height; } });
-  Object.defineProperty(this, 'drawScale', { get: function() { return parent.drawScale; } });
+  Object.defineProperty(this, 'drawScale', { get: function() { return screen.drawScale; } });
   Object.defineProperty(this, 'font', {
     set: function(x) {
       if(!nigelgame.sheets[x]) throw new Error('invalid font: ' + x);

@@ -14,10 +14,10 @@ nigelgame.Panel.prototype.toCanvasCoords = function(x, y, w, h, xAnc, yAnc) {
   var l = Math.round(this.canvasOffX + x + this.offset().x + this.width * (this.origin().x+1)/2 - (w || 0) * (xAnc+1)/2);
   var t = Math.round(this.canvasOffY + y + this.offset().y + this.height * (this.origin().y+1)/2 - (h || 0) * (yAnc+1)/2);
   // how much may need to be cut off the sides for sprites
-  var lcut = Math.max(0, this.canvasOffX-l);
-  var tcut = Math.max(0, this.canvasOffY-t);
-  var rcut = Math.max(0, (l+w)-(this.canvasOffX+this.width));
-  var bcut = Math.max(0, (t+h)-(this.canvasOffY+this.height));
+  var lcut = Math.max(0, this.canvasOffX-l, -l);
+  var tcut = Math.max(0, this.canvasOffY-t, -t);
+  var rcut = Math.max(0, (l+w)-(this.canvasOffX+this.width), (l+w)-((this.screen||this).width));
+  var bcut = Math.max(0, (t+h)-(this.canvasOffY+this.height), (t+h)-((this.screen||this).height));
   // return null if the object didn't make it on the screen
   if(lcut+rcut >= w || tcut+bcut >= h) return null;
   // otherwise return a nice object
