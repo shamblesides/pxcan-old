@@ -583,13 +583,6 @@ nigelgame.Screen = function(element) {
     if(mode.name === 'adapt') fitAdapt(w, h);
     else if(mode.name === 'fixed') fitFixed(w, h);
     else if(mode.name === 'scale-overflow') fitScaleOverflow(w, h);
-    // make sure the pixels are crispy if it's scaled up
-    if(scale > 1) {
-      this.context.webkitImageSmoothingEnabled =
-        this.context.imageSmoothingEnabled =
-        this.context.mozImageSmoothingEnabled =
-        this.context.oImageSmoothingEnabled = false;
-    }
     // if the view is the whole window, then keep it at the right location
     if(element === window) {
       window.scrollTo(0, 0);
