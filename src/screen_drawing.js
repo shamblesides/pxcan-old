@@ -123,10 +123,11 @@ nigelgame.Panel.prototype.blit = function(sheetName, frame /* [flip], x, y, [xAn
   // draw it to the screen
   this.context.drawImage(
     // image
-    sprite.img,
+    sprite.scaledImage(this.drawScale),
     // location on the spritesheet
-    sprite.left + (xflip?coords.rcut:coords.lcut), sprite.top + (yflip?coords.bcut:coords.tcut),
-    coords.width, coords.height,
+    (sprite.left + (xflip?coords.rcut:coords.lcut)) * this.drawScale,
+    (sprite.top + (yflip?coords.bcut:coords.tcut)) * this.drawScale,
+    coords.width * this.drawScale, coords.height * this.drawScale,
     // location on screen
     this.canvas.width*xflip + (coords.x*(xflip?-1:1) - coords.width*xflip) * this.drawScale,
     this.canvas.height*yflip + (coords.y*(yflip?-1:1) - coords.height*yflip) * this.drawScale,
@@ -174,9 +175,10 @@ nigelgame.Panel.prototype.write = function(text, x, y, options) {
       // draw it to the screen
       this.context.drawImage(
         // image
-        sprite.img,
+        sprite.scaledImage(this.drawScale),
         // location on the spritesheet
-        sprite.left, sprite.top, sprite.width, sprite.height,
+        sprite.left * this.drawScale, sprite.top * this.drawScale,
+        sprite.width * this.drawScale, sprite.height * this.drawScale,
         // location on screen
         (coords.x + indent + (c * ltrWidth)) * this.drawScale,
         (coords.y + (r * ltrHeight)) * this.drawScale,
