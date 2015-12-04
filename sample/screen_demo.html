@@ -1,0 +1,55 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Sample Game</title>
+  <style>
+    body {
+      background-color: #303030;
+    }
+    div#game {
+      display: block;
+      width: 352px;
+      height: 288px;
+      padding: 0;
+      margin: 24px auto;
+      border: 8px solid #404040;
+    }
+    div#game:focus {
+      border: 8px solid #FFF;
+    }
+  </style>
+  <script src="../build/nigelgame.js"></script>
+  <script src="game.js"></script>
+</head>
+<body>
+  <div id="game"></div>
+  <script>
+    // create screen
+    var screen = new pxcan("#game");
+    screen.preload("img/bg.png", "bg");
+    screen.preload("img/chara.png", "chara", 20, 20);
+    screen.mode("adapt", 3);
+    screen.origin(0,0);
+    screen.offset(0,0);
+    screen.setBackground("black");
+    
+    screen.onReady(function() {
+      this.clear();
+      this.blit('bg', null, 0, 0);
+      this.border();
+      this.write('hello', 0, 0);
+      this.fill('grey', 0,0, 2,2);
+      this.clear();
+    });
+    /*
+    screen.onFrame(function() {
+    });
+    */
+    // clear
+    // reset
+    // font
+    // panel
+  </script>
+</body>
+</html>

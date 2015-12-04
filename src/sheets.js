@@ -1,16 +1,12 @@
-nigelgame.Sheet = function(alias, img, src, spriteWidth, spriteHeight) {
+pxcan.Sheet = function(alias, src, spriteWidth, spriteHeight) {
   // calculate some defaults and extra values
+  var sheetImages = pxcan.images[src];
+  var img = sheetImages.image;
   spriteWidth = spriteWidth || img.width;
   spriteHeight = spriteHeight || img.height;
   var numCols = Math.floor(img.width / spriteWidth);
   var numRows = Math.floor(img.height / spriteHeight);
   var numSprites = numCols * numRows;
-  
-  var imgScales = {};
-  imgScales[1] = document.createElement("canvas");
-  imgScales[1].width = img.width;
-  imgScales[1].height = img.height;
-  imgScales[1].getContext('2d').drawImage(img, 0, 0);
   
   // properties
   Object.defineProperty(this, 'alias', { get: function() { return alias; } });
@@ -27,33 +23,15 @@ nigelgame.Sheet = function(alias, img, src, spriteWidth, spriteHeight) {
   Object.defineProperty(this, 'numSprites', { get: function() { return numSprites; } });
   
   this.scaledImage = function(scale) {
-    if(imgScales[scale]) return imgScales[scale];
-    
-    var c = document.createElement("canvas");
-    c.width = img.width * scale;
-    c.height = img.height * scale;
-    var con = c.getContext('2d');
-    
-    var data = imgScales[1].getContext('2d').getImageData(0,0,img.width,img.height).data;
-    var i = 0;
-    for(var y = 0; y < img.height; ++y) {
-      for(var x = 0; x < img.width; ++x) {
-        con.fillStyle = 'rgba('+data[i]+','+data[i+1]+','+data[i+2]+','+data[i+3]+')';
-        con.fillRect(x*scale, y*scale, scale, scale);
-        i+=4;
-      }
-    }
-    
-    imgScales[scale] = c;
-    return c;
+    return sheetImages.scaledImage(scale);
   }
 };
 
-nigelgame.Sheet.prototype.getSprite = function(frame) {
-  return new nigelgame.Sprite(this, frame);
+pxcan.Sheet.prototype.getSprite = function(frame) {
+  return new pxcan.Sprite(this, frame);
 };
 
-nigelgame.Sprite = function(sheet, frame) {
+pxcan.Sprite = function(sheet, frame) {
   // validate frame
   if(frame === undefined || frame === null)
     throw new Error('bad frame while constructing sprite');

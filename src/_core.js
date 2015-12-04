@@ -8,30 +8,6 @@ function nigelgame(element) {
   this.setScreenSize = function() { screen.setSize.apply(screen, arguments); };
   this.setScreenScale = function() { screen.setScale.apply(screen, arguments); };
   
-  this.addSheet = function(src, alias, w, h) {
-    if(!src) throw "missing source image";
-    if(!alias) throw "missing alias";
-    if(nigelgame.sheets[alias]) {
-      var oldsheet = nigelgame.sheets[alias];
-      if(oldsheet.src === src) return;
-      else throw "Sheet already defined with alias " + oldsheet.alias + "(" + oldsheet.src + ", " + src + ")";
-    }
-    ++resourceReqs;
-    var img = new Image();
-    img.onload = onLoadedFile;
-    img.onerror = function() { throw "Failed to load image " + src; };
-    img.src = src;
-    
-    function onLoadedFile() {
-      nigelgame.sheets[alias] = new nigelgame.Sheet(alias, img, src, w, h);
-      --resourceReqs;
-      if(resourceReqs === 0 && resourceCallback) {
-        resourceCallback();
-        resourceCallback = null;
-      }
-    }
-  };
-  
   this.addJSON = function(src, alias) {
     if(!src) throw "missing json source filename";
     if(!alias) throw "missing alias";

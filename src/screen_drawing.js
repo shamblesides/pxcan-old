@@ -1,9 +1,9 @@
-nigelgame.Screen.prototype.setBackground = function(bg) {
-  this.canvas.style.background = bg;
+pxcan.prototype.setBackground = function(bg) {
+  this.element.style.background = bg;
 };
 
-nigelgame.Screen.prototype.toCanvasCoords =
-nigelgame.Panel.prototype.toCanvasCoords = function(x, y, w, h, xAnc, yAnc) {
+pxcan.prototype.toCanvasCoords =
+pxcan.Panel.prototype.toCanvasCoords = function(x, y, w, h, xAnc, yAnc) {
   // make sure we got the right number of args
   if(arguments.length !== 6)
     throw new Error('toCanvasCoords requires 6 arguments');
@@ -27,14 +27,14 @@ nigelgame.Panel.prototype.toCanvasCoords = function(x, y, w, h, xAnc, yAnc) {
   };
 };
 
-nigelgame.Screen.prototype.clear = 
-nigelgame.Panel.prototype.clear = function(x, y, w, h, xAnc, yAnc) {
+pxcan.prototype.clear = 
+pxcan.Panel.prototype.clear = function(x, y, w, h, xAnc, yAnc) {
   // verify valid arguments
   if([0, 4, 6].indexOf(arguments.length) === -1)
     throw new Error('bad arguments for clear');
   // if no arguments are provided, clear the whole area
   if(arguments.length === 0) {
-    if(this instanceof nigelgame.Screen) {
+    if(this instanceof pxcan) {
       this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
     else {
@@ -54,14 +54,14 @@ nigelgame.Panel.prototype.clear = function(x, y, w, h, xAnc, yAnc) {
   this.context.clearRect(coords.x * this.drawScale, coords.y * this.drawScale, coords.width * this.drawScale, coords.height * this.drawScale);
 };
 
-nigelgame.Screen.prototype.reset = function() {
+pxcan.prototype.reset = function() {
   this.clear();
   this.origin(0, 0);
   this.offset(0, 0);
 };
 
-nigelgame.Screen.prototype.fill =
-nigelgame.Panel.prototype.fill = function(color, x, y, w, h, xAnc, yAnc) {
+pxcan.prototype.fill =
+pxcan.Panel.prototype.fill = function(color, x, y, w, h, xAnc, yAnc) {
   // verify valid arguments
   if([1, 5, 7].indexOf(arguments.length) === -1)
     throw new Error('bad arguments for fill');
@@ -70,7 +70,7 @@ nigelgame.Panel.prototype.fill = function(color, x, y, w, h, xAnc, yAnc) {
   this.context.fillStyle = color;
   // if only the color is provided, fill the whole area
   if(arguments.length === 1) {
-    if(this instanceof nigelgame.Screen) {
+    if(this instanceof pxcan) {
       this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
     }
     else {
@@ -93,8 +93,8 @@ nigelgame.Panel.prototype.fill = function(color, x, y, w, h, xAnc, yAnc) {
   this.context.fillStyle = temp;
 };
 
-nigelgame.Screen.prototype.blit =
-nigelgame.Panel.prototype.blit = function(sheetName, frame /* [flip], x, y, [xAnc, yAnc] */) {
+pxcan.prototype.blit =
+pxcan.Panel.prototype.blit = function(sheetName, frame /* [flip], x, y, [xAnc, yAnc] */) {
   // verify valid arguments
   if([4,5,6,7].indexOf(arguments.length) === -1)
     throw new Error('bad arguments for blit');
@@ -105,7 +105,7 @@ nigelgame.Panel.prototype.blit = function(sheetName, frame /* [flip], x, y, [xAn
   var xAnc = arguments.length>=6? arguments[arguments.length-2]: null;
   var yAnc = arguments.length>=6? arguments[arguments.length-1]: null;
   // get the sheet
-  var sheet = nigelgame.sheets[sheetName];
+  var sheet = this.sheets[sheetName];
   if(!sheet) throw new Error('unknown sheet: ' + sheetName);
   // if a particular sprite is specified, get it
   var sprite = (frame !== undefined && frame !== null)?
@@ -140,10 +140,10 @@ nigelgame.Panel.prototype.blit = function(sheetName, frame /* [flip], x, y, [xAn
   }
 };
 
-nigelgame.Screen.prototype.write =
-nigelgame.Panel.prototype.write = function(text, x, y, options) {
+pxcan.prototype.write =
+pxcan.Panel.prototype.write = function(text, x, y, options) {
   // verify font
-  var font = nigelgame.sheets[this.font];
+  var font = this.sheets[this.font];
   // options
   options = options || {};
   if(options.cols || options.rows)
@@ -188,21 +188,22 @@ nigelgame.Panel.prototype.write = function(text, x, y, options) {
   }
 };
 
-nigelgame.Screen.prototype.border =
-nigelgame.Panel.prototype.border = function(sheet) {
+pxcan.prototype.border =
+pxcan.Panel.prototype.border = function(sheet) {
+  sheet = sheet || "pxcan-border";
   // temporarily store origin and offset, then set them
   var oldOrigin = this.origin();
   var oldOffset = this.offset();
   this.origin(-1,-1);
   this.offset(0,0);
   // horizontal edges
-  var sw = nigelgame.sheets[sheet].spriteWidth;
+  var sw = this.sheets[sheet].spriteWidth;
   for(var x = sw; x < this.width - sw; x += sw) {
     this.blit(sheet, {col:1, row:0}, x, 0, -1, -1);
     this.blit(sheet, {col:1, row:2}, x, this.height, -1, 1);
   }
   // vertical edges
-  var sh = nigelgame.sheets[sheet].spriteHeight;
+  var sh = this.sheets[sheet].spriteHeight;
   for(var y = sh; y < this.height - sh; y += sh) {
     this.blit(sheet, {col:0, row:1}, 0, y, -1, -1);
     this.blit(sheet, {col:2, row:1}, this.width, y, 1, -1);
