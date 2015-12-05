@@ -1,29 +1,20 @@
 pxcan.Sheet = function(alias, src, spriteWidth, spriteHeight) {
-  // calculate some defaults and extra values
-  var sheetImages = pxcan.images[src];
-  var img = sheetImages.image;
-  spriteWidth = spriteWidth || img.width;
-  spriteHeight = spriteHeight || img.height;
-  var numCols = Math.floor(img.width / spriteWidth);
-  var numRows = Math.floor(img.height / spriteHeight);
-  var numSprites = numCols * numRows;
-  
   // properties
   Object.defineProperty(this, 'alias', { get: function() { return alias; } });
-  Object.defineProperty(this, 'img', { get: function() { return img; } });
+  Object.defineProperty(this, 'img', { get: function() { return pxcan.image(src); } });
   Object.defineProperty(this, 'src', { get: function() { return src; } });
   Object.defineProperty(this, 'left', { get: function() { return 0; } });
   Object.defineProperty(this, 'top', { get: function() { return 0; } });
-  Object.defineProperty(this, 'width', { get: function() { return img.width; } });
-  Object.defineProperty(this, 'height', { get: function() { return img.height; } });
-  Object.defineProperty(this, 'spriteWidth', { get: function() { return spriteWidth; } });
-  Object.defineProperty(this, 'spriteHeight', { get: function() { return spriteHeight; } });
-  Object.defineProperty(this, 'numCols', { get: function() { return numCols; } });
-  Object.defineProperty(this, 'numRows', { get: function() { return numRows; } });
-  Object.defineProperty(this, 'numSprites', { get: function() { return numSprites; } });
+  Object.defineProperty(this, 'width', { get: function() { return this.img.width; } });
+  Object.defineProperty(this, 'height', { get: function() { return this.img.height; } });
+  Object.defineProperty(this, 'spriteWidth', { get: function() { return spriteWidth || this.img.width; } });
+  Object.defineProperty(this, 'spriteHeight', { get: function() { return spriteHeight || this.img.height; } });
+  Object.defineProperty(this, 'numCols', { get: function() { return Math.floor(this.img.width / spriteWidth); } });
+  Object.defineProperty(this, 'numRows', { get: function() { return Math.floor(this.img.height / spriteHeight); } });
+  Object.defineProperty(this, 'numSprites', { get: function() { return this.numCols * this.numRows; } });
   
   this.scaledImage = function(scale) {
-    return sheetImages.scaledImage(scale);
+    return pxcan.scaledImage(src, scale);
   }
 };
 
@@ -52,5 +43,5 @@ pxcan.Sprite = function(sheet, frame) {
   Object.defineProperty(this, 'width', { get: function() { return fw; } });
   Object.defineProperty(this, 'height', { get: function() { return fh; } });
   
-  this.scaledImage = function(scale) { return sheet.scaledImage(scale); }
+  this.scaledImage = function(scale) { return pxcan.scaledImage(sheet.src, scale); }
 };

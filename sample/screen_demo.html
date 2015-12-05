@@ -34,14 +34,13 @@
     screen.offset(0,0);
     screen.setBackground("black");
     
-    screen.onReady(function() {
+    screen.onReady = function() {
       this.clear();
       this.blit('bg', null, 0, 0);
       this.border();
       this.write('hello', 0, 0);
       this.fill('grey', 0,0, 2,2);
-      this.clear();
-    });
+    };
     /*
     screen.onFrame(function() {
     });
