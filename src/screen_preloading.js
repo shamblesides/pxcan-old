@@ -47,7 +47,7 @@
       }
       return;
     }
-    else {
+    else if(pxc) {
       waitingOn[src] = [pxc.id];
     }
     
@@ -71,17 +71,19 @@
       imgBank[src].scaledImages[1].height = img.height;
       imgBank[src].scaledImages[1].getContext('2d').drawImage(img, 0, 0);
       //alert pxcans
-      for(var i = 0; i < waitingOn[src].length; ++i) {
-        var pid = waitingOn[src][i];
-        --numReqs[pid];
-        if(numReqs[pid] === 0 && pxcans[pid].onReady) {
-          var p = pxcans[pid];
-          p.onReady.call(p);
-          p.onReady = null;
-          delete pxcans[pid];
+      if(waitingOn[src]) {
+        for(var i = 0; i < waitingOn[src].length; ++i) {
+          var pid = waitingOn[src][i];
+          --numReqs[pid];
+          if(numReqs[pid] === 0 && pxcans[pid].onReady) {
+            var p = pxcans[pid];
+            p.onReady.call(p);
+            p.onReady = null;
+            delete pxcans[pid];
+          }
         }
+        delete waitingOn[src];
       }
-      delete waitingOn[src];
     }
   };
   pxcan.hasImage = function(src) {
@@ -117,5 +119,5 @@
     //cache and return
     imgBank[src].scaledImages[scale] = c;
     return c;
-  }
+  };
 })();

@@ -12,10 +12,10 @@ pxcan.Sheet = function(alias, src, spriteWidth, spriteHeight) {
   Object.defineProperty(this, 'numCols', { get: function() { return Math.floor(this.img.width / spriteWidth); } });
   Object.defineProperty(this, 'numRows', { get: function() { return Math.floor(this.img.height / spriteHeight); } });
   Object.defineProperty(this, 'numSprites', { get: function() { return this.numCols * this.numRows; } });
-  
-  this.scaledImage = function(scale) {
-    return pxcan.scaledImage(src, scale);
-  }
+};
+
+pxcan.Sheet.prototype.scaledImage = function(scale) {
+  return pxcan.scaledImage(this.src, scale);
 };
 
 pxcan.Sheet.prototype.getSprite = function(frame) {
@@ -37,11 +37,14 @@ pxcan.Sprite = function(sheet, frame) {
   var fh = frame.height!==undefined? frame.height: (frame.row!==undefined? sheet.spriteHeight: sheet.height-fy);
   
   // properties
+  Object.defineProperty(this, 'sheet', { get: function() { return sheet; } });
   Object.defineProperty(this, 'img', { get: function() { return sheet.img; } });
   Object.defineProperty(this, 'left', { get: function() { return fx; } });
   Object.defineProperty(this, 'top', { get: function() { return fy; } });
   Object.defineProperty(this, 'width', { get: function() { return fw; } });
   Object.defineProperty(this, 'height', { get: function() { return fh; } });
-  
-  this.scaledImage = function(scale) { return pxcan.scaledImage(sheet.src, scale); }
+};
+
+pxcan.Sprite.prototype.scaledImage = function(scale) {
+  return pxcan.scaledImage(this.sheet.src, scale);
 };

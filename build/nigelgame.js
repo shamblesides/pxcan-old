@@ -411,7 +411,6 @@ var pxcan = function(element) {
   // vars
   element = element || window;
   if(typeof(element) === 'string') element = document.querySelector(element);
-  var screen = this;
   var mode = { name: 'adapt' };
   var width = element.clientWidth || element.innerWidth;
   var height = element.clientHeight || element.innerWidth;
@@ -420,7 +419,6 @@ var pxcan = function(element) {
   var prevDims = null;
   var font = "pxcan-ascii";
   var sheets = {};
-  var resourceReqs = 0;
   var _origin = { x: 0, y: 0 };
   var _offset = { x: 0, y: 0 };
   
@@ -458,12 +456,11 @@ var pxcan = function(element) {
   Object.defineProperty(this, 'bottom', { get: function() { return this.top + height; } });
   Object.defineProperty(this, 'width', { get: function() { return width; } });
   Object.defineProperty(this, 'height', { get: function() { return height; } });
-  Object.defineProperty(this, 'sheets', { get: function() { return sheets; } });
   Object.defineProperty(this, 'drawScale', { get: function() { return scale; } });
   Object.defineProperty(this, 'wasResized', { get: function() { return needsRepaint; } });
   Object.defineProperty(this, 'font', {
     set: function(x) {
-      if(!sheets[x]) throw new Error('invalid font: ' + x);
+      if(!this.hasSheet(x)) throw new Error('invalid font: ' + x);
       font = x;
     },
     get: function() {
@@ -475,15 +472,24 @@ var pxcan = function(element) {
   Object.defineProperty(this, 'onFrame', { writable: true });
   
   this.preload = function(src, alias, w, h) {
-    if(!alias && alias !== 0) throw "missing alias";
-    if(sheets[alias]) throw "sheet already exists with alias " + alias;
+    if(!alias && alias !== 0) throw new Error("missing alias");
+    if(sheets[alias]) throw new Error("sheet already exists with alias " + alias);
+    if(pxcan.globalSheets[alias]) throw new Error("global sheet already exists with alias " + alias);
     if(!pxcan.hasImage(src)) {
       pxcan.preload(src, this);
     }
     sheets[alias] = new pxcan.Sheet(alias, src, w, h);
   };
-  this.preload("data:image/png;base64,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", "pxcan-ascii", 8, 8);
-  this.preload("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAhElEQVRIie2WwQrAIAxDU/H/fzk7CdHVwdYWdjCXipQX04NqJIlCdVkbAG5q2EAh3NSQgUJCJxaeAaAm+DqONaEpp22a3mgCrrwmTVG5jIwEj8pM4HKa15WpY3AM/m3AagOrNrglyLouJp4aZF1400u4vmhZJmMa7IiPxvsojH1Y9bflAvhRIjH91XRBAAAAAElFTkSuQmCC", "pxcan-border", 8, 8);
+  
+  this.sheet = function(src) {
+    if(sheets[src]) return sheets[src];
+    if(pxcan.globalSheets[src]) return pxcan.globalSheets[src];
+    throw new Error("invalid sheet: " + src);
+  };
+  
+  this.hasSheet = function(src) {
+    return !!(sheets[src] || pxcan.globalSheets[src]);
+  };
   
   this.origin = function(x, y) {
     if(arguments.length === 0) return { x: _origin.x, y: _origin.y };
@@ -663,7 +669,7 @@ pxcan.Panel = function(parent, x, y, w, h, xAnchor, yAnchor) {
   Object.defineProperty(this, 'drawScale', { get: function() { return screen.drawScale; } });
   Object.defineProperty(this, 'font', {
     set: function(x) {
-      if(!screen.sheets[x]) throw new Error('invalid font: ' + x);
+      if(!this.hasSheet(x)) throw new Error('invalid font: ' + x);
       font = x;
     },
     get: function() { return font || parent.font; }
@@ -799,7 +805,7 @@ pxcan.Panel.prototype.blit = function(sheetName, frame /* [flip], x, y, [xAnc, y
   var xAnc = arguments.length>=6? arguments[arguments.length-2]: null;
   var yAnc = arguments.length>=6? arguments[arguments.length-1]: null;
   // get the sheet
-  var sheet = this.sheets[sheetName];
+  var sheet = this.sheet(sheetName);
   if(!sheet) throw new Error('unknown sheet: ' + sheetName);
   // if a particular sprite is specified, get it
   var sprite = (frame !== undefined && frame !== null)?
@@ -837,7 +843,7 @@ pxcan.Panel.prototype.blit = function(sheetName, frame /* [flip], x, y, [xAnc, y
 pxcan.prototype.write =
 pxcan.Panel.prototype.write = function(text, x, y, options) {
   // verify font
-  var font = this.sheets[this.font];
+  var font = this.sheet(this.font);
   // options
   options = options || {};
   if(options.cols || options.rows)
@@ -891,13 +897,13 @@ pxcan.Panel.prototype.border = function(sheet) {
   this.origin(-1,-1);
   this.offset(0,0);
   // horizontal edges
-  var sw = this.sheets[sheet].spriteWidth;
+  var sw = this.sheet(sheet).spriteWidth;
   for(var x = sw; x < this.width - sw; x += sw) {
     this.blit(sheet, {col:1, row:0}, x, 0, -1, -1);
     this.blit(sheet, {col:1, row:2}, x, this.height, -1, 1);
   }
   // vertical edges
-  var sh = this.sheets[sheet].spriteHeight;
+  var sh = this.sheet(sheet).spriteHeight;
   for(var y = sh; y < this.height - sh; y += sh) {
     this.blit(sheet, {col:0, row:1}, 0, y, -1, -1);
     this.blit(sheet, {col:2, row:1}, this.width, y, 1, -1);
@@ -961,7 +967,7 @@ pxcan.Panel.prototype.border = function(sheet) {
       }
       return;
     }
-    else {
+    else if(pxc) {
       waitingOn[src] = [pxc.id];
     }
     
@@ -985,17 +991,19 @@ pxcan.Panel.prototype.border = function(sheet) {
       imgBank[src].scaledImages[1].height = img.height;
       imgBank[src].scaledImages[1].getContext('2d').drawImage(img, 0, 0);
       //alert pxcans
-      for(var i = 0; i < waitingOn[src].length; ++i) {
-        var pid = waitingOn[src][i];
-        --numReqs[pid];
-        if(numReqs[pid] === 0 && pxcans[pid].onReady) {
-          var p = pxcans[pid];
-          p.onReady.call(p);
-          p.onReady = null;
-          delete pxcans[pid];
+      if(waitingOn[src]) {
+        for(var i = 0; i < waitingOn[src].length; ++i) {
+          var pid = waitingOn[src][i];
+          --numReqs[pid];
+          if(numReqs[pid] === 0 && pxcans[pid].onReady) {
+            var p = pxcans[pid];
+            p.onReady.call(p);
+            p.onReady = null;
+            delete pxcans[pid];
+          }
         }
+        delete waitingOn[src];
       }
-      delete waitingOn[src];
     }
   };
   pxcan.hasImage = function(src) {
@@ -1031,7 +1039,7 @@ pxcan.Panel.prototype.border = function(sheet) {
     //cache and return
     imgBank[src].scaledImages[scale] = c;
     return c;
-  }
+  };
 })();
 
 
@@ -1049,10 +1057,10 @@ pxcan.Sheet = function(alias, src, spriteWidth, spriteHeight) {
   Object.defineProperty(this, 'numCols', { get: function() { return Math.floor(this.img.width / spriteWidth); } });
   Object.defineProperty(this, 'numRows', { get: function() { return Math.floor(this.img.height / spriteHeight); } });
   Object.defineProperty(this, 'numSprites', { get: function() { return this.numCols * this.numRows; } });
-  
-  this.scaledImage = function(scale) {
-    return pxcan.scaledImage(src, scale);
-  }
+};
+
+pxcan.Sheet.prototype.scaledImage = function(scale) {
+  return pxcan.scaledImage(this.src, scale);
 };
 
 pxcan.Sheet.prototype.getSprite = function(frame) {
@@ -1074,11 +1082,33 @@ pxcan.Sprite = function(sheet, frame) {
   var fh = frame.height!==undefined? frame.height: (frame.row!==undefined? sheet.spriteHeight: sheet.height-fy);
   
   // properties
+  Object.defineProperty(this, 'sheet', { get: function() { return sheet; } });
   Object.defineProperty(this, 'img', { get: function() { return sheet.img; } });
   Object.defineProperty(this, 'left', { get: function() { return fx; } });
   Object.defineProperty(this, 'top', { get: function() { return fy; } });
   Object.defineProperty(this, 'width', { get: function() { return fw; } });
   Object.defineProperty(this, 'height', { get: function() { return fh; } });
-  
-  this.scaledImage = function(scale) { return pxcan.scaledImage(sheet.src, scale); }
 };
+
+pxcan.Sprite.prototype.scaledImage = function(scale) {
+  return pxcan.scaledImage(this.sheet.src, scale);
+};
+
+pxcan.globalSheets = {};
+
+(function() {
+  function registerGlobalSheet(src, alias, w, h) {
+    pxcan.preload(src);
+    pxcan.globalSheets[alias] = new pxcan.Sheet(alias, src, w, h);
+  }
+  
+  registerGlobalSheet(
+    "data:image/png;base64,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",
+    "pxcan-ascii", 8, 8
+  );
+  registerGlobalSheet(
+    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAhElEQVRIie2WwQrAIAxDU/H/fzk7CdHVwdYWdjCXipQX04NqJIlCdVkbAG5q2EAh3NSQgUJCJxaeAaAm+DqONaEpp22a3mgCrrwmTVG5jIwEj8pM4HKa15WpY3AM/m3AagOrNrglyLouJp4aZF1400u4vmhZJmMa7IiPxvsojH1Y9bflAvhRIjH91XRBAAAAAElFTkSuQmCC",
+    "pxcan-border", 8, 8
+  );
+
+})();

@@ -105,7 +105,7 @@ pxcan.Panel.prototype.blit = function(sheetName, frame /* [flip], x, y, [xAnc, y
   var xAnc = arguments.length>=6? arguments[arguments.length-2]: null;
   var yAnc = arguments.length>=6? arguments[arguments.length-1]: null;
   // get the sheet
-  var sheet = this.sheets[sheetName];
+  var sheet = this.sheet(sheetName);
   if(!sheet) throw new Error('unknown sheet: ' + sheetName);
   // if a particular sprite is specified, get it
   var sprite = (frame !== undefined && frame !== null)?
@@ -143,7 +143,7 @@ pxcan.Panel.prototype.blit = function(sheetName, frame /* [flip], x, y, [xAnc, y
 pxcan.prototype.write =
 pxcan.Panel.prototype.write = function(text, x, y, options) {
   // verify font
-  var font = this.sheets[this.font];
+  var font = this.sheet(this.font);
   // options
   options = options || {};
   if(options.cols || options.rows)
@@ -197,13 +197,13 @@ pxcan.Panel.prototype.border = function(sheet) {
   this.origin(-1,-1);
   this.offset(0,0);
   // horizontal edges
-  var sw = this.sheets[sheet].spriteWidth;
+  var sw = this.sheet(sheet).spriteWidth;
   for(var x = sw; x < this.width - sw; x += sw) {
     this.blit(sheet, {col:1, row:0}, x, 0, -1, -1);
     this.blit(sheet, {col:1, row:2}, x, this.height, -1, 1);
   }
   // vertical edges
-  var sh = this.sheets[sheet].spriteHeight;
+  var sh = this.sheet(sheet).spriteHeight;
   for(var y = sh; y < this.height - sh; y += sh) {
     this.blit(sheet, {col:0, row:1}, 0, y, -1, -1);
     this.blit(sheet, {col:2, row:1}, this.width, y, 1, -1);
