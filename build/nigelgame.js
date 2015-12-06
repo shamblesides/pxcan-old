@@ -667,6 +667,7 @@ pxcan.Panel = function(parent, x, y, w, h, xAnchor, yAnchor) {
   Object.defineProperty(this, 'width', { get: function() { return width; } });
   Object.defineProperty(this, 'height', { get: function() { return height; } });
   Object.defineProperty(this, 'drawScale', { get: function() { return screen.drawScale; } });
+  Object.defineProperty(this, 'sheet', { get: function() { return screen.sheet; } });
   Object.defineProperty(this, 'font', {
     set: function(x) {
       if(!this.hasSheet(x)) throw new Error('invalid font: ' + x);
