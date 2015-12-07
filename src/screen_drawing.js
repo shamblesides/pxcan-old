@@ -141,38 +141,41 @@ pxcan.Panel.prototype.blit = function(sheetName, frame /* [flip], x, y, [xAnc, y
 };
 
 pxcan.prototype.write =
-pxcan.Panel.prototype.write = function(text, x, y, options) {
-  //options:
-  // cols, rows
-  // anchorX, anchorY
-  // align
-  // get font
+pxcan.Panel.prototype.write = function(text, x, y /* [xAnc, yAnc], [align] */) {
+  // verify valid arguments
+  if([3,4,5,6].indexOf(arguments.length) === -1)
+    throw new Error('bad arguments for write');
+  // font
   var font = this.sheet(this.font);
-  // options
-  options = options || {};
-  if(options.cols || options.rows)
-    text = nigelgame.wrapString(text, options.cols, options.rows);
-  var anchor = (options && options.anchor) || {};
-  if(anchor.x === undefined) anchor.x = this.origin().x || 0;
-  if(anchor.y === undefined) anchor.y = this.origin().y || 0;
+  // anchor
+  var anchorX, anchorY;
+  if(arguments.length >= 5) {
+    anchorX = arguments[3];
+    anchorY = arguments[4];
+  }
+  else {
+    anchorX = this.origin().x;
+    anchorY = this.origin().y;
+  }
+  // text alignment
+  var align = 0;
+  if([4,6].indexOf(arguments.length) !== -1) {
+    align = arguments[arguments.length-1];
+    if(align === "left") align = 0;
+    else if(align === "center") align = 0.5;
+    else if(align === "right") align = 1;
+    else if(!(align >= 0 && align <= 1))
+      throw  new Error("unknown text alignment: " + align);
+  }
   // format text into lines & get max column width
   var lines = text.split('\n');
   var maxcol = 0;
   for(var i = 0; i < lines.length; ++i) maxcol = Math.max(lines[i].length, maxcol);
-  // how to align the text?
-  var align = 0;
-  if(options && options.align) {
-    if(options.align === "left") align = 0;
-    else if(options.align === "center") align = 0.5;
-    else if(options.align === "right") align = 1;
-    else if(options.align >= 0 && options.algin <= 1) align = options.align;
-    else throw "unknown text alignment: " + options.align;
-  }
   // where the top left char at
   var ltrWidth = font.spriteWidth;
   var ltrHeight = font.spriteHeight;
-  var leftx = Math.round(x - (maxcol - 1) * ltrWidth * ((anchor.x+1)/2));
-  var topy = Math.round(y - (lines.length - 1) * ltrHeight * ((anchor.y+1)/2));
+  var leftx = Math.round(x - (maxcol - 1) * ltrWidth * ((anchorX+1)/2));
+  var topy = Math.round(y - (lines.length - 1) * ltrHeight * ((anchorY+1)/2));
   // iterate
   for(var r = 0; r < lines.length; ++r) {
     var indent = Math.round((maxcol - lines[r].length) * align * ltrWidth);
@@ -180,7 +183,8 @@ pxcan.Panel.prototype.write = function(text, x, y, options) {
       this.blit(
         this.font, lines[r].charCodeAt(c) - 32, 
         leftx + indent + c * ltrWidth,
-        topy + r * ltrHeight
+        topy + r * ltrHeight,
+        anchorX, anchorY
       );
     }
   }
@@ -188,7 +192,6 @@ pxcan.Panel.prototype.write = function(text, x, y, options) {
 
 pxcan.prototype.border =
 pxcan.Panel.prototype.border = function(sheet) {
-  // TODO: fails to stay inside the parent panel
   sheet = sheet || "pxcan-border";
   // temporarily store origin and offset, then set them
   var oldOrigin = this.origin();
