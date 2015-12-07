@@ -34,12 +34,38 @@
     screen.offset(0,0);
     screen.setBackground("black");
     
+    function lottaWords(scr) {
+      var words = 'wait\nxxx';
+      scr.origin(1,1);
+      scr.write(words, 0, 0);
+      scr.origin(-1,1);
+      scr.write(words, 0, 0);
+      scr.origin(1,-1);
+      scr.write(words, 0, 0);
+      scr.origin(-1,-1);
+      scr.write(words, 0, 0, {align:'right'});
+      scr.origin(0,0);
+      scr.write(words, 0, 0, {align:'center'});
+      scr.fill('grey', 0,0, 2,2);
+    }
+    
     screen.onReady = function() {
       this.clear();
       this.blit('bg', null, 0, 0);
-      this.border();
-      this.write('hello', 0, 0);
-      this.fill('grey', 0,0, 2,2);
+      //this.border();
+      //lottaWords(this);
+      
+      var panel1 = this.panel(-10,-10,80,60);
+      panel1.clear();
+      panel1.blit('bg', null, 0, 0);
+      //panel1.border();
+      //lottaWords(panel1);
+      
+      var panel2 = panel1.panel(-5,-5, 50, 50);
+      panel2.clear();
+      //panel2.blit('bg', null, 0, 0);
+      panel2.border();
+      lottaWords(panel2);
     };
     /*
     screen.onFrame(function() {

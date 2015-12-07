@@ -843,7 +843,11 @@ pxcan.Panel.prototype.blit = function(sheetName, frame /* [flip], x, y, [xAnc, y
 
 pxcan.prototype.write =
 pxcan.Panel.prototype.write = function(text, x, y, options) {
-  // verify font
+  //options:
+  // cols, rows
+  // anchorX, anchorY
+  // align
+  // get font
   var font = this.sheet(this.font);
   // options
   options = options || {};
@@ -858,32 +862,26 @@ pxcan.Panel.prototype.write = function(text, x, y, options) {
   for(var i = 0; i < lines.length; ++i) maxcol = Math.max(lines[i].length, maxcol);
   // how to align the text?
   var align = 0;
-  if(!options || !options.align || options.align === "left") align = 0;
-  else if(options.align === "center") align = 0.5;
-  else if(options.align === "right") align = 1;
-  else throw "unknown text alignment: " + options.align;
+  if(options && options.align) {
+    if(options.align === "left") align = 0;
+    else if(options.align === "center") align = 0.5;
+    else if(options.align === "right") align = 1;
+    else if(options.align >= 0 && options.algin <= 1) align = options.align;
+    else throw "unknown text alignment: " + options.align;
+  }
   // where the top left char at
-  var coords = this.toCanvasCoords(x, y, font.spriteWidth * maxcol, font.spriteHeight * lines.length, null, null);
-  if(!coords) return;
   var ltrWidth = font.spriteWidth;
   var ltrHeight = font.spriteHeight;
+  var leftx = Math.round(x - (maxcol - 1) * ltrWidth * ((anchor.x+1)/2));
+  var topy = Math.round(y - (lines.length - 1) * ltrHeight * ((anchor.y+1)/2));
   // iterate
   for(var r = 0; r < lines.length; ++r) {
-    var indent = Math.round((maxcol-lines[r].length)*align*font.spriteWidth);
+    var indent = Math.round((maxcol - lines[r].length) * align * ltrWidth);
     for(var c = 0; c < lines[r].length; ++c) {
-      var ch = lines[r].charCodeAt(c) - 32;
-      var sprite = font.getSprite(ch);
-      // draw it to the screen
-      this.context.drawImage(
-        // image
-        sprite.scaledImage(this.drawScale),
-        // location on the spritesheet
-        sprite.left * this.drawScale, sprite.top * this.drawScale,
-        sprite.width * this.drawScale, sprite.height * this.drawScale,
-        // location on screen
-        (coords.x + indent + (c * ltrWidth)) * this.drawScale,
-        (coords.y + (r * ltrHeight)) * this.drawScale,
-        ltrWidth * this.drawScale, ltrHeight * this.drawScale
+      this.blit(
+        this.font, lines[r].charCodeAt(c) - 32, 
+        leftx + indent + c * ltrWidth,
+        topy + r * ltrHeight
       );
     }
   }
@@ -891,6 +889,7 @@ pxcan.Panel.prototype.write = function(text, x, y, options) {
 
 pxcan.prototype.border =
 pxcan.Panel.prototype.border = function(sheet) {
+  // TODO: fails to stay inside the parent panel
   sheet = sheet || "pxcan-border";
   // temporarily store origin and offset, then set them
   var oldOrigin = this.origin();
