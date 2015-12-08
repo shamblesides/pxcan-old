@@ -8,7 +8,9 @@ module.exports = function(grunt) {
       },
 			src: {
 				files: {
-					'build/nigelgame.js': 'src/*.js'
+					'build/nigelgame.js': [
+            'src/screen.js', 'src/screen_panel.js', 'src/screen_drawing.js', 'src/screen_preloading.js', 'src/sheets.js', 'src/sheets_global.js'
+          ]
 				}
 			}
 		},
