@@ -1,5 +1,6 @@
 var pxcan = function(element) {
   // vars
+  var self = this;
   element = element || window;
   if(typeof(element) === 'string') element = document.querySelector(element);
   var mode = { name: 'adapt' };
@@ -49,6 +50,16 @@ var pxcan = function(element) {
   Object.defineProperty(this, 'height', { get: function() { return height; } });
   Object.defineProperty(this, 'drawScale', { get: function() { return scale; } });
   Object.defineProperty(this, 'wasResized', { get: function() { return needsRepaint; } });
+  this.origin = function(x, y) {
+    if(arguments.length === 0) return { x: _origin.x, y: _origin.y };
+    if(arguments.length === 2) _origin = { x: x, y: y };
+    else throw new Error('invalid arguments for origin');
+  };
+  this.offset = function(x, y) {
+    if(arguments.length === 0) return { x: _offset.x, y: _offset.y };
+    if(arguments.length === 2) _offset = { x: x, y: y };
+    else throw new Error('invalid arguments for offset');
+  };
   Object.defineProperty(this, 'font', {
     set: function(x) {
       if(!this.hasSheet(x)) throw new Error('invalid font: ' + x);
@@ -59,8 +70,6 @@ var pxcan = function(element) {
       return font;
     }
   });
-  Object.defineProperty(this, 'onReady', { writable: true });
-  Object.defineProperty(this, 'onFrame', { writable: true });
   
   this.preload = function(src, alias, w, h) {
     if(!alias && alias !== 0) throw new Error("missing alias");
@@ -82,16 +91,26 @@ var pxcan = function(element) {
     return !!(sheets[src] || pxcan.globalSheets[src]);
   };
   
-  this.origin = function(x, y) {
-    if(arguments.length === 0) return { x: _origin.x, y: _origin.y };
-    if(arguments.length === 2) _origin = { x: x, y: y };
-    else throw new Error('invalid arguments for origin');
-  };
-  this.offset = function(x, y) {
-    if(arguments.length === 0) return { x: _offset.x, y: _offset.y };
-    if(arguments.length === 2) _offset = { x: x, y: y };
-    else throw new Error('invalid arguments for offset');
-  };
+  Object.defineProperty(this, 'isPreloading', { get: function() { return pxcan.isPreloading(this); } });
+  var _onready = null;
+  Object.defineProperty(this, 'onReady', {
+    get: function() { return _onready; },
+    set: function(x) {
+      if(x && !this.isPreloading) x.call(this);
+      else _onready = x;
+    }
+  });
+  Object.defineProperty(this, 'onFrame', { writable: true });
+  
+  var raf = window.requestAnimationFrame ||
+    window.mozRequestAnimationFrame ||
+    window.webkitRequestAnimationFrame ||
+    window.oRequestAnimationFrame;
+  function rafFunc() {
+    if(self.onFrame && !self.isPreloading) self.onFrame.call(self);
+    raf(rafFunc);
+  }
+  raf(rafFunc);
   
   this.mode = function(newMode) {
     // if no arguments are given, treat as getter function

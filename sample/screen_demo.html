@@ -25,7 +25,6 @@
 <body>
   <div id="game"></div>
   <script>
-    // create screen
     var screen = new pxcan("#game");
     screen.preload("img/bg.png", "bg");
     screen.preload("img/chara.png", "chara", 20, 20);
@@ -61,15 +60,12 @@
       //panel2.blit('bg', null, 0, 0);
       panel2.border();
       lottaWords(panel2);
+      
+      this.onFrame = function() {
+        panel2.clear();
+        panel2.write(''+Math.round(Math.random()*300), 0,0);
+      }
     };
-    /*
-    screen.onFrame(function() {
-    });
-    */
-    // clear
-    // reset
-    // font
-    // panel
   </script>
 </body>
 </html>
