@@ -1,24 +1,15 @@
-//give pxcan a unique id
-(function() {
-  var nextId = 0;
-  
-  Object.defineProperty(pxcan.prototype, "__id", { writable: true })
-  Object.defineProperty(pxcan.prototype, "id", { get: function() {
-    if (this.__id == undefined) this.__id = nextId++;
-    return this.__id;
-  } });
-})();
+pxcan.instances = [];
 
 //preloading module
 (function() {
   var waitingOn = {};
   var numReqs = {};
-  var pxcans = {};
+  var numReqsGlobal = 0;
   
   var imgBank = {};
   
   pxcan.isPreloading = function(pxc) {
-    return !!(numReqs[pxc.id]);
+    return !!numReqs[pxc.id] || numReqsGlobal > 0;
   }
   
   pxcan.preload = function(src, pxc) {
@@ -27,12 +18,13 @@
     //only preload something once
     if(pxc) {
       numReqs[pxc.id] |= 0;
-      pxcans[pxc.id] = pxc;
     }
+    //ignore if already preloaded
     if(imgBank[src]) {
       console.log("note: "+src+" was already preloaded.");
       return;
     }
+    //ignore if already preloading
     if(waitingOn[src]) {
       if(!pxc) {
         console.log("note: "+src+" was already requested to be preloaded");
@@ -41,18 +33,23 @@
         console.log("note: "+src+" was already requested to be preloaded by this pxcan");
       }
       else {
+        // if requested by second canvas, track that
         console.log("note: "+src+" was already requested to be preloaded by a different pxcan");
         waitingOn[src].push(pxc.id);
         ++numReqs[pxc.id];
       }
       return;
     }
-    else if(pxc) {
-      waitingOn[src] = [pxc.id];
-    }
     
-    //load image
-    if(pxc) ++numReqs[pxc.id];
+    //keep track of who's loading it
+    if(pxc) {
+      waitingOn[src] = [pxc.id];
+      ++numReqs[pxc.id];
+    }
+    else {
+      ++numReqsGlobal;
+    }
+    //load
     var img = new Image();
     img.onload = onLoadedFile;
     img.onerror = function() { throw new Error("Failed to load image " + src); };
@@ -74,15 +71,26 @@
       if(waitingOn[src]) {
         for(var i = 0; i < waitingOn[src].length; ++i) {
           var pid = waitingOn[src][i];
+          var p = pxcan.instances[pid];
           --numReqs[pid];
-          if(numReqs[pid] === 0 && pxcans[pid].onReady) {
-            var p = pxcans[pid];
+          if(numReqsGlobal === 0 && !numReqs[pid] && p.onReady) {
             p.onReady.call(p);
             p.onReady = null;
-            delete pxcans[pid];
           }
         }
         delete waitingOn[src];
+      }
+      else if(!pxc) {
+        --numReqsGlobal;
+        if(numReqsGlobal === 0) {
+          for(var pid = 0; pid < pxcan.instances.length; ++pid) {
+            var p = pxcan.instances[pid];
+            if(!numReqs[pid] && p.onReady) {
+              p.onReady.call(p);
+              p.onReady = null;
+            }
+          }
+        }
       }
     }
   };

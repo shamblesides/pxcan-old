@@ -26,8 +26,8 @@
   <div id="game"></div>
   <script>
     var screen = new pxcan("#game");
-    screen.preload("img/bg.png", "bg");
-    screen.preload("img/chara.png", "chara", 20, 20);
+    //screen.preload("img/bg.png", "bg");
+    //screen.preload("img/chara.png", "chara", 20, 20);
     screen.mode("adapt", 3);
     screen.origin(0,0);
     screen.offset(0,0);
@@ -43,15 +43,21 @@
       scr.fill('grey', 0,0, 2,2);
     }
     
+    /*
+    screen.onFrame = function() {
+      console.log(this.hasSheet('pxcan-border'));
+      lottaWords(this);
+    };
+    */
     screen.onReady = function() {
       this.clear();
-      this.blit('bg', null, 0, 0);
+      //this.blit('bg', null, 0, 0);
       //this.border();
       //lottaWords(this);
       
       var panel1 = this.panel(-10,-10,80,60);
       panel1.clear();
-      panel1.blit('bg', null, 0, 0);
+      //panel1.blit('bg', null, 0, 0);
       panel1.border();
       //lottaWords(panel1);
       

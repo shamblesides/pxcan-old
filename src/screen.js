@@ -14,6 +14,9 @@ var pxcan = function(element) {
   var _origin = { x: 0, y: 0 };
   var _offset = { x: 0, y: 0 };
   
+  // add to list of pxcan instances
+  pxcan.instances.push(this);
+  
   // create canvas element
   var canvas = document.createElement('canvas');
   canvas.style.display = 'block';
@@ -33,6 +36,8 @@ var pxcan = function(element) {
   if(element !== window && element.tabIndex < 0) element.tabIndex = 0;
   
   // public properties
+  var _id = ++pxcan.lastId;
+  Object.defineProperty(this, 'id', { get: function() { return _id; } })
   Object.defineProperty(this, 'element', { get: function() { return element; } });
   Object.defineProperty(this, 'canvas', { get: function() { return canvas; } });
   Object.defineProperty(this, 'context', { get: function() { return context; } });
@@ -240,3 +245,5 @@ var pxcan = function(element) {
   
   this.fitElement();
 };
+
+pxcan.lastId = -1;
