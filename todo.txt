@@ -1,0 +1,11 @@
+TO DO
+-----
+* Re-integrate keybinds
+* Re-integrate touch events
+* Re-integrate json loading?
+* Re-integrate frameskip?
+* Re-integrate nigelgame.random
+* Re-integrate nigelgame.wrapString
+* Add rotation to blit options
+* Add recoloring to blit options
+* HTML documentation
