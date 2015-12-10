@@ -1,19 +1,3 @@
-// Math extensions
-//  Median
-Math.mid = function() {
-  var arr = [];
-  for(var i = 0; i < arguments.length; ++i) arr.push(+arguments[i]);
-  arr.sort(function(a, b) { return a-b; });
-  if(arr.length%2 === 1) return arr[Math.floor(arr.length/2)];
-  else return (arr[Math.floor(arr.length/2)] + arr[Math.floor(arr.length/2)-1]) / 2;
-};
-//  Cap!
-//  returns val if it's between -max and max.
-//  otherwise, returns the cap of them.
-Math.cap = function(val, max) {
-  return Math.mid(-max, val, max);
-};
-
 // Hashcode of strings.
 // http://werxltd.com/wp/2010/05/13/javascript-implementation-of-javas-string-hashcode-method/
 String.prototype.hashCode = function() {
