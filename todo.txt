@@ -4,7 +4,6 @@ TO DO
 * Re-integrate touch events
 * Re-integrate json loading?
 * Re-integrate frameskip?
-* Re-integrate nigelgame.wrapString
 * Add rotation to blit options
 * Add recoloring to blit options
 * Make pxcan.prototype.reset() more comprehensive

@@ -11,7 +11,7 @@ module.exports = function(grunt) {
 					'build/nigelgame.js': [
             'src/screen.js', 'src/screen_panel.js', 'src/screen_drawing.js', 'src/screen_preloading.js',
             'src/sheets.js', 'src/sheets_global.js',
-            'src/math_extensions.js', 'src/random.js'
+            'src/math_extensions.js', 'src/random.js', 'src/wrap_string.js'
           ]
 				}
 			}
