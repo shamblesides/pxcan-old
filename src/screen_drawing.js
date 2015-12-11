@@ -143,6 +143,8 @@ pxcan.Panel.prototype.blit = function(sheetName, frame /* [flip], x, y, [xAnc, y
 pxcan.prototype.write =
 pxcan.Panel.prototype.write = function(text, x, y /* [xAnc, yAnc], [align] */) {
   // verify valid arguments
+  if(text === undefined || text === null) throw new Error('text is ' + text);
+  if(typeof(text) !== 'string') text = text.toString();
   if([3,4,5,6].indexOf(arguments.length) === -1)
     throw new Error('bad arguments for write');
   // font
