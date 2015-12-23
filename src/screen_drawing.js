@@ -134,7 +134,6 @@ pxcan.Panel.prototype.blit = function(sheetName, frame /* [flip], x, y, [xAnc, y
     }
     flipArgs = flipArgs.substr(1);
   }
-  console.log(+xflip + ':' + +yflip + '/' + +cwrot);
   // coooordinates
   var coords = this.toCanvasCoords(x, y, cwrot?sprite.height:sprite.width, cwrot?sprite.width:sprite.height, xAnc, yAnc);
   if(!coords) return;
