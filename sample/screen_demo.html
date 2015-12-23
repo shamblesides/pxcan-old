@@ -32,6 +32,7 @@
     screen.origin(0,0);
     screen.offset(0,0);
     screen.setBackground("black");
+    screen.bind('myButton', 'a', 'b', 'c');
     
     screen.onReady = function() {
       //this.origin(-1,-1);
@@ -41,6 +42,14 @@
       this.blit('chara', 0, p+'90'+e, 30, 0);
       this.blit('chara', 0, p+'180'+e, 30, 30);
       this.blit('chara', 0, p+'270'+e, 0, 30);
+    };
+    
+    screen.onFrame = function() {
+      this.clear();
+      if(this.button('myButton').wasPressed) screen.fill('red');
+      if(this.button('myButton').wasReleased) screen.fill('blue');
+      if(this.button('myButton').isDown) this.write('down', 0, 0);
+      else this.write('not down', 0, 0);
     };
   </script>
 </body>

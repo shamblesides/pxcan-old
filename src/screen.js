@@ -13,6 +13,8 @@ var pxcan = function(element) {
   var sheets = {};
   var _origin = { x: 0, y: 0 };
   var _offset = { x: 0, y: 0 };
+  var binds = {};
+  var buttons = {};
   
   // add to list of pxcan instances
   pxcan.instances.push(this);
@@ -76,47 +78,7 @@ var pxcan = function(element) {
     }
   });
   
-  this.preload = function(src, alias, w, h) {
-    if(!alias && alias !== 0) throw new Error("missing alias");
-    if(sheets[alias]) throw new Error("sheet already exists with alias " + alias);
-    if(pxcan.globalSheets[alias]) throw new Error("global sheet already exists with alias " + alias);
-    if(!pxcan.hasImage(src)) {
-      pxcan.preload(src, this);
-    }
-    sheets[alias] = new pxcan.Sheet(alias, src, w, h);
-  };
-  
-  this.sheet = function(src) {
-    if(sheets[src]) return sheets[src];
-    if(pxcan.globalSheets[src]) return pxcan.globalSheets[src];
-    throw new Error("invalid sheet: " + src);
-  };
-  
-  this.hasSheet = function(src) {
-    return !!(sheets[src] || pxcan.globalSheets[src]);
-  };
-  
-  Object.defineProperty(this, 'isPreloading', { get: function() { return pxcan.isPreloading(this); } });
-  var _onready = null;
-  Object.defineProperty(this, 'onReady', {
-    get: function() { return _onready; },
-    set: function(x) {
-      if(x && !this.isPreloading) x.call(this);
-      else _onready = x;
-    }
-  });
-  Object.defineProperty(this, 'onFrame', { writable: true });
-  
-  var raf = window.requestAnimationFrame ||
-    window.mozRequestAnimationFrame ||
-    window.webkitRequestAnimationFrame ||
-    window.oRequestAnimationFrame;
-  function rafFunc() {
-    if(self.onFrame && !self.isPreloading) self.onFrame.call(self);
-    raf(rafFunc);
-  }
-  raf(rafFunc);
-  
+  // screen mode/sizing components
   this.mode = function(newMode) {
     // if no arguments are given, treat as getter function
     if(arguments.length === 0) return mode.name;
@@ -244,6 +206,93 @@ var pxcan = function(element) {
   }
   
   this.fitElement();
+  
+  // sheet loading
+  this.preload = function(src, alias, w, h) {
+    if(!alias && alias !== 0) throw new Error("missing alias");
+    if(sheets[alias]) throw new Error("sheet already exists with alias " + alias);
+    if(pxcan.globalSheets[alias]) throw new Error("global sheet already exists with alias " + alias);
+    if(!pxcan.hasImage(src)) {
+      pxcan.preload(src, this);
+    }
+    sheets[alias] = new pxcan.Sheet(alias, src, w, h);
+  };
+  
+  this.sheet = function(src) {
+    if(sheets[src]) return sheets[src];
+    if(pxcan.globalSheets[src]) return pxcan.globalSheets[src];
+    throw new Error("invalid sheet: " + src);
+  };
+  
+  this.hasSheet = function(src) {
+    return !!(sheets[src] || pxcan.globalSheets[src]);
+  };
+  
+  // onReady and onFrame events
+  Object.defineProperty(this, 'isPreloading', { get: function() { return pxcan.isPreloading(this); } });
+  var _onready = null;
+  Object.defineProperty(this, 'onReady', {
+    get: function() { return _onready; },
+    set: function(x) {
+      if(x && !this.isPreloading) x.call(this);
+      else _onready = x;
+    }
+  });
+  Object.defineProperty(this, 'onFrame', { writable: true });
+  
+  var raf = window.requestAnimationFrame ||
+    window.mozRequestAnimationFrame ||
+    window.webkitRequestAnimationFrame ||
+    window.oRequestAnimationFrame;
+  function rafFunc() {
+    // call frame function
+    if(self.onFrame && !self.isPreloading) self.onFrame.call(self, self);
+    // update button state
+    for(var b in buttons) {
+      if(buttons[b].wasPressed) buttons[b].wasPressed = false;
+      if(buttons[b].wasReleased) buttons[b].wasReleased = false;
+      if(buttons[b].isDown) ++buttons[b].framesDown;
+      else buttons[b].framesDown = 0;
+    }
+    // queue next call
+    raf(rafFunc);
+  }
+  raf(rafFunc);
+  
+  // built-in button functions 
+  this.bind = function(button /*, key1, [key2, [...]] */) {
+    for(var i = 1; i < arguments.length; ++i) {
+      var code = arguments[i];
+      if(typeof(code) === 'string') code = code.toUpperCase().charCodeAt(0);
+      binds[code] = button;
+    }
+    buttons[button] = {
+      wasPressed: false,
+      wasReleased: false,
+      isDown: false,
+      framesDown: 0
+    };
+  };
+  
+  this.button = function(b) { return buttons[b]; };
+  
+  function keyevt(evt) {
+    if(binds[evt.keyCode] === undefined) {
+      evt.preventDefault();
+      return true;
+    }
+    var button = buttons[binds[evt.keyCode]];
+    if(evt.type === 'keydown' && button.framesDown === 0) {
+      button.wasPressed = button.isDown = true;
+      button.framesDown = 0;
+    }
+    else if(evt.type === 'keyup' && button.isDown) {
+      button.wasReleased = true;
+      button.isDown = false;
+    }
+  }
+  element.addEventListener("keydown", keyevt, false);
+  element.addEventListener("keyup", keyevt, false);
 };
 
 pxcan.lastId = -1;

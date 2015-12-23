@@ -1,6 +1,5 @@
 TO DO
 -----
-* Re-integrate keybinds
 * Re-integrate touch events
 * Re-integrate json loading?
 * Re-integrate frameskip?
