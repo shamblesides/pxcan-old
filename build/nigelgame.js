@@ -418,7 +418,7 @@ pxcan.Panel.prototype.blit = function(sheetName, frame /* [flip], x, y, [xAnc, y
   if([4,5,6,7].indexOf(arguments.length) === -1)
     throw new Error('bad arguments for blit');
   // get variable arguments
-  var flip = (arguments.length%2 === 1) && arguments[2] || '';
+  var flipArgs = (arguments.length%2 === 1)? arguments[2].toString(): '';
   var x = arguments[arguments.length%2===0? 2: 3];
   var y = arguments[arguments.length%2===0? 3: 4];
   var xAnc = arguments.length>=6? arguments[arguments.length-2]: null;
@@ -429,18 +429,44 @@ pxcan.Panel.prototype.blit = function(sheetName, frame /* [flip], x, y, [xAnc, y
   // if a particular sprite is specified, get it
   var sprite = (frame !== undefined && frame !== null)?
     sheet.getSprite(frame): sheet;
+  // determine flip+rot
+  var xflip = false, yflip = false, cwrot = false;
+  flipArgs = flipArgs.replace('90', 'c');
+  flipArgs = flipArgs.replace('270', 'cxy');
+  flipArgs = flipArgs.replace('180', 'xy');
+  while(flipArgs.length > 0) {
+    if(flipArgs.startsWith('x') || flipArgs.startsWith('h')) {
+      xflip = !xflip;
+    }
+    else if(flipArgs.startsWith('y') || flipArgs.startsWith('v')) {
+      yflip = !yflip;
+    }
+    else if(flipArgs.startsWith('c')) {
+      if(cwrot) {
+        xflip = !xflip;
+        yflip = !yflip;
+      }
+      var temp = xflip;
+      xflip = yflip;
+      yflip = temp;
+      cwrot = !cwrot;
+    }
+    flipArgs = flipArgs.substr(1);
+  }
+  console.log(+xflip + ':' + +yflip + '/' + +cwrot);
   // coooordinates
-  var coords = this.toCanvasCoords(x, y, sprite.width, sprite.height, xAnc, yAnc);
+  var coords = this.toCanvasCoords(x, y, cwrot?sprite.height:sprite.width, cwrot?sprite.width:sprite.height, xAnc, yAnc);
   if(!coords) return;
-  // do canvas flipping
-  var xflip = (flip.indexOf('h')!==-1)? 1:0;
-  var yflip = (flip.indexOf('v')!==-1)? 1:0;
-  if(flip) {
-    this.context.translate(this.canvas.width*xflip, this.canvas.height*yflip);
+  // flip+rotate
+  if(xflip || yflip) {
+    this.context.translate(this.canvas.width*+xflip, this.canvas.height*+yflip);
     this.context.scale(xflip?-1:1, yflip?-1:1);
   }
+  if(cwrot) {
+    this.context.rotate(Math.PI/2);
+  }
   // draw it to the screen
-  this.context.drawImage(
+  if(!cwrot) this.context.drawImage(
     // image
     sprite.scaledImage(this.drawScale),
     // location on the spritesheet
@@ -448,13 +474,28 @@ pxcan.Panel.prototype.blit = function(sheetName, frame /* [flip], x, y, [xAnc, y
     (sprite.top + (yflip?coords.bcut:coords.tcut)) * this.drawScale,
     coords.width * this.drawScale, coords.height * this.drawScale,
     // location on screen
-    this.canvas.width*xflip + (coords.x*(xflip?-1:1) - coords.width*xflip) * this.drawScale,
-    this.canvas.height*yflip + (coords.y*(yflip?-1:1) - coords.height*yflip) * this.drawScale,
+    this.canvas.width*+xflip + (coords.x*(xflip?-1:1) - coords.width*+xflip) * this.drawScale,
+    this.canvas.height*+yflip + (coords.y*(yflip?-1:1) - coords.height*+yflip) * this.drawScale,
     coords.width * this.drawScale, coords.height * this.drawScale
   );
+  else this.context.drawImage(
+    // image
+    sprite.scaledImage(this.drawScale),
+    // location on the spritesheet
+    (sprite.left + (yflip?coords.bcut:coords.tcut)) * this.drawScale,
+    (sprite.top + (xflip?coords.lcut:coords.rcut)) * this.drawScale,
+    coords.height * this.drawScale, coords.width * this.drawScale,
+    // location on screen
+    this.canvas.height*+yflip + (coords.y*(yflip?-1:1) - coords.height*+yflip) * this.drawScale,
+    -this.canvas.width*+xflip - (coords.x*(xflip?-1:1) + coords.width*+!xflip) * this.drawScale,
+    coords.height * this.drawScale, coords.width * this.drawScale
+  );
   // undo flipping
-  if(flip) {
-    this.context.translate(this.canvas.width*xflip, this.canvas.height*yflip);
+  if(cwrot) {
+    this.context.rotate(-Math.PI/2);
+  }
+  if(xflip || yflip) {
+    this.context.translate(this.canvas.width*+xflip, this.canvas.height*+yflip);
     this.context.scale(xflip?-1:1, yflip?-1:1);
   }
 };

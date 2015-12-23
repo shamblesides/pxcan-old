@@ -26,51 +26,21 @@
   <div id="game"></div>
   <script>
     var screen = new pxcan("#game");
-    //screen.preload("img/bg.png", "bg");
-    //screen.preload("img/chara.png", "chara", 20, 20);
+    screen.preload("img/bg.png", "bg");
+    screen.preload("img/chara.png", "chara", 20, 20);
     screen.mode("adapt", 3);
     screen.origin(0,0);
     screen.offset(0,0);
     screen.setBackground("black");
     
-    function lottaWords(scr) {
-      var words = 'wait\nxxx';
-      scr.origin(0,0);
-      scr.write(words, 0, 0, -1,-1, 'center');
-      scr.write(words, 0, 0, 1,-1, 'right');
-      scr.write(words, 0, 0, 1,1, 'center');
-      scr.write(words, 0, 0, -1,1, 'center');
-      scr.fill('grey', 0,0, 2,2);
-    }
-    
-    /*
-    screen.onFrame = function() {
-      console.log(this.hasSheet('pxcan-border'));
-      lottaWords(this);
-    };
-    */
     screen.onReady = function() {
-      this.clear();
-      //this.blit('bg', null, 0, 0);
-      //this.border();
-      //lottaWords(this);
-      
-      var panel1 = this.panel(-10,-10,80,60);
-      panel1.clear();
-      //panel1.blit('bg', null, 0, 0);
-      panel1.border();
-      //lottaWords(panel1);
-      
-      var panel2 = panel1.panel(-5,20, 50, 50);
-      panel2.clear();
-      //panel2.blit('bg', null, 0, 0);
-      panel2.border();
-      lottaWords(panel2);
-      
-      this.onFrame = function() {
-        panel2.clear();
-        panel2.write(Math.round(pxcan.random()*300), 0,0);
-      }
+      //this.origin(-1,-1);
+      var p = '';
+      var e = '';
+      this.blit('chara', 0, p+''+e, 0, 0);
+      this.blit('chara', 0, p+'90'+e, 30, 0);
+      this.blit('chara', 0, p+'180'+e, 30, 30);
+      this.blit('chara', 0, p+'270'+e, 0, 30);
     };
   </script>
 </body>
