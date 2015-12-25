@@ -1,5 +1,5 @@
 pxcan.prototype.setBackground = function(bg) {
-  this.element.style.background = bg;
+  ((this.element !== window)? this.element: document.getElementsByTagName('body')[0]).style.background = bg;
 };
 
 pxcan.prototype.toCanvasCoords =
