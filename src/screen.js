@@ -15,6 +15,7 @@ var pxcan = function(element) {
   var _offset = { x: 0, y: 0 };
   var binds = {};
   var buttons = {};
+  var frameskipCounter = 0;
   
   // add to list of pxcan instances
   pxcan.instances.push(this);
@@ -57,6 +58,7 @@ var pxcan = function(element) {
   Object.defineProperty(this, 'height', { get: function() { return height; } });
   Object.defineProperty(this, 'drawScale', { get: function() { return scale; } });
   Object.defineProperty(this, 'wasResized', { get: function() { return needsRepaint; } });
+  Object.defineProperty(this, 'frameskip', { writable: true });
   this.origin = function(x, y) {
     if(arguments.length === 0) return { x: _origin.x, y: _origin.y };
     if(arguments.length === 2) _origin = { x: x, y: y };
@@ -245,14 +247,18 @@ var pxcan = function(element) {
     window.webkitRequestAnimationFrame ||
     window.oRequestAnimationFrame;
   function rafFunc() {
-    // call frame function
-    if(self.onFrame && !self.isPreloading) self.onFrame.call(self, self);
-    // update button state
-    for(var b in buttons) {
-      if(buttons[b].wasPressed) buttons[b].wasPressed = false;
-      if(buttons[b].wasReleased) buttons[b].wasReleased = false;
-      if(buttons[b].isDown) ++buttons[b].framesDown;
-      else buttons[b].framesDown = 0;
+    ++frameskipCounter;
+    if(frameskipCounter > self.frameskip) {
+      frameskipCounter = 0;
+      // call frame function
+      if(self.onFrame && !self.isPreloading) self.onFrame.call(self, self);
+      // update button state
+      for(var b in buttons) {
+        if(buttons[b].wasPressed) buttons[b].wasPressed = false;
+        if(buttons[b].wasReleased) buttons[b].wasReleased = false;
+        if(buttons[b].isDown) ++buttons[b].framesDown;
+        else buttons[b].framesDown = 0;
+      }
     }
     // queue next call
     raf(rafFunc);

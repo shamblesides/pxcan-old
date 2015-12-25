@@ -2,7 +2,6 @@ TO DO
 -----
 * Re-integrate touch events
 * Re-integrate json loading?
-* Re-integrate frameskip?
 * Add recoloring to blit options
 * Make pxcan.prototype.reset() more comprehensive
 * Consider how views will work in pxcan?
