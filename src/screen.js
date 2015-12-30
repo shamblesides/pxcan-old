@@ -16,6 +16,7 @@ var pxcan = function(element) {
   var binds = {};
   var buttons = {};
   var frameskipCounter = 0;
+  var clock = 0;
   
   // add to list of pxcan instances
   pxcan.instances.push(this);
@@ -58,6 +59,7 @@ var pxcan = function(element) {
   Object.defineProperty(this, 'height', { get: function() { return height; } });
   Object.defineProperty(this, 'drawScale', { get: function() { return scale; } });
   Object.defineProperty(this, 'wasResized', { get: function() { return needsRepaint; } });
+  Object.defineProperty(this, 'clock', { get: function() { return clock; } });
   Object.defineProperty(this, 'frameskip', { writable: true });
   this.origin = function(x, y) {
     if(arguments.length === 0) return { x: _origin.x, y: _origin.y };
@@ -259,6 +261,8 @@ var pxcan = function(element) {
         if(buttons[b].isDown) ++buttons[b].framesDown;
         else buttons[b].framesDown = 0;
       }
+      // update clock
+      ++clock;
     }
     // queue next call
     raf(rafFunc);

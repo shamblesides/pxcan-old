@@ -29,7 +29,6 @@
     screen.preload("img/bg.png", "bg");
     screen.preload("img/chara.png", "chara", 20, 20);
     screen.mode("adapt", 3);
-    screen.origin(0,0);
     screen.offset(0,0);
     screen.setBackground("black");
     screen.bind('myButton', 'a', 'b', 'c');
@@ -47,10 +46,13 @@
     
     screen.onFrame = function() {
       this.clear();
+      screen.origin(0,0);
       if(this.button('myButton').wasPressed) screen.fill('red');
       if(this.button('myButton').wasReleased) screen.fill('blue');
       if(this.button('myButton').isDown) this.write('down', 0, 0);
       else this.write('not down', 0, 0);
+      screen.origin(1,1);
+      this.write(this.clock, 0, 0);
     };
   </script>
 </body>
