@@ -48,10 +48,10 @@ var pxcan = function(element) {
   Object.defineProperty(this, 'canvasOffX', { get: function() { return 0; } });
   Object.defineProperty(this, 'canvasOffY', { get: function() { return 0; } });
   Object.defineProperty(this, 'left', { get: function() {
-    return Math.round(_offset.x - (width * (_origin.x + 1) / 2));
+    return Math.round(-_offset.x - (width * (_origin.x + 1) / 2));
   } });
   Object.defineProperty(this, 'top', { get: function() {
-    return Math.round(_offset.y - (height * (_origin.y + 1) / 2));
+    return Math.round(-_offset.y - (height * (_origin.y + 1) / 2));
   } });
   Object.defineProperty(this, 'right', { get: function() { return this.left + width; } });
   Object.defineProperty(this, 'bottom', { get: function() { return this.top + height; } });
