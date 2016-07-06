@@ -32,7 +32,7 @@
     screen.offset(0,0);
     screen.setBackground("black");
     screen.bind('myButton', 'a', 'b', 'c');
-    screen.frameskip = 10;
+    screen.frameskip = 30;
     
     screen.onReady = function() {
       //this.origin(-1,-1);
@@ -45,10 +45,12 @@
     };
     
     screen.onFrame = function() {
-      this.clear();
+      this.reset();
+      screen.origin(-1,0);
+      if(this.button('myButton').wasPressed) screen.fill('red', 0,0,screen.width/2,screen.height);
+      screen.origin(1,0);
+      if(this.button('myButton').wasReleased) screen.fill('blue', 0,0,screen.width/2,screen.height);
       screen.origin(0,0);
-      if(this.button('myButton').wasPressed) screen.fill('red');
-      if(this.button('myButton').wasReleased) screen.fill('blue');
       if(this.button('myButton').isDown) this.write('down', 0, 0);
       else this.write('not down', 0, 0);
       screen.origin(1,1);
