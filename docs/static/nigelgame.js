@@ -60,7 +60,7 @@ var pxcan = function(element) {
   Object.defineProperty(this, 'drawScale', { get: function() { return scale; } });
   Object.defineProperty(this, 'wasResized', { get: function() { return needsRepaint; } });
   Object.defineProperty(this, 'clock', { get: function() { return clock; } });
-  Object.defineProperty(this, 'frameskip', { writable: true });
+  Object.defineProperty(this, 'frameskip', { value: 0, writable: true });
   this.origin = function(x, y) {
     if(arguments.length === 0) return { x: _origin.x, y: _origin.y };
     if(arguments.length === 2) _origin = { x: x, y: y };
