@@ -1,8 +1,9 @@
 ---
 date: 2016-07-20T17:39:41-06:00
-title: Pressing, Holding, and Releasing a Button
+title: Examples
 ---
 
+## Buttons ##
 This example demonstrates how to check if the player has just pressed, just released, or is currently holding down a button.
 
 <!--more-->
