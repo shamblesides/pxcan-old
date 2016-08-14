@@ -40,27 +40,30 @@ var pxcan = function(element) {
   if(element !== window && element.tabIndex < 0) element.tabIndex = 0;
   
   // public properties
-  var _id = ++pxcan.lastId;
-  Object.defineProperty(this, 'id', { get: function() { return _id; } })
-  Object.defineProperty(this, 'element', { get: function() { return element; } });
-  Object.defineProperty(this, 'canvas', { get: function() { return canvas; } });
-  Object.defineProperty(this, 'context', { get: function() { return context; } });
-  Object.defineProperty(this, 'canvasOffX', { get: function() { return 0; } });
-  Object.defineProperty(this, 'canvasOffY', { get: function() { return 0; } });
-  Object.defineProperty(this, 'left', { get: function() {
+  function DEF(name, attr) {
+    Object.defineProperty(self, name, attr);
+  }
+  var _id = ++pxcan.generateId();
+  DEF('id', { get: function() { return _id; } })
+  DEF('element', { get: function() { return element; } });
+  DEF('canvas', { get: function() { return canvas; } });
+  DEF('context', { get: function() { return context; } });
+  DEF('canvasOffX', { get: function() { return 0; } });
+  DEF('canvasOffY', { get: function() { return 0; } });
+  DEF('left', { get: function() {
     return Math.round(-_offset.x - (width * (_origin.x + 1) / 2));
   } });
-  Object.defineProperty(this, 'top', { get: function() {
+  DEF('top', { get: function() {
     return Math.round(-_offset.y - (height * (_origin.y + 1) / 2));
   } });
-  Object.defineProperty(this, 'right', { get: function() { return this.left + width; } });
-  Object.defineProperty(this, 'bottom', { get: function() { return this.top + height; } });
-  Object.defineProperty(this, 'width', { get: function() { return width; } });
-  Object.defineProperty(this, 'height', { get: function() { return height; } });
-  Object.defineProperty(this, 'drawScale', { get: function() { return scale; } });
-  Object.defineProperty(this, 'wasResized', { get: function() { return needsRepaint; } });
-  Object.defineProperty(this, 'clock', { get: function() { return clock; } });
-  Object.defineProperty(this, 'frameskip', { value: 0, writable: true });
+  DEF('right', { get: function() { return this.left + width; } });
+  DEF('bottom', { get: function() { return this.top + height; } });
+  DEF('width', { get: function() { return width; } });
+  DEF('height', { get: function() { return height; } });
+  DEF('drawScale', { get: function() { return scale; } });
+  DEF('wasResized', { get: function() { return needsRepaint; } });
+  DEF('clock', { get: function() { return clock; } });
+  DEF('frameskip', { value: 0, writable: true });
   this.origin = function(x, y) {
     if(arguments.length === 0) return { x: _origin.x, y: _origin.y };
     if(arguments.length === 2) _origin = { x: x, y: y };
@@ -71,7 +74,7 @@ var pxcan = function(element) {
     if(arguments.length === 2) _offset = { x: x, y: y };
     else throw new Error('invalid arguments for offset');
   };
-  Object.defineProperty(this, 'font', {
+  DEF('font', {
     set: function(x) {
       if(!this.hasSheet(x)) throw new Error('invalid font: ' + x);
       font = x;
@@ -233,16 +236,16 @@ var pxcan = function(element) {
   };
   
   // onReady and onFrame events
-  Object.defineProperty(this, 'isPreloading', { get: function() { return pxcan.isPreloading(this); } });
+  DEF('isPreloading', { get: function() { return pxcan.isPreloading(this); } });
   var _onready = null;
-  Object.defineProperty(this, 'onReady', {
+  DEF('onReady', {
     get: function() { return _onready; },
     set: function(x) {
       if(x && !this.isPreloading) x.call(this);
       else _onready = x;
     }
   });
-  Object.defineProperty(this, 'onFrame', { writable: true });
+  DEF('onFrame', { writable: true });
   
   var raf = window.requestAnimationFrame ||
     window.mozRequestAnimationFrame ||
@@ -254,13 +257,8 @@ var pxcan = function(element) {
       frameskipCounter = 0;
       // call frame function
       if(self.onFrame && !self.isPreloading) self.onFrame.call(self, self);
-      // update button state
-      for(var b in buttons) {
-        if(buttons[b].wasPressed) buttons[b].wasPressed = false;
-        if(buttons[b].wasReleased) buttons[b].wasReleased = false;
-        if(buttons[b].isDown) ++buttons[b].framesDown;
-        else buttons[b].framesDown = 0;
-      }
+      // update input state
+      updateButtons();
       // update clock
       ++clock;
     }
@@ -303,6 +301,18 @@ var pxcan = function(element) {
   }
   element.addEventListener("keydown", keyevt, false);
   element.addEventListener("keyup", keyevt, false);
+
+  function updateButtons() {
+    for (var b in buttons) {
+      if(buttons[b].wasPressed) buttons[b].wasPressed = false;
+      if(buttons[b].wasReleased) buttons[b].wasReleased = false;
+      if(buttons[b].isDown) ++buttons[b].framesDown;
+      else buttons[b].framesDown = 0;
+    }
+  }
 };
 
-pxcan.lastId = -1;
+pxcan.generateId = (function() {
+  var lastId = -1;
+  return function() { return ++lastId; };
+})();
