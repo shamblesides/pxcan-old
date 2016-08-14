@@ -419,8 +419,8 @@ var pxcan = function(element) {
     }
   }
   element.addEventListener("mousedown", gotMouseDown, false);
-  element.addEventListener("mousemove", gotMouseMove, false);
-  element.addEventListener("mouseup", gotMouseUp, false);
+  window.addEventListener("mousemove", gotMouseMove, false);
+  window.addEventListener("mouseup", gotMouseUp, false);
 };
 
 pxcan.generateId = (function() {
