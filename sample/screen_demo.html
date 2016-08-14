@@ -26,36 +26,60 @@
   <div id="game"></div>
   <script>
     var screen = new pxcan("#game");
-    screen.preload("img/bg.png", "bg");
-    screen.preload("img/chara.png", "chara", 20, 20);
     screen.mode("adapt", 3);
     screen.offset(0,0);
     screen.setBackground("black");
-    screen.bind('myButton', 'a', 'b', 'c');
-    screen.frameskip = 30;
     
     screen.onReady = function() {
-      //this.origin(-1,-1);
-      var p = '';
-      var e = '';
-      this.blit('chara', 0, p+''+e, 0, 0);
-      this.blit('chara', 0, p+'90'+e, 30, 0);
-      this.blit('chara', 0, p+'180'+e, 30, 30);
-      this.blit('chara', 0, p+'270'+e, 0, 30);
+      this.write('draw', 0,0);
     };
     
     screen.onFrame = function() {
-      this.reset();
-      screen.origin(-1,0);
-      if(this.button('myButton').wasPressed) screen.fill('red', 0,0,screen.width/2,screen.height);
-      screen.origin(1,0);
-      if(this.button('myButton').wasReleased) screen.fill('blue', 0,0,screen.width/2,screen.height);
-      screen.origin(0,0);
-      if(this.button('myButton').isDown) this.write('down', 0, 0);
-      else this.write('not down', 0, 0);
-      screen.origin(1,1);
-      this.write(this.clock, 0, 0);
+      if (this.touch.changed) {
+        var tch = this.touch;
+        var color = tch.isRightClick ? 'red': 'white';
+        var size = tch.isMouse? 1 : 10;
+
+        if (tch.moved && tch.isDown) {
+          drawLine(this, color, size, tch.last.x, tch.last.y, tch.x, tch.y);
+        }
+        else if (tch.wasStarted) {
+          this.fill(color, tch.x, tch.y, size, size);
+        }
+        else if (tch.wasReleased && tch.isDrag) {
+          drawLine(this, 'gray', size, tch.start.x, tch.start.y, tch.x, tch.y);
+        }
+        else if (tch.wasInterrupted) {
+          this.fill('orange');
+        }
+      }
+      // tch.changed, tch.isDown, tch.isMouse, tch.isRightClick, tch.wasStarted, 
+      // tch.moved, tch.isDrag, tch.wasReleased, tch.wasInterrupted
+
+      // tch.(point) : cur, last, start
+      // point.x, point.y, point.inBounds, point.ref
+      // point.rel(scr, 'bounded'|'b'), point.rel(scr, ['unbounded'|'u'])
+      // point.bounded(), point.unbounded()
+
+      // tch.x, tch.y, tch.inBounds, tch.rel(), tch.bounded(), tch.unbounded()
     };
+
+    function drawLine(screen, color, size, x0,y0, x1,y1) {
+      var dx = Math.abs(x1-x0);
+      var dy = Math.abs(y1-y0);
+      var sx = (x0 < x1) ? 1 : -1;
+      var sy = (y0 < y1) ? 1 : -1;
+      var err = dx-dy;
+
+      while(true){
+        screen.fill(color, x0,y0, size,size);
+
+        if ((x0==x1) && (y0==y1)) break;
+        var e2 = 2*err;
+        if (e2 >-dy){ err -= dy; x0  += sx; }
+        if (e2 < dx){ err += dx; y0  += sy; }
+      }
+    }
   </script>
 </body>
 </html>

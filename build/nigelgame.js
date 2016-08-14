@@ -15,6 +15,26 @@ var pxcan = function(element) {
   var _offset = { x: 0, y: 0 };
   var binds = {};
   var buttons = {};
+  var touch = {
+    changed: false,
+    isDown: false,
+    isMouse: undefined,
+    isRightClick: undefined,
+    wasStarted: false,
+    moved: false,
+    isDrag: false,
+    wasReleased: false,
+    wasInterrupted: false,
+    cur: undefined,
+    last: undefined,
+    start: undefined,
+    x: null,
+    y: null,
+    inBounds: null,
+    rel: null,
+    bounded: null,
+    unbounded: null
+  };
   var frameskipCounter = 0;
   var clock = 0;
   
@@ -40,27 +60,30 @@ var pxcan = function(element) {
   if(element !== window && element.tabIndex < 0) element.tabIndex = 0;
   
   // public properties
-  var _id = ++pxcan.lastId;
-  Object.defineProperty(this, 'id', { get: function() { return _id; } })
-  Object.defineProperty(this, 'element', { get: function() { return element; } });
-  Object.defineProperty(this, 'canvas', { get: function() { return canvas; } });
-  Object.defineProperty(this, 'context', { get: function() { return context; } });
-  Object.defineProperty(this, 'canvasOffX', { get: function() { return 0; } });
-  Object.defineProperty(this, 'canvasOffY', { get: function() { return 0; } });
-  Object.defineProperty(this, 'left', { get: function() {
+  function DEF(name, attr) {
+    Object.defineProperty(self, name, attr);
+  }
+  var _id = pxcan.generateId();
+  DEF('id', { get: function() { return _id; } })
+  DEF('element', { get: function() { return element; } });
+  DEF('canvas', { get: function() { return canvas; } });
+  DEF('context', { get: function() { return context; } });
+  DEF('canvasOffX', { get: function() { return 0; } });
+  DEF('canvasOffY', { get: function() { return 0; } });
+  DEF('left', { get: function() {
     return Math.round(-_offset.x - (width * (_origin.x + 1) / 2));
   } });
-  Object.defineProperty(this, 'top', { get: function() {
+  DEF('top', { get: function() {
     return Math.round(-_offset.y - (height * (_origin.y + 1) / 2));
   } });
-  Object.defineProperty(this, 'right', { get: function() { return this.left + width; } });
-  Object.defineProperty(this, 'bottom', { get: function() { return this.top + height; } });
-  Object.defineProperty(this, 'width', { get: function() { return width; } });
-  Object.defineProperty(this, 'height', { get: function() { return height; } });
-  Object.defineProperty(this, 'drawScale', { get: function() { return scale; } });
-  Object.defineProperty(this, 'wasResized', { get: function() { return needsRepaint; } });
-  Object.defineProperty(this, 'clock', { get: function() { return clock; } });
-  Object.defineProperty(this, 'frameskip', { value: 0, writable: true });
+  DEF('right', { get: function() { return this.left + width; } });
+  DEF('bottom', { get: function() { return this.top + height; } });
+  DEF('width', { get: function() { return width; } });
+  DEF('height', { get: function() { return height; } });
+  DEF('drawScale', { get: function() { return scale; } });
+  DEF('wasResized', { get: function() { return needsRepaint; } });
+  DEF('clock', { get: function() { return clock; } });
+  DEF('frameskip', { value: 0, writable: true });
   this.origin = function(x, y) {
     if(arguments.length === 0) return { x: _origin.x, y: _origin.y };
     if(arguments.length === 2) _origin = { x: x, y: y };
@@ -71,7 +94,7 @@ var pxcan = function(element) {
     if(arguments.length === 2) _offset = { x: x, y: y };
     else throw new Error('invalid arguments for offset');
   };
-  Object.defineProperty(this, 'font', {
+  DEF('font', {
     set: function(x) {
       if(!this.hasSheet(x)) throw new Error('invalid font: ' + x);
       font = x;
@@ -81,6 +104,7 @@ var pxcan = function(element) {
       return font;
     }
   });
+  DEF('touch', { get: function() { return touch; } });
   
   // screen mode/sizing components
   this.mode = function(newMode) {
@@ -233,16 +257,16 @@ var pxcan = function(element) {
   };
   
   // onReady and onFrame events
-  Object.defineProperty(this, 'isPreloading', { get: function() { return pxcan.isPreloading(this); } });
+  DEF('isPreloading', { get: function() { return pxcan.isPreloading(this); } });
   var _onready = null;
-  Object.defineProperty(this, 'onReady', {
+  DEF('onReady', {
     get: function() { return _onready; },
     set: function(x) {
       if(x && !this.isPreloading) x.call(this);
       else _onready = x;
     }
   });
-  Object.defineProperty(this, 'onFrame', { writable: true });
+  DEF('onFrame', { writable: true });
   
   var raf = window.requestAnimationFrame ||
     window.mozRequestAnimationFrame ||
@@ -254,13 +278,9 @@ var pxcan = function(element) {
       frameskipCounter = 0;
       // call frame function
       if(self.onFrame && !self.isPreloading) self.onFrame.call(self, self);
-      // update button state
-      for(var b in buttons) {
-        if(buttons[b].wasPressed) buttons[b].wasPressed = false;
-        if(buttons[b].wasReleased) buttons[b].wasReleased = false;
-        if(buttons[b].isDown) ++buttons[b].framesDown;
-        else buttons[b].framesDown = 0;
-      }
+      // update input state
+      updateButtons();
+      updateTouch();
       // update clock
       ++clock;
     }
@@ -303,10 +323,110 @@ var pxcan = function(element) {
   }
   element.addEventListener("keydown", keyevt, false);
   element.addEventListener("keyup", keyevt, false);
+
+  function updateButtons() {
+    for (var b in buttons) {
+      if(buttons[b].wasPressed) buttons[b].wasPressed = false;
+      if(buttons[b].wasReleased) buttons[b].wasReleased = false;
+      if(buttons[b].isDown) ++buttons[b].framesDown;
+      else buttons[b].framesDown = 0;
+    }
+  }
+
+  // touch/mouse events
+  function touchPointFromEvt(mouseEvt, ref) {
+    // raw coordinates relative to screen top left
+    var xOnScreen = mouseEvt.clientX - (element.clientLeft || 0) - (element.offsetLeft || 0);
+    var yOnScreen = mouseEvt.clientY - (element.clientTop || 0) - (element.offsetTop || 0);
+
+    // pixel based coordinates relative to screen top left
+    var fromLeft = Math.floor(xOnScreen / (element.clientWidth || element.innerWidth) * screen.width);
+    var fromTop = Math.floor(yOnScreen / (element.clientHeight || element.innerHeight) * screen.height);
+
+    // ok.
+    return new TouchPoint(fromLeft, fromTop, ref || self);
+  }
+
+  function TouchPoint(fromLeft, fromTop, ref, bounded) {
+    Object.defineProperty(this, 'x', { get: function() {
+      if(bounded) return pxMath.clamp(fromLeft, 0, ref.width) + ref.left;
+      return fromLeft + ref.left;
+    } });
+    Object.defineProperty(this, 'y', { get: function() {
+      if(bounded) return pxMath.clamp(fromTop, 0, ref.height) + ref.top;
+      return fromTop + ref.top;
+    } });
+    Object.defineProperty(this, 'inBounds', { get: function() {
+      return (fromLeft >= 0 && fromLeft <= ref.width && fromTop >= 0 && fromTop <= ref.height);
+    } });
+    this.rel = function(ref, bounded) {
+      if(['bounded','b','unbounded','u',undefined].indexOf(bounded) === -1) {
+        throw new Error('bad value for "bounded" parameter.');
+      }
+      return new TouchPoint(fromLeft, fromTop, ref, bounded && bounded.startsWith('b'));
+    };
+    (function(self) {
+      self.bounded = function() { self.rel(ref, 'bounded'); };
+      self.unbounded = function() { self.rel(ref, 'unbounded'); };
+    })(this);
+  }
+  
+  ['x','y','inBounds','rel','bounded','unbounded'].forEach(function(attr) {
+    Object.defineProperty(touch, attr, { get: function() {
+      if(touch.cur === undefined) throw new Error('No touch events happening.');
+      return touch.cur[attr];
+    } });
+  });
+
+  function gotMouseDown(mouseEvt) {
+    if(touch.isDown && touch.isMouse) return;
+    touch.cur = touch.start = touchPointFromEvt(mouseEvt);
+    touch.changed = true;
+    touch.isDown = true;
+    touch.isMouse = true;
+    touch.isRightClick = (mouseEvt.button === 2);
+    touch.wasStarted = true;
+  }
+  function gotMouseMove(mouseEvt) {
+    if(!touch.isDown || !touch.isMouse) return;
+    touch.cur = touchPointFromEvt(mouseEvt);
+    
+    if(touch.last && touch.x === touch.last.x && touch.y === touch.last.y) return;
+    touch.changed = true;
+    touch.moved = true;
+    touch.isDrag = true;
+  }
+  function gotMouseUp(mouseEvt) {
+    if(!touch.isDown || !touch.isMouse) return;
+    touch.changed = true;
+    touch.isDown = false;
+    touch.wasReleased = true;
+  }
+  function updateTouch() {
+    touch.changed = false;
+    touch.wasStarted = false;
+    touch.moved = false;
+    touch.wasReleased = false;
+    touch.wasInterrupted = false;
+    if(touch.isDown) {
+      touch.last = touch.cur;
+    }
+    else {
+      touch.cur = touch.last = touch.start = undefined;
+      touch.isMouse = undefined;
+      touch.isRightClick = undefined;
+      touch.isDrag = false;
+    }
+  }
+  element.addEventListener("mousedown", gotMouseDown, false);
+  element.addEventListener("mousemove", gotMouseMove, false);
+  element.addEventListener("mouseup", gotMouseUp, false);
 };
 
-pxcan.lastId = -1;
-
+pxcan.generateId = (function() {
+  var lastId = -1;
+  return function() { return ++lastId; };
+})();
 
 pxcan.Panel = function(parent, x, y, w, h, xAnchor, yAnchor) {
   // verify arguments
