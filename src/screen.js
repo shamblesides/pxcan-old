@@ -84,6 +84,7 @@ var pxcan = function(element) {
   DEF('wasResized', { get: function() { return needsRepaint; } });
   DEF('clock', { get: function() { return clock; } });
   DEF('frameskip', { value: 0, writable: true });
+  DEF('contextMenu', { value: true, writable: true });
   this.origin = function(x, y) {
     if(arguments.length === 0) return { x: _origin.x, y: _origin.y };
     if(arguments.length === 2) _origin = { x: x, y: y };
@@ -421,6 +422,10 @@ var pxcan = function(element) {
   element.addEventListener("mousedown", gotMouseDown, false);
   window.addEventListener("mousemove", gotMouseMove, false);
   window.addEventListener("mouseup", gotMouseUp, false);
+  
+  element.addEventListener("contextmenu", function(e) {
+    if(!self.contextMenu) e.preventDefault();
+  });
 };
 
 pxcan.generateId = (function() {
