@@ -29,8 +29,8 @@ pxcan.Panel = function(parent, x, y, w, h, xAnchor, yAnchor) {
   Object.defineProperty(this, 'top', { get: function() {
     return Math.round(_offset.y - (height * (_origin.y + 1) / 2));
   } });
-  Object.defineProperty(this, 'right', { get: function() { return this.left + width; } });
-  Object.defineProperty(this, 'bottom', { get: function() { return this.top + height; } });
+  Object.defineProperty(this, 'right', { get: function() { return this.left + width - 1; } });
+  Object.defineProperty(this, 'bottom', { get: function() { return this.top + height - 1; } });
   Object.defineProperty(this, 'width', { get: function() { return width; } });
   Object.defineProperty(this, 'height', { get: function() { return height; } });
   Object.defineProperty(this, 'drawScale', { get: function() { return screen.drawScale; } });

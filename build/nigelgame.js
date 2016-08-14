@@ -76,8 +76,8 @@ var pxcan = function(element) {
   DEF('top', { get: function() {
     return Math.round(-_offset.y - (height * (_origin.y + 1) / 2));
   } });
-  DEF('right', { get: function() { return this.left + width; } });
-  DEF('bottom', { get: function() { return this.top + height; } });
+  DEF('right', { get: function() { return this.left + width - 1; } });
+  DEF('bottom', { get: function() { return this.top + height - 1; } });
   DEF('width', { get: function() { return width; } });
   DEF('height', { get: function() { return height; } });
   DEF('drawScale', { get: function() { return scale; } });
@@ -350,15 +350,15 @@ var pxcan = function(element) {
 
   function TouchPoint(fromLeft, fromTop, ref, bounded) {
     Object.defineProperty(this, 'x', { get: function() {
-      if(bounded) return pxMath.clamp(fromLeft, 0, ref.width) + ref.left;
+      if(bounded) return pxMath.clamp(fromLeft, 0, ref.width-1) + ref.left;
       return fromLeft + ref.left;
     } });
     Object.defineProperty(this, 'y', { get: function() {
-      if(bounded) return pxMath.clamp(fromTop, 0, ref.height) + ref.top;
+      if(bounded) return pxMath.clamp(fromTop, 0, ref.height-1) + ref.top;
       return fromTop + ref.top;
     } });
     Object.defineProperty(this, 'inBounds', { get: function() {
-      return (fromLeft >= 0 && fromLeft <= ref.width && fromTop >= 0 && fromTop <= ref.height);
+      return bounded || (this.x === this.bounded().x && this.y === this.bounded().y); 
     } });
     this.rel = function(ref, bounded) {
       if(['bounded','b','unbounded','u',undefined].indexOf(bounded) === -1) {
@@ -367,8 +367,8 @@ var pxcan = function(element) {
       return new TouchPoint(fromLeft, fromTop, ref, bounded && bounded.startsWith('b'));
     };
     (function(self) {
-      self.bounded = function() { self.rel(ref, 'bounded'); };
-      self.unbounded = function() { self.rel(ref, 'unbounded'); };
+      self.bounded = function() { return self.rel(ref, 'bounded'); };
+      self.unbounded = function() { return self.rel(ref, 'unbounded'); };
     })(this);
   }
   
@@ -422,6 +422,7 @@ var pxcan = function(element) {
   element.addEventListener("mousedown", gotMouseDown, false);
   window.addEventListener("mousemove", gotMouseMove, false);
   window.addEventListener("mouseup", gotMouseUp, false);
+  
   element.addEventListener("contextmenu", function(e) {
     if(!self.contextMenu) e.preventDefault();
   });
@@ -463,8 +464,8 @@ pxcan.Panel = function(parent, x, y, w, h, xAnchor, yAnchor) {
   Object.defineProperty(this, 'top', { get: function() {
     return Math.round(_offset.y - (height * (_origin.y + 1) / 2));
   } });
-  Object.defineProperty(this, 'right', { get: function() { return this.left + width; } });
-  Object.defineProperty(this, 'bottom', { get: function() { return this.top + height; } });
+  Object.defineProperty(this, 'right', { get: function() { return this.left + width - 1; } });
+  Object.defineProperty(this, 'bottom', { get: function() { return this.top + height - 1; } });
   Object.defineProperty(this, 'width', { get: function() { return width; } });
   Object.defineProperty(this, 'height', { get: function() { return height; } });
   Object.defineProperty(this, 'drawScale', { get: function() { return screen.drawScale; } });

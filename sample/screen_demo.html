@@ -42,7 +42,7 @@
         var size = tch.isMouse? 1 : 10;
 
         if (tch.moved && tch.isDown) {
-          drawLine(this, color, size, tch.last.x, tch.last.y, tch.x, tch.y);
+          drawLine(this, color, size, tch.last.bounded().x, tch.last.bounded().y, tch.bounded().x, tch.bounded().y);
         }
         else if (tch.wasStarted) {
           this.fill(color, tch.x, tch.y, size, size);
@@ -52,6 +52,9 @@
         }
         else if (tch.wasInterrupted) {
           this.fill('orange');
+        }
+        if (!tch.inBounds && tch.last.inBounds) {
+          this.write('out of bounds', 0,0);
         }
       }
       // tch.changed, tch.isDown, tch.isMouse, tch.isRightClick, tch.wasStarted, 
