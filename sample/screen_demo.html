@@ -27,7 +27,6 @@
   <script>
     var screen = new pxcan("#game");
     screen.mode("adapt", 3);
-    screen.offset(0,0);
     screen.setBackground("black");
     screen.contextMenu = false;
     
@@ -36,39 +35,27 @@
     };
     
     screen.onFrame = function() {
-      try{
-        if (this.touch.changed) {
-          var tch = this.touch;
-          var color = tch.isRightClick ? 'red': 'white';
-          var size = tch.isMouse? 1 : 10;
+      if (!this.touch.changed) return;
 
-          if (tch.moved && tch.isDown) {
-            drawLine(this, color, size, tch.last.bounded().x, tch.last.bounded().y, tch.bounded().x, tch.bounded().y);
-          }
-          else if (tch.wasStarted) {
-            this.fill(color, tch.x, tch.y, size, size);
-          }
-          else if (tch.wasReleased && tch.isDrag) {
-            drawLine(this, 'gray', size, tch.start.x, tch.start.y, tch.x, tch.y);
-          }
-          else if (tch.wasInterrupted) {
-            this.fill('orange');
-          }
-          if (!tch.inBounds && tch.last && tch.last.inBounds) {
-            this.write('out of bounds', 0,0);
-          }
-        }
+      var tch = this.touch;
+      var color = tch.isRightClick ? 'red': 'white';
+      var size = tch.isMouse? 1 : 10;
+
+      if (tch.moved && tch.isDown) {
+        drawLine(this, color, size, tch.last.bounded().x, tch.last.bounded().y, tch.bounded().x, tch.bounded().y);
       }
-      catch(ex) { alert(ex.message); }
-      // tch.changed, tch.isDown, tch.isMouse, tch.isRightClick, tch.wasStarted, 
-      // tch.moved, tch.isDrag, tch.wasReleased, tch.wasInterrupted
-
-      // tch.(point) : cur, last, start
-      // point.x, point.y, point.inBounds, point.ref
-      // point.rel(scr, 'bounded'|'b'), point.rel(scr, ['unbounded'|'u'])
-      // point.bounded(), point.unbounded()
-
-      // tch.x, tch.y, tch.inBounds, tch.rel(), tch.bounded(), tch.unbounded()
+      else if (tch.wasStarted) {
+        this.fill(color, tch.x, tch.y, size, size);
+      }
+      else if (tch.wasReleased && tch.isDrag) {
+        drawLine(this, 'gray', size, tch.start.x, tch.start.y, tch.x, tch.y);
+      }
+      else if (tch.wasInterrupted) {
+        this.fill('orange');
+      }
+      if (!tch.inBounds && tch.last && tch.last.inBounds) {
+        this.write('out of bounds', 0,0);
+      }
     };
 
     function drawLine(screen, color, size, x0,y0, x1,y1) {
