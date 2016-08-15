@@ -7,6 +7,7 @@ pxcan.Panel = function(parent, x, y, w, h, xAnchor, yAnchor) {
     xAnchor = parent.origin().x;
     yAnchor = parent.origin().y;
   }
+  var self = this;
   var font = null;
   var _origin = parent.origin();
   var _offset = parent.offset();
@@ -17,12 +18,14 @@ pxcan.Panel = function(parent, x, y, w, h, xAnchor, yAnchor) {
   this.canvasOffY = Math.round(parent.canvasOffY + y + parent.height*(parent.origin().y+1)/2 - h*(yAnchor+1)/2);
   var width = Math.round(w);
   var height = Math.round(h);
+
+  // inherited properties
+  ['element', 'canvas', 'context', 'drawScale', 'sheet'].forEach(function(attr) {
+    Object.defineProperty(self, attr, { get: function() { return screen[attr]; } });
+  });
   
   // public properties
   Object.defineProperty(this, 'screen', { get: function() { return screen; } });
-  Object.defineProperty(this, 'element', { get: function() { return screen.element; } });
-  Object.defineProperty(this, 'canvas', { get: function() { return screen.canvas; } });
-  Object.defineProperty(this, 'context', { get: function() { return screen.context; } });
   Object.defineProperty(this, 'left', { get: function() {
     return Math.round(_offset.x - (width * (_origin.x + 1) / 2));
   } });
@@ -33,8 +36,6 @@ pxcan.Panel = function(parent, x, y, w, h, xAnchor, yAnchor) {
   Object.defineProperty(this, 'bottom', { get: function() { return this.top + height - 1; } });
   Object.defineProperty(this, 'width', { get: function() { return width; } });
   Object.defineProperty(this, 'height', { get: function() { return height; } });
-  Object.defineProperty(this, 'drawScale', { get: function() { return screen.drawScale; } });
-  Object.defineProperty(this, 'sheet', { get: function() { return screen.sheet; } });
   Object.defineProperty(this, 'font', {
     set: function(x) {
       if(!this.hasSheet(x)) throw new Error('invalid font: ' + x);

@@ -1,11 +1,6 @@
 // custom random number generator
 //  it can just be called as a function, or it can be seeded
 pxcan.random = (function() {
-  function getSeed(s) {
-    if(typeof(s) === 'number') return s;
-    else if(typeof(s) === 'string') return hashString(s);
-    else throw new Error('not sure what to do with seed: ' + s);
-  }
   // Hashcode of strings.
   //  http://werxltd.com/wp/2010/05/13/javascript-implementation-of-javas-string-hashcode-method/
   function hashString(str) {
@@ -17,6 +12,11 @@ pxcan.random = (function() {
       hash |= 0; // Convert to 32bit integer
     }
     return hash;
+  }
+  function getSeed(s) {
+    if(typeof(s) === 'number') return s;
+    else if(typeof(s) === 'string') return hashString(s);
+    else throw new Error('not sure what to do with seed: ' + s);
   }
   function SinRand(s) {
     var seed = getSeed(s);

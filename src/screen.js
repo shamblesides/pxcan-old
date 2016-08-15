@@ -84,7 +84,6 @@ var pxcan = function(element) {
   DEF('wasResized', { get: function() { return needsRepaint; } });
   DEF('clock', { get: function() { return clock; } });
   DEF('frameskip', { value: 0, writable: true });
-  DEF('contextMenu', { value: true, writable: true });
   this.origin = function(x, y) {
     if(arguments.length === 0) return { x: _origin.x, y: _origin.y };
     if(arguments.length === 2) _origin = { x: x, y: y };
@@ -105,7 +104,6 @@ var pxcan = function(element) {
       return font;
     }
   });
-  DEF('touch', { get: function() { return touch; } });
   
   // screen mode/sizing components
   this.mode = function(newMode) {
@@ -247,14 +245,14 @@ var pxcan = function(element) {
     sheets[alias] = new pxcan.Sheet(alias, src, w, h);
   };
   
-  this.sheet = function(src) {
-    if(sheets[src]) return sheets[src];
-    if(pxcan.globalSheets[src]) return pxcan.globalSheets[src];
-    throw new Error("invalid sheet: " + src);
+  this.sheet = function(alias) {
+    if(sheets[alias]) return sheets[alias];
+    if(pxcan.globalSheets[alias]) return pxcan.globalSheets[alias];
+    throw new Error("invalid sheet: " + alias);
   };
   
-  this.hasSheet = function(src) {
-    return !!(sheets[src] || pxcan.globalSheets[src]);
+  this.hasSheet = function(alias) {
+    return !!(sheets[alias] || pxcan.globalSheets[alias]);
   };
   
   // onReady and onFrame events
@@ -335,6 +333,9 @@ var pxcan = function(element) {
   }
 
   // touch stuff (mouse and touch)
+  DEF('touch', { get: function() { return touch; } });
+  DEF('contextMenu', { value: true, writable: true });
+  
   function evtToCoords(evt) {
     // raw coordinates relative to screen top left
     var xOnScreen = evt.clientX - (element.clientLeft || 0) - (element.offsetLeft || 0) + window.scrollX;
