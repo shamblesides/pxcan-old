@@ -337,8 +337,8 @@ var pxcan = function(element) {
   // touch stuff (mouse and touch)
   function evtToCoords(evt) {
     // raw coordinates relative to screen top left
-    var xOnScreen = evt.clientX - (element.clientLeft || 0) - (element.offsetLeft || 0);
-    var yOnScreen = evt.clientY - (element.clientTop || 0) - (element.offsetTop || 0);
+    var xOnScreen = evt.clientX - (element.clientLeft || 0) - (element.offsetLeft || 0) + window.scrollX;
+    var yOnScreen = evt.clientY - (element.clientTop || 0) - (element.offsetTop || 0) + window.scrollY;
 
     // pixel based coordinates relative to screen top left
     return {
@@ -470,7 +470,7 @@ var pxcan = function(element) {
       return e.identifier === currentTouchId;
     });
     if(!currentTouch) return;
-console.log(touchEvt.targetTouches);
+    
     if(touchEvt.targetTouches.length === 0) { // no more touches; release
       onTouchEnd();
       currentTouchId = null;
