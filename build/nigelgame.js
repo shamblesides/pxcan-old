@@ -334,21 +334,22 @@ var pxcan = function(element) {
     }
   }
 
-  // touch/mouse events
-  function touchPointFromEvt(mouseEvt, ref) {
+  // touch stuff (mouse and touch)
+  function evtToCoords(evt) {
     // raw coordinates relative to screen top left
-    var xOnScreen = mouseEvt.clientX - (element.clientLeft || 0) - (element.offsetLeft || 0);
-    var yOnScreen = mouseEvt.clientY - (element.clientTop || 0) - (element.offsetTop || 0);
+    var xOnScreen = evt.clientX - (element.clientLeft || 0) - (element.offsetLeft || 0);
+    var yOnScreen = evt.clientY - (element.clientTop || 0) - (element.offsetTop || 0);
 
     // pixel based coordinates relative to screen top left
-    var fromLeft = Math.floor(xOnScreen / (element.clientWidth || element.innerWidth) * screen.width);
-    var fromTop = Math.floor(yOnScreen / (element.clientHeight || element.innerHeight) * screen.height);
-
-    // ok.
-    return new TouchPoint(fromLeft, fromTop, ref || self);
+    return {
+      fromLeft: Math.floor(xOnScreen / (element.clientWidth || element.innerWidth) * screen.width),
+      fromTop: Math.floor(yOnScreen / (element.clientHeight || element.innerHeight) * screen.height)
+    };
   }
-
   function TouchPoint(fromLeft, fromTop, ref, bounded) {
+    ref = ref || self;
+    bounded = bounded || false;
+
     Object.defineProperty(this, 'x', { get: function() {
       if(bounded) return pxMath.clamp(fromLeft, 0, ref.width-1) + ref.left;
       return fromLeft + ref.left;
@@ -379,30 +380,26 @@ var pxcan = function(element) {
     } });
   });
 
-  function gotMouseDown(mouseEvt) {
-    if(touch.isDown && touch.isMouse) return;
-    touch.cur = touch.start = touchPointFromEvt(mouseEvt);
+  function onTouchStart(fromLeft, fromTop) {
+    touch.cur = touch.start = new TouchPoint(fromLeft, fromTop);
     touch.changed = true;
     touch.isDown = true;
-    touch.isMouse = true;
-    touch.isRightClick = (mouseEvt.button === 2);
     touch.wasStarted = true;
   }
-  function gotMouseMove(mouseEvt) {
-    if(!touch.isDown || !touch.isMouse) return;
-    touch.cur = touchPointFromEvt(mouseEvt);
+  function onTouchMove(fromLeft, fromTop) {
+    touch.cur = new TouchPoint(fromLeft, fromTop);
     
-    if(touch.last && touch.x === touch.last.x && touch.y === touch.last.y) return;
+    if(touch.last && (touch.x === touch.last.x) && (touch.y === touch.last.y)) return;
     touch.changed = true;
     touch.moved = true;
     touch.isDrag = true;
   }
-  function gotMouseUp(mouseEvt) {
-    if(!touch.isDown || !touch.isMouse) return;
+  function onTouchEnd() {
     touch.changed = true;
     touch.isDown = false;
     touch.wasReleased = true;
   }
+
   function updateTouch() {
     touch.changed = false;
     touch.wasStarted = false;
@@ -419,10 +416,73 @@ var pxcan = function(element) {
       touch.isDrag = false;
     }
   }
-  element.addEventListener("mousedown", gotMouseDown, false);
-  window.addEventListener("mousemove", gotMouseMove, false);
-  window.addEventListener("mouseup", gotMouseUp, false);
   
+  // mouse!
+  element.addEventListener("mousedown", function(mouseEvt) {
+    if(touch.isDown) return;
+    var coords = evtToCoords(mouseEvt);
+    onTouchStart(coords.fromLeft, coords.fromTop);
+    touch.isMouse = true;
+    touch.isRightClick = (mouseEvt.button === 2);
+  }, false);
+
+  window.addEventListener("mousemove", function(mouseEvt) {
+    if(!touch.isMouse) return;
+    var coords = evtToCoords(mouseEvt);
+    onTouchMove(coords.fromLeft, coords.fromTop);
+  }, false);
+  
+  window.addEventListener("mouseup", function(mouseEvt) {
+    if(!touch.isMouse) return;
+    onTouchEnd();
+  }, false);
+
+  // touch.
+  var currentTouchId = undefined;
+  element.addEventListener("touchstart", function(touchEvt) {
+    touchEvt.preventDefault();
+    if(touch.isDown) return;
+    
+    var coords = evtToCoords(touchEvt.changedTouches[0]);
+    onTouchStart(coords.fromLeft, coords.fromTop);
+    touch.isMouse = false;
+    currentTouchId = touchEvt.changedTouches[0].identifier;
+  }, false);
+
+  element.addEventListener("touchmove", function(touchEvt) {
+    touchEvt.preventDefault();
+    if(!touch.isDown || touch.isMouse) return;
+
+    var currentTouch = Array.prototype.find.call(touchEvt.changedTouches, function(e) {
+      return e.identifier === currentTouchId;
+    });
+    if(!currentTouch) return;
+
+    var coords = evtToCoords(currentTouch);
+    onTouchMove(coords.fromLeft, coords.fromTop);
+  }, false);
+
+  element.addEventListener("touchend", function(touchEvt) {
+    touchEvt.preventDefault();
+    if(!touch.isDown || touch.isMouse) return;
+
+    var currentTouch = Array.prototype.find.call(touchEvt.changedTouches, function(e) {
+      return e.identifier === currentTouchId;
+    });
+    if(!currentTouch) return;
+console.log(touchEvt.targetTouches);
+    if(touchEvt.targetTouches.length === 0) { // no more touches; release
+      onTouchEnd();
+      currentTouchId = null;
+    }
+    else { // other touches on screen; 'drag' to the lastest one
+      var nextTouch = touchEvt.targetTouches[touchEvt.targetTouches.length-1];
+      currentTouchId = nextTouch.identifier;
+      onTouchMove(nextTouch);
+    }
+  }, false);
+  
+  // optional right click menu event capture
   element.addEventListener("contextmenu", function(e) {
     if(!self.contextMenu) e.preventDefault();
   });
