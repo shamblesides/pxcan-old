@@ -306,10 +306,9 @@ var pxcan = function(element) {
   this.button = function(b) { return buttons[b]; };
   
   function keyevt(evt) {
-    if(binds[evt.keyCode] === undefined) {
-      evt.preventDefault();
-      return true;
-    }
+    if(binds[evt.keyCode] === undefined) return true;
+    
+    evt.preventDefault();
     var button = buttons[binds[evt.keyCode]];
     if(evt.type === 'keydown' && button.framesDown === 0) {
       button.wasPressed = button.isDown = true;
