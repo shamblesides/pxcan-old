@@ -84,7 +84,6 @@ var pxcan = function(element) {
   DEF('wasResized', { get: function() { return needsRepaint; } });
   DEF('clock', { get: function() { return clock; } });
   DEF('frameskip', { value: 0, writable: true });
-  DEF('contextMenu', { value: true, writable: true });
   this.origin = function(x, y) {
     if(arguments.length === 0) return { x: _origin.x, y: _origin.y };
     if(arguments.length === 2) _origin = { x: x, y: y };
@@ -105,7 +104,6 @@ var pxcan = function(element) {
       return font;
     }
   });
-  DEF('touch', { get: function() { return touch; } });
   
   // screen mode/sizing components
   this.mode = function(newMode) {
@@ -247,14 +245,14 @@ var pxcan = function(element) {
     sheets[alias] = new pxcan.Sheet(alias, src, w, h);
   };
   
-  this.sheet = function(src) {
-    if(sheets[src]) return sheets[src];
-    if(pxcan.globalSheets[src]) return pxcan.globalSheets[src];
-    throw new Error("invalid sheet: " + src);
+  this.sheet = function(alias) {
+    if(sheets[alias]) return sheets[alias];
+    if(pxcan.globalSheets[alias]) return pxcan.globalSheets[alias];
+    throw new Error("invalid sheet: " + alias);
   };
   
-  this.hasSheet = function(src) {
-    return !!(sheets[src] || pxcan.globalSheets[src]);
+  this.hasSheet = function(alias) {
+    return !!(sheets[alias] || pxcan.globalSheets[alias]);
   };
   
   // onReady and onFrame events
@@ -335,6 +333,9 @@ var pxcan = function(element) {
   }
 
   // touch stuff (mouse and touch)
+  DEF('touch', { get: function() { return touch; } });
+  DEF('contextMenu', { value: true, writable: true });
+  
   function evtToCoords(evt) {
     // raw coordinates relative to screen top left
     var xOnScreen = evt.clientX - (element.clientLeft || 0) - (element.offsetLeft || 0) + window.scrollX;
@@ -502,6 +503,7 @@ pxcan.Panel = function(parent, x, y, w, h, xAnchor, yAnchor) {
     xAnchor = parent.origin().x;
     yAnchor = parent.origin().y;
   }
+  var self = this;
   var font = null;
   var _origin = parent.origin();
   var _offset = parent.offset();
@@ -512,12 +514,14 @@ pxcan.Panel = function(parent, x, y, w, h, xAnchor, yAnchor) {
   this.canvasOffY = Math.round(parent.canvasOffY + y + parent.height*(parent.origin().y+1)/2 - h*(yAnchor+1)/2);
   var width = Math.round(w);
   var height = Math.round(h);
+
+  // inherited properties
+  ['element', 'canvas', 'context', 'drawScale', 'sheet'].forEach(function(attr) {
+    Object.defineProperty(self, attr, { get: function() { return screen[attr]; } });
+  });
   
   // public properties
   Object.defineProperty(this, 'screen', { get: function() { return screen; } });
-  Object.defineProperty(this, 'element', { get: function() { return screen.element; } });
-  Object.defineProperty(this, 'canvas', { get: function() { return screen.canvas; } });
-  Object.defineProperty(this, 'context', { get: function() { return screen.context; } });
   Object.defineProperty(this, 'left', { get: function() {
     return Math.round(_offset.x - (width * (_origin.x + 1) / 2));
   } });
@@ -528,8 +532,6 @@ pxcan.Panel = function(parent, x, y, w, h, xAnchor, yAnchor) {
   Object.defineProperty(this, 'bottom', { get: function() { return this.top + height - 1; } });
   Object.defineProperty(this, 'width', { get: function() { return width; } });
   Object.defineProperty(this, 'height', { get: function() { return height; } });
-  Object.defineProperty(this, 'drawScale', { get: function() { return screen.drawScale; } });
-  Object.defineProperty(this, 'sheet', { get: function() { return screen.sheet; } });
   Object.defineProperty(this, 'font', {
     set: function(x) {
       if(!this.hasSheet(x)) throw new Error('invalid font: ' + x);
@@ -1064,11 +1066,6 @@ var pxMath = {
 // custom random number generator
 //  it can just be called as a function, or it can be seeded
 pxcan.random = (function() {
-  function getSeed(s) {
-    if(typeof(s) === 'number') return s;
-    else if(typeof(s) === 'string') return hashString(s);
-    else throw new Error('not sure what to do with seed: ' + s);
-  }
   // Hashcode of strings.
   //  http://werxltd.com/wp/2010/05/13/javascript-implementation-of-javas-string-hashcode-method/
   function hashString(str) {
@@ -1080,6 +1077,11 @@ pxcan.random = (function() {
       hash |= 0; // Convert to 32bit integer
     }
     return hash;
+  }
+  function getSeed(s) {
+    if(typeof(s) === 'number') return s;
+    else if(typeof(s) === 'string') return hashString(s);
+    else throw new Error('not sure what to do with seed: ' + s);
   }
   function SinRand(s) {
     var seed = getSeed(s);
