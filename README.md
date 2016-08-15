@@ -1,7 +1,7 @@
-nigelgame
+pxcan
 =========
 
-Using nigelgame, it's easy to quickly prototype a 2D pixelly game using JS! Here are some noteworthy features:
+Using pxcan, it's easy to quickly prototype a 2D pixelly game using JS! Here are some noteworthy features:
 
 *   Crisp upscaling of pixel graphics
 *   Built to let you handle different screen sizes

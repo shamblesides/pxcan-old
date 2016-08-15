@@ -1,6 +1,6 @@
 baseurl = "http://replace-this-with-your-hugo-site.com/"
 languageCode = "en-us"
-title = "NigelGame.JS Docs"
+title = "pxcan.js Docs"
 theme = "hugo-material-docs"
 metadataformat = "yaml"
 canonifyurls = true
@@ -45,7 +45,7 @@ googleAnalytics = ""
 
 
 [[menu.main]]
-	name   = "NigelGame.JS"
+	name   = "pxcan.js"
 	url    = "/"
 	weight = 0
 

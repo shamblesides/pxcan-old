@@ -50,7 +50,7 @@ screen.onFrame = function() {
 };
 ~~~
 
-<script src="/nigelgame.js"></script>
+<script src="/pxcan.js"></script>
 <script>
     var screen = new pxcan("#game");
     screen.mode("adapt", 3);
