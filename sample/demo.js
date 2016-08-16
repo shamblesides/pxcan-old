@@ -53,10 +53,10 @@ game.onFrame = function() {
   // draw
   this.reset();
   var flip = (this.clock % 50 >= 25)? 'hv': '';
-  for (var p of panels) {
+  panels.forEach(function(p) {
     p.clear();
     p.blit('bg', null, 0, 0);
     p.blit('chara', chara.frame, flip, chara.x, chara.y, 0, 1);
-  }
+  });
 
 };
