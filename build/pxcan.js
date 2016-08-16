@@ -342,8 +342,8 @@ var pxcan = function(element) {
 
     // pixel based coordinates relative to screen top left
     return {
-      fromLeft: Math.floor(xOnScreen / (element.clientWidth || element.innerWidth) * screen.width),
-      fromTop: Math.floor(yOnScreen / (element.clientHeight || element.innerHeight) * screen.height)
+      fromLeft: Math.floor(xOnScreen / (element.clientWidth || element.innerWidth) * self.width),
+      fromTop: Math.floor(yOnScreen / (element.clientHeight || element.innerHeight) * self.height)
     };
   }
   function TouchPoint(fromLeft, fromTop, ref, bounded) {
