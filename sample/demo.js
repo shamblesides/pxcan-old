@@ -54,6 +54,7 @@ game.onFrame = function() {
   ];
   for (var i = 0; i < 5; ++i) {
     var p = panels[i];
+    p.clear();
     p.blit('bg', null, 0, 0);
     p.blit('chara', chara.frame, flip, chara.x, chara.y, 0, 1);
   }
