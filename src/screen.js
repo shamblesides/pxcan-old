@@ -275,6 +275,8 @@ var pxcan = function(element) {
     ++frameskipCounter;
     if(frameskipCounter > self.frameskip) {
       frameskipCounter = 0;
+      // re-fit screen
+      self.fitElement();
       // call frame function
       if(self.onFrame && !self.isPreloading) self.onFrame.call(self, self);
       // update input state
