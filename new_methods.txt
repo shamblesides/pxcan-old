@@ -6,7 +6,6 @@ pxcan.canvas
 pxcan.context
 pxcan.canvasOffX, pxcan.canvasOffY = 0
 
-
 pxcan.left, pxcan.right
 pxcan.top, pxcan.bottom
 pxcan.width
@@ -117,6 +116,8 @@ pxcan.touch{
     unBounded()
   }
 }
+
+pxcan.hasFocus
 
 --- STATIC ---
 

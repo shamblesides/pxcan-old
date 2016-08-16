@@ -486,6 +486,11 @@ var pxcan = function(element) {
   element.addEventListener("contextmenu", function(e) {
     if(!self.contextMenu) e.preventDefault();
   });
+
+  // does this element have focus?
+  DEF('hasFocus', { get: function() {
+    return document.hasFocus() && document.activeElement === element;
+  } });
 };
 
 pxcan.generateId = (function() {
