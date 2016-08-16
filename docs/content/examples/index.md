@@ -105,6 +105,22 @@ function drawLine(screen, color, size, x0,y0, x1,y1) {
 }
 ~~~
 
+## hasFocus ##
+A very simple demo to check if the game element has keyboard focus.
+
+<div id="focus-example"></div>
+
+~~~
+var screen = new pxcan("#focus-example");
+screen.mode("adapt", 3);
+screen.frameskip = 5;
+
+screen.onFrame = function() {
+    this.fill(this.hasFocus? 'green': 'red');
+    this.write(this.clock, 0,0);
+};
+~~~
+
 
 <script src="/pxcan.js"></script>
 <script>
@@ -186,4 +202,13 @@ function drawLine(screen, color, size, x0,y0, x1,y1) {
             if (e2 < dx){ err += dx; y0  += sy; }
         }
     }
+
+    screen = new pxcan("#focus-example");
+    screen.mode("adapt", 3);
+    screen.frameskip = 5;
+
+    screen.onFrame = function() {
+        this.fill(this.hasFocus? 'green': 'red');
+        this.write(this.clock, 0,0);
+    };
 </script>
