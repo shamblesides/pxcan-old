@@ -22,7 +22,18 @@ module.exports = function(grunt) {
     uglify: {
       buildSrc: {
         files: {
-          'build/pxcan.min.js': 'build/pxcan.js'
+          'build/pxcan.min.js': 'build/pxcan.babel.js'
+        }
+      }
+    },
+    babel: {
+      options: {
+        sourceMap: true,
+        presets: ['babel-preset-es2015']
+      },
+      babel: {
+        files: {
+          'build/pxcan.babel.js': 'build/pxcan.js'
         }
       }
     }
@@ -31,9 +42,10 @@ module.exports = function(grunt) {
   // Load the plugins
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-uglify');
+  grunt.loadNpmTasks('grunt-babel');
 
   // Tasks
-  grunt.registerTask('default', ['concat:buildSrc', 'uglify:buildSrc', 'concat:copyToDocs']);
+  grunt.registerTask('default', ['concat:buildSrc', 'babel', 'uglify:buildSrc', 'concat:copyToDocs']);
   grunt.registerTask('test', ['concat:buildSrc']);
 
 };
