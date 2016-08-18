@@ -38,9 +38,6 @@ var pxcan = function(element) {
   var frameskipCounter = 0;
   var clock = 0;
   
-  // add to list of pxcan instances
-  pxcan.instances.push(this);
-  
   // create canvas element
   var canvas = document.createElement('canvas');
   canvas.style.display = 'block';
@@ -63,7 +60,7 @@ var pxcan = function(element) {
   function DEF(name, attr) {
     Object.defineProperty(self, name, attr);
   }
-  var _id = pxcan.generateId();
+  var _id = pxcan.assignId(this);
   DEF('id', { get: function() { return _id; } })
   DEF('element', { get: function() { return element; } });
   DEF('canvas', { get: function() { return canvas; } });
@@ -492,8 +489,3 @@ var pxcan = function(element) {
     return document.hasFocus() && document.activeElement === element;
   } });
 };
-
-pxcan.generateId = (function() {
-  var lastId = -1;
-  return function() { return ++lastId; };
-})();
