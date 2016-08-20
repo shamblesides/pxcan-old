@@ -23,19 +23,8 @@ game.onFrame = function() {
   ];
 
   // update movement based on keys
-  if (this.button('left').isDown && this.button('right').isDown) {
-    chara.xDir = Math.sign(this.button('left').framesDown - this.button('right').framesDown);
-  }
-  else if (this.button('left').isDown) chara.xDir = -1;
-  else if (this.button('right').isDown) chara.xDir = 1;
-  else chara.xDir = 0;
-
-  if (this.button('up').isDown && this.button('down').isDown) {
-    chara.yDir = Math.sign(this.button('up').framesDown - this.button('down').framesDown);
-  }
-  else if (this.button('up').isDown) chara.yDir = -1;
-  else if (this.button('down').isDown) chara.yDir = 1;
-  else chara.yDir = 0;
+  chara.xDir = ({ 'left': -1, 'right': 1 })[this.pad('left','right')] || 0;
+  chara.yDir = ({ 'up': -1, 'down': 1 })[this.pad('up','down')] || 0;
   
   // or touch!
   if (this.touch.isDown) {

@@ -98,6 +98,7 @@ pxcan.onFrame
 
 pxcan.bind(button, ...keys)
 pxcan.button(button).{ wasPressed, wasReleased, isDown, framesDown }
+pxcan.pad(...buttons)
 pxcan.touch{
   changed,
   isDown,

@@ -321,6 +321,19 @@ var pxcan = function pxcan(element) {
     return buttons[b];
   };
 
+  this.pad = function () /* ...buttons */{
+    var padButtons;
+    if (arguments.length === 1 && arguments[0] instanceof Array) padButtons = arguments[0];else padButtons = Array.slice.call(null, arguments);
+
+    padButtons = padButtons.filter(function (x) {
+      return buttons[x].isDown;
+    });
+    if (padButtons.length === 0) return null;
+    return padButtons.reduce(function (a, b) {
+      return buttons[b].framesDown < buttons[a].framesDown ? b : a;
+    }, padButtons[0]);
+  };
+
   function keyevt(evt) {
     if (binds[evt.keyCode] === undefined) return true;
 
