@@ -1,6 +1,8 @@
 'use strict';
 
 var pxcan = function pxcan(element) {
+  var _this = this;
+
   // vars
   var self = this;
   element = element || window;
@@ -60,54 +62,51 @@ var pxcan = function pxcan(element) {
 
   // public properties
   function DEF(name, attr) {
-    Object.defineProperty(self, name, attr);
+    if (typeof attr === 'function') Object.defineProperty(self, name, { get: attr });else Object.defineProperty(self, name, attr);
   }
-  var _id = pxcan.assignId(this);
-  DEF('id', { get: function get() {
-      return _id;
-    } });
-  DEF('element', { get: function get() {
-      return element;
-    } });
-  DEF('canvas', { get: function get() {
-      return canvas;
-    } });
-  DEF('context', { get: function get() {
-      return context;
-    } });
-  DEF('canvasOffX', { get: function get() {
-      return 0;
-    } });
-  DEF('canvasOffY', { get: function get() {
-      return 0;
-    } });
-  DEF('left', { get: function get() {
-      return Math.round(-_offset.x - width * (_origin.x + 1) / 2);
-    } });
-  DEF('top', { get: function get() {
-      return Math.round(-_offset.y - height * (_origin.y + 1) / 2);
-    } });
-  DEF('right', { get: function get() {
-      return this.left + width - 1;
-    } });
-  DEF('bottom', { get: function get() {
-      return this.top + height - 1;
-    } });
-  DEF('width', { get: function get() {
-      return width;
-    } });
-  DEF('height', { get: function get() {
-      return height;
-    } });
-  DEF('drawScale', { get: function get() {
-      return scale;
-    } });
-  DEF('wasResized', { get: function get() {
-      return needsRepaint;
-    } });
-  DEF('clock', { get: function get() {
-      return clock;
-    } });
+  DEF('id', { value: pxcan.assignId(this) });
+  DEF('element', function () {
+    return element;
+  });
+  DEF('canvas', function () {
+    return canvas;
+  });
+  DEF('context', function () {
+    return context;
+  });
+  DEF('canvasOffX', function () {
+    return 0;
+  });
+  DEF('canvasOffY', function () {
+    return 0;
+  });
+  DEF('left', function () {
+    return Math.round(-_offset.x - width * (_origin.x + 1) / 2);
+  });
+  DEF('top', function () {
+    return Math.round(-_offset.y - height * (_origin.y + 1) / 2);
+  });
+  DEF('right', function () {
+    return _this.left + width - 1;
+  });
+  DEF('bottom', function () {
+    return _this.top + height - 1;
+  });
+  DEF('width', function () {
+    return width;
+  });
+  DEF('height', function () {
+    return height;
+  });
+  DEF('drawScale', function () {
+    return scale;
+  });
+  DEF('wasResized', function () {
+    return needsRepaint;
+  });
+  DEF('clock', function () {
+    return clock;
+  });
   DEF('frameskip', { value: 0, writable: true });
   this.origin = function (x, y) {
     if (arguments.length === 0) return { x: _origin.x, y: _origin.y };
@@ -269,9 +268,9 @@ var pxcan = function pxcan(element) {
   };
 
   // onReady and onFrame events
-  DEF('isPreloading', { get: function get() {
-      return pxcan.isPreloading(this);
-    } });
+  DEF('isPreloading', function () {
+    return pxcan.isPreloading(_this);
+  });
   var _onready = null;
   DEF('onReady', {
     get: function get() {
@@ -347,9 +346,9 @@ var pxcan = function pxcan(element) {
   }
 
   // touch stuff (mouse and touch)
-  DEF('touch', { get: function get() {
-      return touch;
-    } });
+  DEF('touch', function () {
+    return touch;
+  });
   DEF('contextMenu', { value: true, writable: true });
 
   function evtToCoords(evt) {
@@ -507,9 +506,9 @@ var pxcan = function pxcan(element) {
   });
 
   // does this element have focus?
-  DEF('hasFocus', { get: function get() {
-      return document.hasFocus() && document.activeElement === element;
-    } });
+  DEF('hasFocus', function () {
+    return document.hasFocus() && document.activeElement === element;
+  });
 };
 
 pxcan.Panel = function (parent, x, y, w, h, xAnchor, yAnchor) {

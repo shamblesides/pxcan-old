@@ -58,28 +58,24 @@ var pxcan = function(element) {
   
   // public properties
   function DEF(name, attr) {
-    Object.defineProperty(self, name, attr);
+    if(typeof(attr) === 'function') Object.defineProperty(self, name, {get:attr});
+    else Object.defineProperty(self, name, attr);
   }
-  var _id = pxcan.assignId(this);
-  DEF('id', { get: function() { return _id; } })
-  DEF('element', { get: function() { return element; } });
-  DEF('canvas', { get: function() { return canvas; } });
-  DEF('context', { get: function() { return context; } });
-  DEF('canvasOffX', { get: function() { return 0; } });
-  DEF('canvasOffY', { get: function() { return 0; } });
-  DEF('left', { get: function() {
-    return Math.round(-_offset.x - (width * (_origin.x + 1) / 2));
-  } });
-  DEF('top', { get: function() {
-    return Math.round(-_offset.y - (height * (_origin.y + 1) / 2));
-  } });
-  DEF('right', { get: function() { return this.left + width - 1; } });
-  DEF('bottom', { get: function() { return this.top + height - 1; } });
-  DEF('width', { get: function() { return width; } });
-  DEF('height', { get: function() { return height; } });
-  DEF('drawScale', { get: function() { return scale; } });
-  DEF('wasResized', { get: function() { return needsRepaint; } });
-  DEF('clock', { get: function() { return clock; } });
+  DEF('id', { value: pxcan.assignId(this) });
+  DEF('element', ()=> element);
+  DEF('canvas', ()=> canvas);
+  DEF('context', ()=> context);
+  DEF('canvasOffX', ()=> 0);
+  DEF('canvasOffY', ()=> 0);
+  DEF('left', ()=> Math.round(-_offset.x - (width * (_origin.x + 1) / 2)));
+  DEF('top', ()=> Math.round(-_offset.y - (height * (_origin.y + 1) / 2)));
+  DEF('right', ()=> this.left + width - 1);
+  DEF('bottom', ()=> this.top + height - 1);
+  DEF('width', ()=> width);
+  DEF('height', ()=> height);
+  DEF('drawScale', ()=> scale);
+  DEF('wasResized', ()=> needsRepaint);
+  DEF('clock', ()=> clock);
   DEF('frameskip', { value: 0, writable: true });
   this.origin = function(x, y) {
     if(arguments.length === 0) return { x: _origin.x, y: _origin.y };
@@ -253,7 +249,7 @@ var pxcan = function(element) {
   };
   
   // onReady and onFrame events
-  DEF('isPreloading', { get: function() { return pxcan.isPreloading(this); } });
+  DEF('isPreloading', ()=> pxcan.isPreloading(this));
   var _onready = null;
   DEF('onReady', {
     get: function() { return _onready; },
@@ -331,7 +327,7 @@ var pxcan = function(element) {
   }
 
   // touch stuff (mouse and touch)
-  DEF('touch', { get: function() { return touch; } });
+  DEF('touch', ()=> touch);
   DEF('contextMenu', { value: true, writable: true });
   
   function evtToCoords(evt) {
@@ -485,7 +481,5 @@ var pxcan = function(element) {
   });
 
   // does this element have focus?
-  DEF('hasFocus', { get: function() {
-    return document.hasFocus() && document.activeElement === element;
-  } });
+  DEF('hasFocus', ()=> document.hasFocus() && document.activeElement === element);
 };
