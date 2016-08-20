@@ -22,18 +22,17 @@ module.exports = function(grunt) {
     uglify: {
       buildSrc: {
         files: {
-          'build/pxcan.min.js': 'build/pxcan.babel.js'
+          'build/pxcan.min.js': 'build/pxcan.js'
         }
       }
     },
     babel: {
       options: {
-        sourceMap: true,
         presets: ['babel-preset-es2015']
       },
       babel: {
         files: {
-          'build/pxcan.babel.js': 'build/pxcan.js'
+          'build/pxcan.js': 'build/pxcan.js'
         }
       }
     }
