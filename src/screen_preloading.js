@@ -7,9 +7,9 @@
   
   var imgBank = {};
 
-  pxcan.assignId = (function(inst) {
+  pxcan.assignId = (function() {
     var lastId = -1;
-    return function() {
+    return function(inst) {
       instances.push(inst);
       numReqsFrom[lastId+1] = 0;
       return ++lastId;
@@ -76,7 +76,7 @@
       else waitingOn[src].forEach(p => --numReqsFrom[p.id]);
 
       if(numGlobalReqs > 0) return;
-      if(waitingOn[src].every(p => numReqsFrom[p.id])) return;
+      if(waitingOn[src] && waitingOn[src].every(p => numReqsFrom[p.id])) return;
 
       var affectedInstances = (globalCall? instances : waitingOn[src]);
 
