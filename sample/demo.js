@@ -2,8 +2,6 @@ var game;
 if(document.getElementById('game')) game = new pxcan('#game');
 else game = new pxcan(window);
 
-game.mode('adapt', 3);
-
 game.setBackground('black');
 game.preload('img/chara.png', 'chara', 20,20);
 game.preload("img/bg.png", "bg");

@@ -11,7 +11,6 @@ This example demonstrates how to check if the player has just pressed, just rele
 ~~~
 // initialize the screen
 var screen = new pxcan("#button-example");
-screen.mode("adapt", 3);
 screen.setBackground("black");
 
 // bind a new button called "myButton" to the Z, X, and SPACE keys
@@ -55,7 +54,6 @@ This example demonstrates a lot of the touch functionality included within pxcan
 
 ~~~
 var screen = new pxcan("#touch-example");
-screen.mode("adapt", 3);
 screen.setBackground("black");
 screen.contextMenu = false;
 
@@ -112,7 +110,6 @@ A very simple demo to check if the game element has keyboard focus.
 
 ~~~
 var screen = new pxcan("#focus-example");
-screen.mode("adapt", 3);
 screen.frameskip = 5;
 
 screen.onFrame = function() {
@@ -125,7 +122,6 @@ screen.onFrame = function() {
 <script src="/pxcan.js"></script>
 <script>
     var screen = new pxcan("#button-example");
-    screen.mode("adapt", 3);
     screen.setBackground("black");
     screen.bind('myButton', 'z', 'x', ' ');
 
@@ -154,7 +150,6 @@ screen.onFrame = function() {
     };
 
     screen = new pxcan("#touch-example");
-    screen.mode("adapt", 3);
     screen.setBackground("black");
     screen.contextMenu = false;
 
@@ -204,7 +199,6 @@ screen.onFrame = function() {
     }
 
     screen = new pxcan("#focus-example");
-    screen.mode("adapt", 3);
     screen.frameskip = 5;
 
     screen.onFrame = function() {
