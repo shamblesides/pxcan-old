@@ -1,16 +1,42 @@
-nigelgame.Screen = function(element) {
+var pxcan = function(element) {
   // vars
+  var self = this;
   element = element || window;
   if(typeof(element) === 'string') element = document.querySelector(element);
   var mode = { name: 'adapt' };
   var width = element.clientWidth || element.innerWidth;
   var height = element.clientHeight || element.innerWidth;
-  var scale = 1;
+  var scale = 3;
   var needsRepaint = true;
   var prevDims = null;
-  var font = null;
+  var font = "pxcan-ascii";
+  var sheets = {};
   var _origin = { x: 0, y: 0 };
   var _offset = { x: 0, y: 0 };
+  var binds = {};
+  var buttons = {};
+  var touch = {
+    changed: false,
+    isDown: false,
+    isMouse: undefined,
+    isRightClick: undefined,
+    wasStarted: false,
+    moved: false,
+    isDrag: false,
+    wasReleased: false,
+    wasInterrupted: false,
+    cur: undefined,
+    last: undefined,
+    start: undefined,
+    x: null,
+    y: null,
+    inBounds: null,
+    rel: null,
+    bounded: null,
+    unbounded: null
+  };
+  var frameskipCounter = 0;
+  var clock = 0;
   
   // create canvas element
   var canvas = document.createElement('canvas');
@@ -31,34 +57,26 @@ nigelgame.Screen = function(element) {
   if(element !== window && element.tabIndex < 0) element.tabIndex = 0;
   
   // public properties
-  Object.defineProperty(this, 'element', { get: function() { return element; } });
-  Object.defineProperty(this, 'canvas', { get: function() { return canvas; } });
-  Object.defineProperty(this, 'context', { get: function() { return context; } });
-  Object.defineProperty(this, 'canvasOffX', { get: function() { return 0; } });
-  Object.defineProperty(this, 'canvasOffY', { get: function() { return 0; } });
-  Object.defineProperty(this, 'left', { get: function() {
-    return Math.round(_offset.x - (width * (_origin.x + 1) / 2));
-  } });
-  Object.defineProperty(this, 'top', { get: function() {
-    return Math.round(_offset.y - (height * (_origin.y + 1) / 2));
-  } });
-  Object.defineProperty(this, 'right', { get: function() { return this.left + width; } });
-  Object.defineProperty(this, 'bottom', { get: function() { return this.top + height; } });
-  Object.defineProperty(this, 'width', { get: function() { return width; } });
-  Object.defineProperty(this, 'height', { get: function() { return height; } });
-  Object.defineProperty(this, 'drawScale', { get: function() { return scale; } });
-  Object.defineProperty(this, 'wasResized', { get: function() { return needsRepaint; } });
-  Object.defineProperty(this, 'font', {
-    set: function(x) {
-      if(!nigelgame.sheets[x]) throw new Error('invalid font: ' + x);
-      font = x;
-    },
-    get: function() {
-      if(!font) throw new Error('font has not been set.');
-      return font;
-    }
-  });
-  
+  function DEF(name, attr) {
+    if(typeof(attr) === 'function') Object.defineProperty(self, name, {get:attr});
+    else Object.defineProperty(self, name, attr);
+  }
+  DEF('id', { value: pxcan.assignId(this) });
+  DEF('element', ()=> element);
+  DEF('canvas', ()=> canvas);
+  DEF('context', ()=> context);
+  DEF('canvasOffX', ()=> 0);
+  DEF('canvasOffY', ()=> 0);
+  DEF('left', ()=> Math.round(-_offset.x - (width * (_origin.x + 1) / 2)));
+  DEF('top', ()=> Math.round(-_offset.y - (height * (_origin.y + 1) / 2)));
+  DEF('right', ()=> this.left + width - 1);
+  DEF('bottom', ()=> this.top + height - 1);
+  DEF('width', ()=> width);
+  DEF('height', ()=> height);
+  DEF('drawScale', ()=> scale);
+  DEF('wasResized', ()=> needsRepaint);
+  DEF('clock', ()=> clock);
+  DEF('frameskip', { value: 0, writable: true });
   this.origin = function(x, y) {
     if(arguments.length === 0) return { x: _origin.x, y: _origin.y };
     if(arguments.length === 2) _origin = { x: x, y: y };
@@ -69,7 +87,18 @@ nigelgame.Screen = function(element) {
     if(arguments.length === 2) _offset = { x: x, y: y };
     else throw new Error('invalid arguments for offset');
   };
+  DEF('font', {
+    set: function(x) {
+      if(!this.hasSheet(x)) throw new Error('invalid font: ' + x);
+      font = x;
+    },
+    get: function() {
+      if(!font) throw new Error('font has not been set.');
+      return font;
+    }
+  });
   
+  // screen mode/sizing components
   this.mode = function(newMode) {
     // if no arguments are given, treat as getter function
     if(arguments.length === 0) return mode.name;
@@ -113,6 +142,7 @@ nigelgame.Screen = function(element) {
     // reset these
     needsRepaint = true;
     prevDims = null;
+    this.fitElement();
   };
   
   this.setSize = function(w, h) {
@@ -127,6 +157,7 @@ nigelgame.Screen = function(element) {
     else {
       throw new Error('screen mode does not support setSize: ' + mode.name);
     }
+    this.fitElement();
   };
   
   this.setScale = function(s) {
@@ -136,6 +167,7 @@ nigelgame.Screen = function(element) {
     else {
       throw new Error('screen mode does not support setScale: ' + mode.name);
     }
+    this.fitElement();
   };
   
   // screen fitting
@@ -193,71 +225,271 @@ nigelgame.Screen = function(element) {
     canvas.height = height * scale;
   }
   
-};
-
-nigelgame.Panel = function(parent, x, y, w, h, xAnchor, yAnchor) {
-  // verify arguments
-  if([5,7].indexOf(arguments.length)===-1)
-    throw new Error('invalid number of arguments.');
-  // vars
-  if(arguments.length === 5) {
-    xAnchor = parent.origin().x;
-    yAnchor = parent.origin().y;
-  }
-  var font = null;
-  var _origin = parent.origin();
-  var _offset = parent.offset();
-  var screen = parent.screen || parent;
+  this.fitElement();
   
-  // subcanvas size
-  this.canvasOffX = Math.round(parent.canvasOffX + x + parent.width*(parent.origin().x+1)/2 - w*(xAnchor+1)/2);
-  this.canvasOffY = Math.round(parent.canvasOffY + y + parent.height*(parent.origin().y+1)/2 - h*(yAnchor+1)/2);
-  var width = Math.round(w);
-  var height = Math.round(h);
+  // sheet loading
+  this.preload = function(src, alias, w, h) {
+    if(!alias && alias !== 0) throw new Error("missing alias");
+    if(sheets[alias]) throw new Error("sheet already exists with alias " + alias);
+    if(pxcan.globalSheets[alias]) throw new Error("global sheet already exists with alias " + alias);
+    if(!pxcan.hasImage(src)) {
+      pxcan.preload(src, this);
+    }
+    sheets[alias] = new pxcan.Sheet(alias, src, w, h);
+  };
   
-  // public properties
-  Object.defineProperty(this, 'screen', { get: function() { return screen; } });
-  Object.defineProperty(this, 'element', { get: function() { return screen.element; } });
-  Object.defineProperty(this, 'canvas', { get: function() { return screen.canvas; } });
-  Object.defineProperty(this, 'context', { get: function() { return screen.context; } });
-  Object.defineProperty(this, 'left', { get: function() {
-    return Math.round(_offset.x - (width * (_origin.x + 1) / 2));
-  } });
-  Object.defineProperty(this, 'top', { get: function() {
-    return Math.round(_offset.y - (height * (_origin.y + 1) / 2));
-  } });
-  Object.defineProperty(this, 'right', { get: function() { return this.left + width; } });
-  Object.defineProperty(this, 'bottom', { get: function() { return this.top + height; } });
-  Object.defineProperty(this, 'width', { get: function() { return width; } });
-  Object.defineProperty(this, 'height', { get: function() { return height; } });
-  Object.defineProperty(this, 'drawScale', { get: function() { return screen.drawScale; } });
-  Object.defineProperty(this, 'font', {
+  this.sheet = function(alias) {
+    if(sheets[alias]) return sheets[alias];
+    if(pxcan.globalSheets[alias]) return pxcan.globalSheets[alias];
+    throw new Error("invalid sheet: " + alias);
+  };
+  
+  this.hasSheet = function(alias) {
+    return !!(sheets[alias] || pxcan.globalSheets[alias]);
+  };
+  
+  // onReady and onFrame events
+  DEF('isPreloading', ()=> pxcan.isPreloading(this));
+  var _onready = null;
+  DEF('onReady', {
+    get: function() { return _onready; },
     set: function(x) {
-      if(!nigelgame.sheets[x]) throw new Error('invalid font: ' + x);
-      font = x;
-    },
-    get: function() { return font || parent.font; }
+      if(x && !this.isPreloading) x.call(this);
+      else _onready = x;
+    }
   });
-  // methods
-  this.origin = function(x, y) {
-    if(arguments.length === 0) return { x: _origin.x, y: _origin.y };
-    if(arguments.length === 2) _origin = { x: x, y: y };
-    else throw new Error('invalid arguments for origin');
-  };
-  this.offset = function(x, y) {
-    if(arguments.length === 0) return { x: _offset.x, y: _offset.y };
-    if(arguments.length === 2) _offset = { x: x, y: y };
-    else throw new Error('invalid arguments for offset');
+  DEF('onFrame', { writable: true });
+  
+  var raf = window.requestAnimationFrame ||
+    window.mozRequestAnimationFrame ||
+    window.webkitRequestAnimationFrame ||
+    window.oRequestAnimationFrame;
+  function rafFunc() {
+    ++frameskipCounter;
+    if(frameskipCounter > self.frameskip) {
+      frameskipCounter = 0;
+      // re-fit screen
+      self.fitElement();
+      // call frame function
+      if(self.onFrame && !self.isPreloading) self.onFrame.call(self, self);
+      // update input state
+      updateButtons();
+      updateTouch();
+      // update clock
+      ++clock;
+    }
+    // queue next call
+    raf(rafFunc);
+  }
+  raf(rafFunc);
+  
+  // built-in button functions 
+  this.bind = function(button /*, key1, [key2, [...]] */) {
+    for(var i = 1; i < arguments.length; ++i) {
+      var code = arguments[i];
+      if(typeof(code) === 'string') code = code.toUpperCase().charCodeAt(0);
+      binds[code] = button;
+    }
+    buttons[button] = {
+      wasPressed: false,
+      wasReleased: false,
+      isDown: false,
+      framesDown: 0
+    };
   };
   
-};
+  this.button = function(b) { return buttons[b]; };
 
-nigelgame.Screen.prototype.panel =
-nigelgame.Panel.prototype.panel = function(x, y, w, h, xAnchor, yAnchor) {
-  if(arguments.length === 4)
-    return new nigelgame.Panel(this, x, y, w, h);
-  else if(arguments.length === 6)
-    return new nigelgame.Panel(this, x, y, w, h, xAnchor, yAnchor);
-  else
-    throw new Error('invalid number of arguments.');
+  this.pad = function(/* ...buttons */) {
+    var padButtons;
+    if(arguments.length===1 && (arguments[0] instanceof Array)) padButtons = arguments[0];
+    else padButtons = Array.slice.call(null, arguments);
+
+    padButtons = padButtons.filter(x=>buttons[x].isDown);
+    if(padButtons.length === 0) return null;
+    return padButtons.reduce((a,b)=>(buttons[b].framesDown < buttons[a].framesDown? b:a), padButtons[0]);
+  };
+  
+  function keyevt(evt) {
+    if(binds[evt.keyCode] === undefined) return true;
+    
+    evt.preventDefault();
+    var button = buttons[binds[evt.keyCode]];
+    if(evt.type === 'keydown' && button.framesDown === 0) {
+      button.wasPressed = button.isDown = true;
+      button.framesDown = 0;
+    }
+    else if(evt.type === 'keyup' && button.isDown) {
+      button.wasReleased = true;
+      button.isDown = false;
+    }
+  }
+  element.addEventListener("keydown", keyevt, false);
+  element.addEventListener("keyup", keyevt, false);
+
+  function updateButtons() {
+    for (var b in buttons) {
+      if(buttons[b].wasPressed) buttons[b].wasPressed = false;
+      if(buttons[b].wasReleased) buttons[b].wasReleased = false;
+      if(buttons[b].isDown) ++buttons[b].framesDown;
+      else buttons[b].framesDown = 0;
+    }
+  }
+
+  // touch stuff (mouse and touch)
+  DEF('touch', ()=> touch);
+  DEF('contextMenu', { value: true, writable: true });
+  
+  function evtToCoords(evt) {
+    // raw coordinates relative to screen top left
+    var xOnScreen = evt.clientX - (element.clientLeft || 0) - (element.offsetLeft || 0) + window.scrollX;
+    var yOnScreen = evt.clientY - (element.clientTop || 0) - (element.offsetTop || 0) + window.scrollY;
+
+    // pixel based coordinates relative to screen top left
+    return {
+      fromLeft: Math.floor(xOnScreen / (element.clientWidth || element.innerWidth) * self.width),
+      fromTop: Math.floor(yOnScreen / (element.clientHeight || element.innerHeight) * self.height)
+    };
+  }
+  function TouchPoint(fromLeft, fromTop, ref, bounded) {
+    ref = ref || self;
+    bounded = bounded || false;
+
+    Object.defineProperty(this, 'x', { get: function() {
+      return (bounded? pxMath.clamp(fromLeft, 0, ref.width-1): fromLeft) + ref.left - ref.canvasOffX;
+    } });
+    Object.defineProperty(this, 'y', { get: function() {
+      return (bounded? pxMath.clamp(fromTop, 0, ref.height-1): fromTop) + ref.top - ref.canvasOffY;
+    } });
+    Object.defineProperty(this, 'inBounds', { get: function() {
+      return bounded || (this.x === this.bounded().x && this.y === this.bounded().y); 
+    } });
+    this.rel = function(ref, bounded) {
+      if(['bounded','b','unbounded','u',undefined].indexOf(bounded) === -1) {
+        throw new Error('bad value for "bounded" parameter.');
+      }
+      return new TouchPoint(fromLeft, fromTop, ref, bounded && bounded.startsWith('b'));
+    };
+    (function(self) {
+      self.bounded = function() { return self.rel(ref, 'bounded'); };
+      self.unbounded = function() { return self.rel(ref, 'unbounded'); };
+    })(this);
+  }
+  
+  ['x','y','inBounds','rel','bounded','unbounded'].forEach(function(attr) {
+    Object.defineProperty(touch, attr, { get: function() {
+      if(touch.cur === undefined) throw new Error('No touch events happening.');
+      return touch.cur[attr];
+    } });
+  });
+
+  function onTouchStart(fromLeft, fromTop) {
+    touch.cur = touch.start = new TouchPoint(fromLeft, fromTop);
+    touch.changed = true;
+    touch.isDown = true;
+    touch.wasStarted = true;
+  }
+  function onTouchMove(fromLeft, fromTop) {
+    touch.cur = new TouchPoint(fromLeft, fromTop);
+    
+    if(touch.last && (touch.x === touch.last.x) && (touch.y === touch.last.y)) return;
+    touch.changed = true;
+    touch.moved = true;
+    touch.isDrag = true;
+  }
+  function onTouchEnd() {
+    touch.changed = true;
+    touch.isDown = false;
+    touch.wasReleased = true;
+  }
+
+  function updateTouch() {
+    touch.changed = false;
+    touch.wasStarted = false;
+    touch.moved = false;
+    touch.wasReleased = false;
+    touch.wasInterrupted = false;
+    if(touch.isDown) {
+      touch.last = touch.cur;
+    }
+    else {
+      touch.cur = touch.last = touch.start = undefined;
+      touch.isMouse = undefined;
+      touch.isRightClick = undefined;
+      touch.isDrag = false;
+    }
+  }
+  
+  // mouse!
+  element.addEventListener("mousedown", function(mouseEvt) {
+    if(touch.isDown) return;
+    var coords = evtToCoords(mouseEvt);
+    onTouchStart(coords.fromLeft, coords.fromTop);
+    touch.isMouse = true;
+    touch.isRightClick = (mouseEvt.button === 2);
+  }, false);
+
+  window.addEventListener("mousemove", function(mouseEvt) {
+    if(!touch.isMouse) return;
+    var coords = evtToCoords(mouseEvt);
+    onTouchMove(coords.fromLeft, coords.fromTop);
+  }, false);
+  
+  window.addEventListener("mouseup", function(mouseEvt) {
+    if(!touch.isMouse) return;
+    onTouchEnd();
+  }, false);
+
+  // touch.
+  var currentTouchId = undefined;
+  element.addEventListener("touchstart", function(touchEvt) {
+    touchEvt.preventDefault();
+    if(touch.isDown) return;
+    
+    var coords = evtToCoords(touchEvt.changedTouches[0]);
+    onTouchStart(coords.fromLeft, coords.fromTop);
+    touch.isMouse = false;
+    currentTouchId = touchEvt.changedTouches[0].identifier;
+  }, false);
+
+  element.addEventListener("touchmove", function(touchEvt) {
+    touchEvt.preventDefault();
+    if(!touch.isDown || touch.isMouse) return;
+
+    var currentTouch = Array.prototype.find.call(touchEvt.changedTouches, function(e) {
+      return e.identifier === currentTouchId;
+    });
+    if(!currentTouch) return;
+
+    var coords = evtToCoords(currentTouch);
+    onTouchMove(coords.fromLeft, coords.fromTop);
+  }, false);
+
+  element.addEventListener("touchend", function(touchEvt) {
+    touchEvt.preventDefault();
+    if(!touch.isDown || touch.isMouse) return;
+
+    var currentTouch = Array.prototype.find.call(touchEvt.changedTouches, function(e) {
+      return e.identifier === currentTouchId;
+    });
+    if(!currentTouch) return;
+    
+    if(touchEvt.targetTouches.length === 0) { // no more touches; release
+      onTouchEnd();
+      currentTouchId = null;
+    }
+    else { // other touches on screen; 'drag' to the lastest one
+      var nextTouch = touchEvt.targetTouches[touchEvt.targetTouches.length-1];
+      currentTouchId = nextTouch.identifier;
+      onTouchMove(nextTouch);
+    }
+  }, false);
+  
+  // optional right click menu event capture
+  element.addEventListener("contextmenu", function(e) {
+    if(!self.contextMenu) e.preventDefault();
+  });
+
+  // does this element have focus?
+  DEF('hasFocus', ()=> document.hasFocus() && document.activeElement === element);
 };

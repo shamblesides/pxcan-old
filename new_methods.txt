@@ -1,82 +1,139 @@
+new pxcan(element)
 
-new game(element)
-game.addSheet(filepath, alias, cellWidth, cellHeight)
-game.addJSON(filepath, alias)
-game.bind(keyName, keyCode, [keyCode, ...])
-game.activateTouch()
-game.activateKeyboard()
-game.setFrameSkip(frameSkip)
-game.setScreenMode(...)
-game.setScreenSize(...)
-game.setScreenScale(...)
-game.start(view)
-// game.stop()
+pxcan.id
+pxcan.element
+pxcan.canvas
+pxcan.context
+pxcan.canvasOffX, pxcan.canvasOffY = 0
 
-(view).update({
-  viewClock
-  gameClock
-  buttons
+pxcan.left, pxcan.right
+pxcan.top, pxcan.bottom
+pxcan.width
+pxcan.height
+
+pxcan.origin().{x, y}
+pxcan.origin(x, y)
+pxcan.offset().{x, y}
+pxcan.offset(x, y)
+
+pxcan.drawScale
+pxcan.wasResized
+
+pxcan.clock
+pxcan.frameskip
+
+pxcan.mode()
+pxcan.mode('adapt', [scale])
+  pxcan.setScale(scale)
+pxcan.mode('fixed', [[width, height,] scale])
+  pxcan.setSize(width, height)
+  pxcan.setScale(scale)
+// pxcan.mode('scale')
+// pxcan.mode('scale', width, height)
+  // pxcan.setSize(width, height)
+pxcan.mode('scale-overflow', [width, height])
+  pxcan.setSize(width, height)
+  // pxcan.setMaxOverflow(width, height)
+
+pxcan.setSize(width, height)
+pxcan.setScale(scale)
+pxcan.fitElement()
+
+pxcan.panel(x, y, width, height, [xAnchor, yAnchor]).{
   screen
-})
+  element
+  canvas
+  context
+  drawScale
+  sheet(...)
+  left, right
+  top, bottom
+  width
+  height
+  font
+  origin(...)
+  offset(...)
+  panel(...)
+}
 
-(view).buttondown(button)
-(view).buttonup(button)
+pxcan.reset()
+pxcan.setBackground(bg)
+pxcan.clear([x, y, w, h, [xAnchor, yAnchor]])
+pxcan.fill(color, [x, y, w, h, [xAnchor, yAnchor]])
+pxcan.blit(sheet, frame, [flip,] x, y, [xAnchor, yAnchor])
+pxcan.write(text, x, y, [xAnchor, yAnchor,] [align])
+pxcan.font
+pxcan.border(borderSheet)
 
-(view).keypress(keypressEvt)
+pxcan.preload(src, alias, width, height)
+pxcan.isPreloading
+pxcan.hasSheet(alias)
+pxcan.sheet(alias).{
+  alias,
+  img,
+  src,
+  left = 0
+  top = 0
+  width,
+  height,
+  spriteWidth,
+  spriteHeight,
+  numCols,
+  numRows,
+  numSprites
+  scaledImage(scale)
+  getSprite(frame).{
+    sheet,
+    img,
+    left,
+    top,
+    width,
+    height,
+    scaledImage(scale)
+  }
+}
 
-(view).touch(touchEvt)
-(view).drag(touchEvt)
-(view).release(touchEvt)
+pxcan.onReady
+pxcan.onFrame
 
-touchEvt.screen
-touchEvt.type
-touchEvt.point
-touchEvt.startPoint // for drag and release
-touchEvt.lastPoint // for drag
-(touchPoint).x
-(touchPoint).y
-(touchPoint).equals
-(touchPoint).inBounds
-(touchPoint).relativeTo(screen | panel)
+pxcan.bind(button, ...keys)
+pxcan.button(button).{ wasPressed, wasReleased, isDown, framesDown }
+pxcan.pad(...buttons)
+pxcan.touch{
+  changed,
+  isDown,
+  isMouse,
+  isRightClick,
+  wasStarted,
+  moved,
+  isDrag,
+  wasReleased,
+  wasInterrupted,
+  (cur=<this>, last, start).{
+    x, y,
+    inBounds,
+    rel(ref, bounded),
+    bounded(),
+    unBounded()
+  }
+}
 
-screen.element
-screen.canvas
-screen.context
+pxcan.hasFocus
 
-screen.left
-screen.top
-screen.right
-screen.bottom
-screen.width
-screen.height
-screen.drawScale
-screen.wasResized
-screen.font
+--- STATIC ---
 
-screen.reset()
-screen.clear([x, y, w, h, [xAnchor, yAnchor]])
-screen.fill(color, [x, y, w, h, [xAnchor, yAnchor]])
-screen.blit(sheet, frame, [flip,] x, y, [xAnchor, yAnchor])
-screen.write(text, x, y, {align, cols, rows})
-screen.panel(x, y, width, height, [xAnchor, yAnchor])
-screen.border(borderSheet)
+pxcan..preload(src, pxc=null)
+pxcan..hasImage(src)
+pxcan..image(src)
+pxcan..scaledImage(src, scale)
 
-screen.origin()
-screen.origin(x, y)
-screen.offset()
-screen.offset(x, y)
+pxcan..globalSheets[]
 
-screen.mode()
-screen.mode('adapt', [scale])
-  screen.setScale(scale)
-screen.mode('fixed', [[width, height,] scale])
-  screen.setSize(width, height)
-  screen.setScale(scale)
-// screen.mode('scale')
-// screen.mode('scale', width, height)
-  // screen.setSize(width, height)
-screen.mode('scale-overflow', [width, height])
-  screen.setSize(width, height)
-  // screen.setMaxOverflow(width, height)
+pxcan..wrapString(str, width, maxLines)
 
-screen.fitElement()
+pxMath..mid(...numbers)
+pxMath..clamp(val, [min,] max)
+
+pxcan..random()
+pxcan..random.create([seed])
+pxcan..random.seed(seed)
