@@ -1,6 +1,5 @@
 TO DO
 -----
-* Re-integrate touch events
 * Re-integrate json loading?
 * Add recoloring to blit options
 * Make pxcan.prototype.reset() more comprehensive
