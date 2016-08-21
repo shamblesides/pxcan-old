@@ -356,10 +356,10 @@ var pxcan = function(element) {
     bounded = bounded || false;
 
     Object.defineProperty(this, 'x', { get: function() {
-      return (bounded? pxMath.clamp(fromLeft, 0, ref.width-1): fromLeft) + ref.left - ref.canvasOffX;
+      return (bounded? pxMath.clamp(fromLeft, ref.canvasOffX+0, ref.canvasOffX+ref.width-1): fromLeft) + ref.left - ref.canvasOffX;
     } });
     Object.defineProperty(this, 'y', { get: function() {
-      return (bounded? pxMath.clamp(fromTop, 0, ref.height-1): fromTop) + ref.top - ref.canvasOffY;
+      return (bounded? pxMath.clamp(fromTop, ref.canvasOffY+0, ref.canvasOffY+ref.height-1): fromTop) + ref.top - ref.canvasOffY;
     } });
     Object.defineProperty(this, 'inBounds', { get: function() {
       return bounded || (this.x === this.bounded().x && this.y === this.bounded().y); 

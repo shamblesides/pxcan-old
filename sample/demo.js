@@ -14,13 +14,9 @@ game.bind('down', 83, 40);
 var chara = {x:0, y:0, xDir:0, yDir:0, speed:1, frame:0};
 
 game.onFrame = function() {
-  var panels = [
-    this.panel(-1,-1,this.width/2-3,this.height/2-3, 1, 1),
-    this.panel(1,-1,this.width/2-3,this.height/2-3, -1, 1),
-    this.panel(-1,1,this.width/2-3,this.height/2-3, 1, -1),
-    this.panel(1,1,this.width/2-3,this.height/2-3, -1, -1),
-    this.panel(0,0, this.width/2, this.height/2)
-  ];
+  var panels = [ [-1,-1], [-1, 1], [1, -1], [1, 1], [0, 0] ]
+    .map(xy => {return {x:xy[0], y:xy[1]}; })
+    .map(c => this.panel(c.x*3, c.y*3, this.width/2-10,this.height/2-10, -c.x, -c.y) );
 
   // update movement based on keys
   chara.xDir = ({ 'left': -1, 'right': 1 })[this.pad('left','right')] || 0;
@@ -28,8 +24,15 @@ game.onFrame = function() {
   
   // or touch!
   if (this.touch.isDown) {
-    chara.xDir = Math.sign((this.touch.rel(panels[0]).x - chara.x)/chara.speed | 0);
-    chara.yDir = Math.sign((this.touch.rel(panels[0]).y - chara.y)/chara.speed | 0);
+    panels.reverse();
+
+    var p = panels.find(p=> this.touch.rel(p).inBounds);
+    if(p) {
+      chara.xDir = Math.sign((this.touch.rel(p).x - chara.x)/chara.speed | 0);
+      chara.yDir = Math.sign((this.touch.rel(p).y - chara.y)/chara.speed | 0);
+    }
+    
+    panels.reverse();
   }
 
   // move
