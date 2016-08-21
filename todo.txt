@@ -1,9 +1,6 @@
 TO DO
 -----
-* Re-integrate json loading?
 * Add recoloring to blit options
-* Make pxcan.prototype.reset() more comprehensive
 * Consider how views will work in pxcan?
 * Music?
 * Sounds?
-* HTML documentation
