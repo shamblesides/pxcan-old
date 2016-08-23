@@ -132,6 +132,8 @@ pxcan.Panel.prototype.blit = function(sheetName /*, [recolor,] [frame,] [flip], 
   // get the sheet
   var sheet = this.sheet(sheetName);
   if(!sheet) throw new Error('unknown sheet: ' + sheetName);
+  // get the recolored sheet
+  var sheetSrc = recolorColors? pxcan.recolorImage(sheet.src, recolorColors) : sheet.src;
   // if a particular sprite is specified, get it
   var sprite = (frame !== null)? sheet.getSprite(frame): sheet;
   // determine flip+rot
@@ -168,7 +170,7 @@ pxcan.Panel.prototype.blit = function(sheetName /*, [recolor,] [frame,] [flip], 
   // draw it to the screen
   if(!cwrot) this.context.drawImage(
     // image
-    sprite.scaledImage(this.drawScale),
+    pxcan.scaledImage(sheetSrc, this.drawScale),
     // location on the spritesheet
     (sprite.left + (xflip?coords.rcut:coords.lcut)) * this.drawScale,
     (sprite.top + (yflip?coords.bcut:coords.tcut)) * this.drawScale,
@@ -180,7 +182,7 @@ pxcan.Panel.prototype.blit = function(sheetName /*, [recolor,] [frame,] [flip], 
   );
   else this.context.drawImage(
     // image
-    sprite.scaledImage(this.drawScale),
+    pxcan.scaledImage(sheetSrc, this.drawScale),
     // location on the spritesheet
     (sprite.left + (yflip?coords.bcut:coords.tcut)) * this.drawScale,
     (sprite.top + (xflip?coords.lcut:coords.rcut)) * this.drawScale,

@@ -46,7 +46,7 @@ game.onFrame = function() {
   panels.forEach(function(p) {
     p.clear();
     p.blit('bg', 0, 0);
-    p.blit('chara', chara.frame, chara.flip, chara.x, chara.y, 0, 1);
+    p.blit('chara', ['#ff0000'], chara.frame, chara.flip, chara.x, chara.y, 0, 1);
   });
 
 };

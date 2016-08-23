@@ -94,6 +94,36 @@
     if(!pxcan.hasImage(src)) throw new Error("invalid image src: "+src);
     return imgBank[src].image;
   };
+  //helper to retrieve and create recolored sheets
+  pxcan.recolorImage = function(src, colors) {
+    if(!imgBank[src]) throw new Error("invalid image src: "+src);
+    //id
+    var id = src + '@' + colors.join(',');
+    //if cached, return its id
+    if(imgBank[id]) return id;
+
+    //otherwise let's make it.
+    var c = document.createElement("canvas");
+    var img = imgBank[src].scaledImages[1];
+    c.width = img.width;
+    c.height = img.height;
+    var ctx = c.getContext('2d');
+    
+    var data = img.getContext('2d').getImageData(0,0,img.width,img.height).data;
+    var i = 0;
+    for(var y = 0; y < img.height; ++y) {
+      for(var x = 0; x < img.width; ++x) {
+        if(data[i+3] === 0) ctx.fillStyle = 'rgba(0,0,0,0)';
+        else ctx.fillStyle = colors[0];
+        ctx.fillRect(x, y, 1, 1);
+        i+=4;
+      }
+    }
+    
+    //cache and return the id
+    imgBank[id] = { scaledImages: {1:c} };
+    return id;
+  }
   //helper to retrieve and create resized images
   pxcan.scaledImage = function(src, scale) {
     if(!imgBank[src]) throw new Error("invalid image src: "+src);
