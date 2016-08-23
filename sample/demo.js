@@ -14,8 +14,7 @@ game.bind('down', 83, 40);
 var chara = {x:0, y:0, xDir:0, yDir:0, speed:1, frame:0};
 
 game.onFrame = function() {
-  var panels = [ [-1,-1], [-1, 1], [1, -1], [1, 1], [0, 0] ]
-    .map(xy => {return {x:xy[0], y:xy[1]}; })
+  var panels = [ {x:-1,y:-1}, {x:-1,y:1}, {x:1,y:-1}, {x:1,y:1}, {x:0,y:0} ]
     .map(c => this.panel(c.x*3, c.y*3, this.width/2-10,this.height/2-10, -c.x, -c.y) );
 
   // update movement based on keys
@@ -40,6 +39,7 @@ game.onFrame = function() {
   chara.y += chara.yDir * chara.speed;
   // movement frame
   if (chara.xDir || chara.yDir) chara.frame = (chara.frame+1)%3;
+  
   // draw
   this.reset();
   var flip = 'h' + (Math.floor(this.clock / 10) % 4 * 90);
