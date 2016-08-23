@@ -11,7 +11,7 @@ game.bind('left', 65, 37);
 game.bind('up', 87, 38);
 game.bind('down', 83, 40);
 
-var chara = {x:0, y:0, xDir:0, yDir:0, speed:1, frame:0};
+var chara = {x:0, y:0, xDir:0, yDir:0, speed:1, frame:0, flip: ''};
 
 game.onFrame = function() {
   var panels = [ {x:-1,y:-1}, {x:-1,y:1}, {x:1,y:-1}, {x:1,y:1}, {x:0,y:0} ]
@@ -26,7 +26,7 @@ game.onFrame = function() {
     panels.reverse();
 
     var p = panels.find(p=> this.touch.rel(p).inBounds);
-    if(p) {
+    if (p) {
       chara.xDir = Math.sign((this.touch.rel(p).x - chara.x)/chara.speed | 0);
       chara.yDir = Math.sign((this.touch.rel(p).y - chara.y)/chara.speed | 0);
     }
@@ -37,16 +37,16 @@ game.onFrame = function() {
   // move
   chara.x += chara.xDir * chara.speed;
   chara.y += chara.yDir * chara.speed;
-  // movement frame
+  // drawing frame
   if (chara.xDir || chara.yDir) chara.frame = (chara.frame+1)%3;
-  
+  chara.flip = 'h' + (Math.floor(this.clock / 10) % 4 * 90);
+
   // draw
   this.reset();
-  var flip = 'h' + (Math.floor(this.clock / 10) % 4 * 90);
   panels.forEach(function(p) {
     p.clear();
     p.blit('bg', 0, 0);
-    p.blit('chara', chara.frame, flip, chara.x, chara.y, 0, 1);
+    p.blit('chara', chara.frame, chara.flip, chara.x, chara.y, 0, 1);
   });
 
 };
