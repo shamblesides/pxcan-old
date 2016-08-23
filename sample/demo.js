@@ -31,7 +31,7 @@ game.onFrame = function() {
       chara.xDir = Math.sign((this.touch.rel(p).x - chara.x)/chara.speed | 0);
       chara.yDir = Math.sign((this.touch.rel(p).y - chara.y)/chara.speed | 0);
     }
-    
+
     panels.reverse();
   }
 
@@ -42,10 +42,10 @@ game.onFrame = function() {
   if (chara.xDir || chara.yDir) chara.frame = (chara.frame+1)%3;
   // draw
   this.reset();
-  var flip = (this.clock % 50 >= 25)? 'hv': '';
+  var flip = 'h' + (Math.floor(this.clock / 10) % 4 * 90);
   panels.forEach(function(p) {
     p.clear();
-    p.blit('bg', null, 0, 0);
+    p.blit('bg', 0, 0);
     p.blit('chara', chara.frame, flip, chara.x, chara.y, 0, 1);
   });
 

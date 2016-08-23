@@ -1,5 +1,7 @@
 'use strict';
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+
 var pxcan = function pxcan(element) {
   var _this = this;
 
@@ -674,44 +676,68 @@ pxcan.prototype.fill = pxcan.Panel.prototype.fill = function (color, x, y, w, h,
   this.context.fillStyle = temp;
 };
 
-pxcan.prototype.blit = pxcan.Panel.prototype.blit = function (sheetName, frame /* [flip], x, y, [xAnc, yAnc] */) {
+pxcan.prototype.blit = pxcan.Panel.prototype.blit = function (sheetName /*, [recolor,] [frame,] [flip], x, y, [xAnc, yAnc] */) {
+  var _arguments = arguments;
+
   // verify valid arguments
-  if ([4, 5, 6, 7].indexOf(arguments.length) === -1) throw new Error('bad arguments for blit');
+  if ([3, 4, 5, 6, 7, 8].indexOf(arguments.length) === -1) throw new Error('bad arguments for blit');
   // get variable arguments
-  var flipArgs = arguments.length % 2 === 1 ? arguments[2].toString() : '';
-  var x = arguments[arguments.length % 2 === 0 ? 2 : 3];
-  var y = arguments[arguments.length % 2 === 0 ? 3 : 4];
-  var xAnc = arguments.length >= 6 ? arguments[arguments.length - 2] : null;
-  var yAnc = arguments.length >= 6 ? arguments[arguments.length - 1] : null;
+  var recolorColors = null,
+      frame = null,
+      flipArgs = '',
+      x,
+      y,
+      xAnc = undefined,
+      yAnc = undefined;
+  (function () {
+    var xArgPosition = void 0;
+    if (typeof _arguments[_arguments.length - 3] === 'number' && typeof _arguments[_arguments.length - 4] === 'number') {
+      x = _arguments[_arguments.length - 4];
+      y = _arguments[_arguments.length - 3];
+      xAnc = _arguments[_arguments.length - 2];
+      yAnc = _arguments[_arguments.length - 1];
+      xArgPosition = _arguments.length - 4;
+    } else {
+      x = _arguments[_arguments.length - 2];
+      y = _arguments[_arguments.length - 1];
+      xArgPosition = _arguments.length - 2;
+    }
+    var iArg = 1;
+    if (iArg < xArgPosition && Array.isArray(_arguments[iArg])) {
+      recolorColors = _arguments[iArg];
+      ++iArg;
+    }
+    if (iArg < xArgPosition && ['number', 'object'].indexOf(_typeof(_arguments[iArg])) !== -1) {
+      frame = _arguments[iArg];
+      ++iArg;
+    }
+    if (iArg < xArgPosition && typeof _arguments[iArg] === 'string') {
+      flipArgs = _arguments[iArg];
+      ++iArg;
+    }
+  })();
+
   // get the sheet
   var sheet = this.sheet(sheetName);
   if (!sheet) throw new Error('unknown sheet: ' + sheetName);
   // if a particular sprite is specified, get it
-  var sprite = frame !== undefined && frame !== null ? sheet.getSprite(frame) : sheet;
+  var sprite = frame !== null ? sheet.getSprite(frame) : sheet;
   // determine flip+rot
   var xflip = false,
       yflip = false,
       cwrot = false;
-  flipArgs = flipArgs.replace('90', 'c');
-  flipArgs = flipArgs.replace('270', 'cxy');
-  flipArgs = flipArgs.replace('180', 'xy');
-  while (flipArgs.length > 0) {
-    if (flipArgs.startsWith('x') || flipArgs.startsWith('h')) {
-      xflip = !xflip;
-    } else if (flipArgs.startsWith('y') || flipArgs.startsWith('v')) {
-      yflip = !yflip;
-    } else if (flipArgs.startsWith('c')) {
+  flipArgs.replace('90', 'c').replace('180', 'xy').replace('270', 'cxy').split('').forEach(function (flip) {
+    if (flip === 'x' || flip === 'h') xflip = !xflip;else if (flip === 'y' || flip === 'v') yflip = !yflip;else if (flip === 'c') {
       if (cwrot) {
         xflip = !xflip;
         yflip = !yflip;
       }
+      cwrot = !cwrot;
       var temp = xflip;
       xflip = yflip;
       yflip = temp;
-      cwrot = !cwrot;
     }
-    flipArgs = flipArgs.substr(1);
-  }
+  });
   // coooordinates
   var coords = this.toCanvasCoords(x, y, cwrot ? sprite.height : sprite.width, cwrot ? sprite.width : sprite.height, xAnc, yAnc);
   if (!coords) return;
