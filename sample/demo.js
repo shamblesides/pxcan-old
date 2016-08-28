@@ -13,6 +13,8 @@ game.bind('down', 83, 40);
 
 var chara = {x:0, y:0, xDir:0, yDir:0, speed:1, frame:0, flip: ''};
 
+var color = ()=> ( '#'+'...'.split('').map(x=>('369b'.charAt(Math.random()*4))).join('') );
+
 game.onFrame = function() {
   var panels = [ {x:-1,y:-1}, {x:-1,y:1}, {x:1,y:-1}, {x:1,y:1}, {x:0,y:0} ]
     .map(c => this.panel(c.x*3, c.y*3, this.width/2-10,this.height/2-10, -c.x, -c.y) );
@@ -45,8 +47,8 @@ game.onFrame = function() {
   this.reset();
   panels.forEach(function(p) {
     p.clear();
-    p.blit('bg', 0, 0);
-    p.blit('chara', ['#ff0000'], chara.frame, chara.flip, chara.x, chara.y, 0, 1);
+    p.blit('bg', ['#f00', '#f22','#f55','#f77', '#f99'], 0, 0);
+    p.blit('chara', ['#000', color(), color()], chara.frame, chara.flip, chara.x, chara.y, 0, 1);
   });
 
 };

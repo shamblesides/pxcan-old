@@ -966,7 +966,11 @@ pxcan.prototype.border = pxcan.Panel.prototype.border = function (sheet) {
     var i = 0;
     for (var y = 0; y < img.height; ++y) {
       for (var x = 0; x < img.width; ++x) {
-        if (data[i + 3] === 0) ctx.fillStyle = 'rgba(0,0,0,0)';else ctx.fillStyle = colors[0];
+        if (data[i + 3] === 0) ctx.fillStyle = 'rgba(0,0,0,0)';else {
+          var brightness = (data[i] + data[i + 1] + data[i + 2]) / (256 * 3);
+          var idx = Math.floor(brightness * colors.length);
+          ctx.fillStyle = colors[idx];
+        }
         ctx.fillRect(x, y, 1, 1);
         i += 4;
       }
