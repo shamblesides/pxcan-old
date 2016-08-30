@@ -962,17 +962,47 @@ pxcan.prototype.border = pxcan.Panel.prototype.border = function (sheet) {
     c.height = img.height;
     var ctx = c.getContext('2d');
 
-    var data = img.getContext('2d').getImageData(0, 0, img.width, img.height).data;
+    //0x[alpha][blue][green][red]
+    var imgRaw = new Uint32Array(img.getContext('2d').getImageData(0, 0, img.width, img.height).data.buffer);
+    //indexed color
+    var imgColors = [];
+    var imgIdx = imgRaw.map(function (x) {
+      if ((x & 0xff000000) === 0) return 0;
+      var idx = imgColors.indexOf(x);
+      if (idx !== -1) return idx + 1;
+      imgColors.push(x);
+      return imgColors.length;
+    });
+    //sort indexes
+    imgColors = imgColors.map(function (x, i) {
+      return { oldIdx: i, brightness: (x & 0xff) + ((x & 0xff00) >> 8) + ((x & 0xff0000) >> 16) };
+    }).sort(function (a, b) {
+      return a.brightness - b.brightness;
+    });
+    console.log(imgColors);
+    imgColors.forEach(function (x, i) {
+      return x.bIdx = i + 1;
+    });
+    imgColors.sort(function (a, b) {
+      return a.oldIdx - b.oldIdx;
+    });
+
+    imgIdx = imgIdx.map(function (x) {
+      return x === 0 ? 0 : imgColors[x - 1].bIdx;
+    });
+    // imgColors = imgColors.map(x=>x.brightness).sort();
+
+    //TODO reduce color map to fewer colors
+
+    //create sprite
     var i = 0;
     for (var y = 0; y < img.height; ++y) {
       for (var x = 0; x < img.width; ++x) {
-        if (data[i + 3] === 0) ctx.fillStyle = 'rgba(0,0,0,0)';else {
-          var brightness = (data[i] + data[i + 1] + data[i + 2]) / (256 * 3);
-          var idx = Math.floor(brightness * colors.length);
-          ctx.fillStyle = colors[idx];
+        if (imgIdx[i] !== 0) {
+          ctx.fillStyle = colors[imgIdx[i] - 1];
+          ctx.fillRect(x, y, 1, 1);
         }
-        ctx.fillRect(x, y, 1, 1);
-        i += 4;
+        ++i;
       }
     }
 

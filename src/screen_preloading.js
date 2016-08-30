@@ -109,18 +109,38 @@
     c.height = img.height;
     var ctx = c.getContext('2d');
     
-    var data = img.getContext('2d').getImageData(0,0,img.width,img.height).data;
-    var i = 0;
-    for(var y = 0; y < img.height; ++y) {
-      for(var x = 0; x < img.width; ++x) {
-        if(data[i+3] === 0) ctx.fillStyle = 'rgba(0,0,0,0)';
-        else {
-          let brightness = (data[i]+data[i+1]+data[i+2])/(256*3);
-          let idx = Math.floor(brightness*colors.length);
-          ctx.fillStyle = colors[idx];
+    //0x[alpha][blue][green][red]
+    let imgRaw = new Uint32Array(img.getContext('2d').getImageData(0,0,img.width,img.height).data.buffer);
+    //indexed color
+    let imgColors = [];
+    let imgIdx = imgRaw.map(function(x) {
+      if((x&0xff000000) === 0) return 0;
+      let idx = imgColors.indexOf(x);
+      if(idx !== -1) return idx+1;
+      imgColors.push(x);
+      return imgColors.length;
+    });
+    //sort indexes
+    imgColors = imgColors.map((x,i)=>({ oldIdx: i, brightness: (x & 0xff) + ((x & 0xff00)>>8) + ((x & 0xff0000)>>16) }))
+      .sort((a,b)=>a.brightness-b.brightness)
+    console.log(imgColors);
+    imgColors.forEach((x,i)=>x.bIdx=i+1);
+    imgColors.sort((a,b)=>a.oldIdx-b.oldIdx);
+
+    imgIdx = imgIdx.map(x=>(x===0)?0:(imgColors[x-1].bIdx));
+    // imgColors = imgColors.map(x=>x.brightness).sort();
+
+    //TODO reduce color map to fewer colors
+
+    //create sprite
+    let i = 0;
+    for(let y = 0; y < img.height; ++y) {
+      for(let x = 0; x < img.width; ++x) {
+        if(imgIdx[i] !== 0) {
+          ctx.fillStyle = colors[imgIdx[i]-1];
+          ctx.fillRect(x, y, 1, 1);
         }
-        ctx.fillRect(x, y, 1, 1);
-        i+=4;
+        ++i;
       }
     }
     

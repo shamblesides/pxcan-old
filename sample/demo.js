@@ -47,8 +47,8 @@ game.onFrame = function() {
   this.reset();
   panels.forEach(function(p) {
     p.clear();
-    p.blit('bg', ['#f00', '#f22','#f55','#f77', '#f99'], 0, 0);
-    p.blit('chara', ['#000', color(), color()], chara.frame, chara.flip, chara.x, chara.y, 0, 1);
+    p.blit('bg', ['#e00', '#f22','#f55','#f77', '#f99'], 0, 0);
+    p.blit('chara', ['#333', '#999', '#bbb'], chara.frame, chara.flip, chara.x, chara.y, 0, 1);
   });
 
 };
