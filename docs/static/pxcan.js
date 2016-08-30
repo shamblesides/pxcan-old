@@ -979,7 +979,6 @@ pxcan.prototype.border = pxcan.Panel.prototype.border = function (sheet) {
     }).sort(function (a, b) {
       return a.brightness - b.brightness;
     });
-    console.log(imgColors);
     imgColors.forEach(function (x, i) {
       return x.bIdx = i + 1;
     });

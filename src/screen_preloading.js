@@ -123,7 +123,6 @@
     //sort indexes
     imgColors = imgColors.map((x,i)=>({ oldIdx: i, brightness: (x & 0xff) + ((x & 0xff00)>>8) + ((x & 0xff0000)>>16) }))
       .sort((a,b)=>a.brightness-b.brightness)
-    console.log(imgColors);
     imgColors.forEach((x,i)=>x.bIdx=i+1);
     imgColors.sort((a,b)=>a.oldIdx-b.oldIdx);
 
