@@ -744,12 +744,9 @@ pxcan.prototype.blit = pxcan.Panel.prototype.blit = function (sheetName /*, [rec
   var coords = this.toCanvasCoords(x, y, cwrot ? sprite.height : sprite.width, cwrot ? sprite.width : sprite.height, xAnc, yAnc);
   if (!coords) return;
   // flip+rotate
-  if (xflip || yflip) {
-    this.context.translate(this.canvas.width * +xflip, this.canvas.height * +yflip);
-    this.context.scale(xflip ? -1 : 1, yflip ? -1 : 1);
-  }
-  if (cwrot) {
-    this.context.rotate(Math.PI / 2);
+  if (xflip || yflip || cwrot) {
+    this.context.save();
+    this.context.setTransform(+!cwrot && (xflip ? -1 : 1), +cwrot && (yflip ? -1 : 1), +cwrot && (xflip ? 1 : -1), +!cwrot && (yflip ? -1 : 1), this.canvas.width * +xflip, this.canvas.height * +yflip);
   }
   // draw it to the screen
   if (!cwrot) this.context.drawImage(
@@ -766,13 +763,7 @@ pxcan.prototype.blit = pxcan.Panel.prototype.blit = function (sheetName /*, [rec
   // location on screen
   this.canvas.height * +yflip + (coords.y * (yflip ? -1 : 1) - coords.height * +yflip) * this.drawScale, -this.canvas.width * +xflip - (coords.x * (xflip ? -1 : 1) + coords.width * +!xflip) * this.drawScale, coords.height * this.drawScale, coords.width * this.drawScale);
   // undo flipping
-  if (cwrot) {
-    this.context.rotate(-Math.PI / 2);
-  }
-  if (xflip || yflip) {
-    this.context.translate(this.canvas.width * +xflip, this.canvas.height * +yflip);
-    this.context.scale(xflip ? -1 : 1, yflip ? -1 : 1);
-  }
+  if (cwrot || xflip || yflip) this.context.restore();
 };
 
 pxcan.prototype.write = pxcan.Panel.prototype.write = function (text /*, [color,] x, y [xAnc, yAnc], [align] */) {
