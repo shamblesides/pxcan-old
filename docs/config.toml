@@ -15,7 +15,7 @@ googleAnalytics = ""
 
 	# Repository
 	provider = "GitHub"
-	repo_url = "https://github.com/shamblesides/nigelgame"
+	repo_url = "https://github.com/shamblesides/pxcan"
 
 	version = "0.1"
 	logo = "images/logo.png"
