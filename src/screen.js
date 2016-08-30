@@ -303,7 +303,7 @@ var pxcan = function(element) {
   this.pad = function(/* ...buttons */) {
     var padButtons;
     if(arguments.length===1 && (arguments[0] instanceof Array)) padButtons = arguments[0];
-    else padButtons = Array.slice.call(null, arguments);
+    else padButtons = Array.prototype.slice.call(arguments);
 
     padButtons = padButtons.filter(x=>buttons[x].isDown);
     if(padButtons.length === 0) return null;
