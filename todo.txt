@@ -1,6 +1,5 @@
 TO DO
 -----
-* Add recoloring to blit options
 * Screen mode: 'scale'
 * setMaxOverflow for screen mode 'scale-overflow'
 * Consider how views will work in pxcan?
