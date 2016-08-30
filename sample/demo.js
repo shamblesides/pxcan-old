@@ -13,11 +13,13 @@ game.bind('down', 83, 40);
 
 var chara = {x:0, y:0, xDir:0, yDir:0, speed:1, frame:0, flip: ''};
 
-var color = ()=> ( '#'+'xxx'.split('').map(x=>('6b'.charAt(Math.random()*2))).join('') );
+function color() {
+  return '#'+'xxx'.split('').map(function(x) { return ('6b'.charAt(Math.random()*2)); }).join('');
+};
 
 game.onFrame = function() {
   var panels = [ {x:-1,y:-1}, {x:-1,y:1}, {x:1,y:-1}, {x:1,y:1}, {x:0,y:0} ]
-    .map(c => this.panel(c.x*3, c.y*3, this.width/2-10,this.height/2-10, -c.x, -c.y) );
+    .map(function(c) { return game.panel(c.x*3, c.y*3, game.width/2-10,game.height/2-10, -c.x, -c.y) });
 
   // update movement based on keys
   chara.xDir = ({ 'left': -1, 'right': 1 })[this.pad('left','right')] || 0;
@@ -27,7 +29,7 @@ game.onFrame = function() {
   if (this.touch.isDown) {
     panels.reverse();
 
-    var p = panels.find(p=> this.touch.rel(p).inBounds);
+    var p = panels.find(function(p) { return game.touch.rel(p).inBounds });
     if (p) {
       chara.xDir = Math.sign((this.touch.rel(p).x - chara.x)/chara.speed | 0);
       chara.yDir = Math.sign((this.touch.rel(p).y - chara.y)/chara.speed | 0);
@@ -54,5 +56,5 @@ game.onFrame = function() {
     p.write('writing letters', '#333', 3,3);
     p.write('writing letters', color(), 4,4);
   });
-
+  
 };

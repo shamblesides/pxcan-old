@@ -965,7 +965,7 @@ pxcan.prototype.border = pxcan.Panel.prototype.border = function () /* [sheet,] 
     var imgRaw = new Uint32Array(img.getContext('2d').getImageData(0, 0, img.width, img.height).data.buffer);
     //indexed color
     var imgColors = [];
-    var imgIdx = imgRaw.map(function (x) {
+    var imgIdx = Array.prototype.map.call(imgRaw, function (x) {
       if ((x & 0xff000000) === 0) return 0;
       var idx = imgColors.indexOf(x);
       if (idx !== -1) return idx + 1;
@@ -985,7 +985,7 @@ pxcan.prototype.border = pxcan.Panel.prototype.border = function () /* [sheet,] 
       return a.oldIdx - b.oldIdx;
     });
 
-    imgIdx = imgIdx.map(function (x) {
+    imgIdx = Array.prototype.map.call(imgIdx, function (x) {
       return x === 0 ? 0 : imgColors[x - 1].bIdx;
     });
     // imgColors = imgColors.map(x=>x.brightness).sort();

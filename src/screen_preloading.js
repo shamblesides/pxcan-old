@@ -113,7 +113,7 @@
     let imgRaw = new Uint32Array(img.getContext('2d').getImageData(0,0,img.width,img.height).data.buffer);
     //indexed color
     let imgColors = [];
-    let imgIdx = imgRaw.map(function(x) {
+    let imgIdx = Array.prototype.map.call(imgRaw, function(x) {
       if((x&0xff000000) === 0) return 0;
       let idx = imgColors.indexOf(x);
       if(idx !== -1) return idx+1;
@@ -126,7 +126,7 @@
     imgColors.forEach((x,i)=>x.bIdx=i+1);
     imgColors.sort((a,b)=>a.oldIdx-b.oldIdx);
 
-    imgIdx = imgIdx.map(x=>(x===0)?0:(imgColors[x-1].bIdx));
+    imgIdx = Array.prototype.map.call(imgIdx, x=>(x===0)?0:(imgColors[x-1].bIdx));
     // imgColors = imgColors.map(x=>x.brightness).sort();
 
     //TODO reduce color map to fewer colors
