@@ -721,7 +721,7 @@ pxcan.prototype.blit = pxcan.Panel.prototype.blit = function (sheetName /*, [rec
   var sheet = this.sheet(sheetName);
   if (!sheet) throw new Error('unknown sheet: ' + sheetName);
   // get the recolored sheet
-  var sheetSrc = recolorColors ? pxcan.recolorImage(sheet.src, recolorColors) : sheet.src;
+  var sheetSrc = recolorColors && recolorColors.length > 0 ? pxcan.recolorImage(sheet.src, recolorColors) : sheet.src;
   // if a particular sprite is specified, get it
   var sprite = frame !== null ? sheet.getSprite(frame) : sheet;
   // determine flip+rot
@@ -775,27 +775,30 @@ pxcan.prototype.blit = pxcan.Panel.prototype.blit = function (sheetName /*, [rec
   }
 };
 
-pxcan.prototype.write = pxcan.Panel.prototype.write = function (text, x, y /* [xAnc, yAnc], [align] */) {
-  // verify valid arguments
+pxcan.prototype.write = pxcan.Panel.prototype.write = function (text /*, [color,] x, y [xAnc, yAnc], [align] */) {
+  // arguments
+  if ([3, 4, 5, 6].indexOf(arguments.length) === -1) throw new Error('bad arguments for write');
   if (text === undefined || text === null) throw new Error('text is ' + text);
   if (typeof text !== 'string') text = text.toString();
-  if ([3, 4, 5, 6].indexOf(arguments.length) === -1) throw new Error('bad arguments for write');
-  // font
-  var font = this.sheet(this.font);
-  // anchor
-  var anchorX, anchorY;
-  if (arguments.length >= 5) {
-    anchorX = arguments[3];
-    anchorY = arguments[4];
+  var color, x, y, anchorX, anchorY, align;
+  var xArgPos = typeof arguments[1] === 'number' ? 1 : 2;
+  color = typeof arguments[1] === 'number' ? [] : [arguments[1]];
+  x = arguments[xArgPos];
+  y = arguments[xArgPos + 1];
+  if (arguments.length >= xArgPos + 3) {
+    anchorX = arguments[xArgPos + 2];
+    anchorY = arguments[xArgPos + 3];
   } else {
     anchorX = this.origin().x;
     anchorY = this.origin().y;
   }
+  align = [xArgPos + 3, xArgPos + 5].indexOf(arguments.length) !== -1 ? arguments[arguments.length - 1] : 0;
+
+  // font
+  var font = this.sheet(this.font);
   // text alignment
-  var align = 0;
-  if ([4, 6].indexOf(arguments.length) !== -1) {
-    align = arguments[arguments.length - 1];
-    if (align === "left") align = 0;else if (align === "center") align = 0.5;else if (align === "right") align = 1;else if (!(align >= 0 && align <= 1)) throw new Error("unknown text alignment: " + align);
+  if (typeof align === 'string') {
+    if (align === "left") align = 0;else if (align === "center") align = 0.5;else if (align === "right") align = 1;else throw new Error("unknown text alignment: " + align);
   }
   // format text into lines & get max column width
   var lines = text.split('\n');
@@ -811,13 +814,18 @@ pxcan.prototype.write = pxcan.Panel.prototype.write = function (text, x, y /* [x
   for (var r = 0; r < lines.length; ++r) {
     var indent = Math.round((maxcol - lines[r].length) * align * ltrWidth);
     for (var c = 0; c < lines[r].length; ++c) {
-      this.blit(this.font, lines[r].charCodeAt(c) - 32, leftx + indent + c * ltrWidth, topy + r * ltrHeight, anchorX, anchorY);
+      this.blit(this.font, color, lines[r].charCodeAt(c) - 32, leftx + indent + c * ltrWidth, topy + r * ltrHeight, anchorX, anchorY);
     }
   }
 };
 
-pxcan.prototype.border = pxcan.Panel.prototype.border = function (sheet) {
-  sheet = sheet || "pxcan-border";
+pxcan.prototype.border = pxcan.Panel.prototype.border = function () /* [sheet,] [colors] */{
+  var sheet = 'pxcan-border',
+      colors = null;
+  if (arguments.length > 0) {
+    if (typeof arguments[0] === 'string') sheet = arguments[0];
+    if (Array.isArray(arguments[arguments.length - 1])) colors = arguments[arguments.length - 1];
+  }
   // temporarily store origin and offset, then set them
   var oldOrigin = this.origin();
   var oldOffset = this.offset();
@@ -826,20 +834,20 @@ pxcan.prototype.border = pxcan.Panel.prototype.border = function (sheet) {
   // horizontal edges
   var sw = this.sheet(sheet).spriteWidth;
   for (var x = sw; x < this.width - sw; x += sw) {
-    this.blit(sheet, { col: 1, row: 0 }, x, 0, -1, -1);
-    this.blit(sheet, { col: 1, row: 2 }, x, this.height, -1, 1);
+    this.blit(sheet, colors, { col: 1, row: 0 }, x, 0, -1, -1);
+    this.blit(sheet, colors, { col: 1, row: 2 }, x, this.height, -1, 1);
   }
   // vertical edges
   var sh = this.sheet(sheet).spriteHeight;
   for (var y = sh; y < this.height - sh; y += sh) {
-    this.blit(sheet, { col: 0, row: 1 }, 0, y, -1, -1);
-    this.blit(sheet, { col: 2, row: 1 }, this.width, y, 1, -1);
+    this.blit(sheet, colors, { col: 0, row: 1 }, 0, y, -1, -1);
+    this.blit(sheet, colors, { col: 2, row: 1 }, this.width, y, 1, -1);
   }
   // corners
-  this.blit(sheet, { col: 0, row: 0 }, 0, 0, -1, -1);
-  this.blit(sheet, { col: 2, row: 0 }, this.width, 0, 1, -1);
-  this.blit(sheet, { col: 0, row: 2 }, 0, this.height, -1, 1);
-  this.blit(sheet, { col: 2, row: 2 }, this.width, this.height, 1, 1);
+  this.blit(sheet, colors, { col: 0, row: 0 }, 0, 0, -1, -1);
+  this.blit(sheet, colors, { col: 2, row: 0 }, this.width, 0, 1, -1);
+  this.blit(sheet, colors, { col: 0, row: 2 }, 0, this.height, -1, 1);
+  this.blit(sheet, colors, { col: 2, row: 2 }, this.width, this.height, 1, 1);
   // return origin and offset to old values
   this.origin(oldOrigin.x, oldOrigin.y);
   this.offset(oldOffset.x, oldOffset.y);

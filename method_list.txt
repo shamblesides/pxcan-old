@@ -61,9 +61,9 @@ pxcan.setBackground(bg)
 pxcan.clear([x, y, w, h, [xAnchor, yAnchor]])
 pxcan.fill(color, [x, y, w, h, [xAnchor, yAnchor]])
 pxcan.blit(sheet:string, [recolor:array,] [frame:int|object,] [flip:string,] x:int, y:int, [xAnchor, yAnchor])
-pxcan.write(text, x, y, [xAnchor, yAnchor,] [align])
+pxcan.write(text, [color,] x, y, [xAnchor, yAnchor,] [align])
 pxcan.font
-pxcan.border(borderSheet)
+pxcan.border([borderSheet,] [color])
 
 pxcan.preload(src, alias, width, height)
 pxcan.isPreloading

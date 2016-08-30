@@ -13,7 +13,7 @@ game.bind('down', 83, 40);
 
 var chara = {x:0, y:0, xDir:0, yDir:0, speed:1, frame:0, flip: ''};
 
-var color = ()=> ( '#'+'...'.split('').map(x=>('369b'.charAt(Math.random()*4))).join('') );
+var color = ()=> ( '#'+'xxx'.split('').map(x=>('6b'.charAt(Math.random()*2))).join('') );
 
 game.onFrame = function() {
   var panels = [ {x:-1,y:-1}, {x:-1,y:1}, {x:1,y:-1}, {x:1,y:1}, {x:0,y:0} ]
@@ -49,6 +49,10 @@ game.onFrame = function() {
     p.clear();
     p.blit('bg', ['#e00', '#f22','#f55','#f77', '#f99'], 0, 0);
     p.blit('chara', ['#333', color(), color()], chara.frame, chara.flip, chara.x, chara.y, 0, 1);
+    p.border([color()]);
+    p.origin(-1,-1);
+    p.write('writing letters', '#333', 3,3);
+    p.write('writing letters', color(), 4,4);
   });
 
 };
