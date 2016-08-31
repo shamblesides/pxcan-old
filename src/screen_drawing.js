@@ -256,7 +256,7 @@ pxcan.Panel.prototype.write = function(text /*, [color,] x, y [xAnc, yAnc], [ali
 
 pxcan.prototype.border =
 pxcan.Panel.prototype.border = function(/* [sheet,] [colors] */) {
-  var sheet = 'pxcan-border', colors = null;
+  var sheet = 'pxborder', colors = null;
   if(arguments.length > 0) {
     if(typeof(arguments[0]) === 'string') sheet = arguments[0];
     if(Array.isArray(arguments[arguments.length-1])) colors = arguments[arguments.length-1];
