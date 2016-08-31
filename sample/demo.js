@@ -18,6 +18,8 @@ function color() {
 };
 
 game.onFrame = function() {
+  this.font = 'px6';
+  
   var panels = [ {x:-1,y:-1}, {x:-1,y:1}, {x:1,y:-1}, {x:1,y:1}, {x:0,y:0} ]
     .map(function(c) { return game.panel(c.x*3, c.y*3, game.width/2-10,game.height/2-10, -c.x, -c.y) });
 
