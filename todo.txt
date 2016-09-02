@@ -2,6 +2,8 @@ TO DO
 -----
 * Screen mode: 'scale'
 * setMaxOverflow for screen mode 'scale-overflow'
+* blitPxcan(pxcan)
+* Layers?
 * Consider how views will work in pxcan?
 * Music?
 * Sounds?
