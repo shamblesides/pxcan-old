@@ -384,7 +384,7 @@ var pxcan = function(element) {
   });
 
   function onTouchStart(fromLeft, fromTop) {
-    touch.cur = touch.start = new TouchPoint(fromLeft, fromTop);
+    touch.cur = touch.last = touch.start = new TouchPoint(fromLeft, fromTop);
     touch.changed = true;
     touch.isDown = true;
     touch.wasStarted = true;
@@ -392,7 +392,7 @@ var pxcan = function(element) {
   function onTouchMove(fromLeft, fromTop) {
     touch.cur = new TouchPoint(fromLeft, fromTop);
     
-    if(touch.last && (touch.x === touch.last.x) && (touch.y === touch.last.y)) return;
+    if((touch.x === touch.last.x) && (touch.y === touch.last.y)) return;
     touch.changed = true;
     touch.moved = true;
     touch.isDrag = true;
