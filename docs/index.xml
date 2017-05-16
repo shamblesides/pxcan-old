@@ -2,224 +2,24 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>pxcan.js Docs</title>
-    <link>http://replace-this-with-your-hugo-site.com/</link>
+    <link>http://www.nigel.fyi/pxcan/</link>
     <description>Recent content on pxcan.js Docs</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
+    <copyright>Released under the MIT license</copyright>
     <lastBuildDate>Wed, 20 Jul 2016 17:39:41 -0600</lastBuildDate>
-    <atom:link href="http://replace-this-with-your-hugo-site.com/index.xml" rel="self" type="application/rss+xml" />
+    
+	<atom:link href="http://www.nigel.fyi/pxcan/index.xml" rel="self" type="application/rss+xml" />
+    
     
     <item>
       <title>Examples</title>
-      <link>http://replace-this-with-your-hugo-site.com/examples/</link>
+      <link>http://www.nigel.fyi/pxcan/examples/</link>
       <pubDate>Wed, 20 Jul 2016 17:39:41 -0600</pubDate>
       
-      <guid>http://replace-this-with-your-hugo-site.com/examples/</guid>
-      <description>
-
-&lt;h2 id=&#34;buttons&#34;&gt;Buttons&lt;/h2&gt;
-
-&lt;p&gt;This example demonstrates how to check if the player has just pressed, just released, or is currently holding down a button.&lt;/p&gt;
-
-&lt;div id=&#34;button-example&#34;&gt;&lt;/div&gt;
-
-&lt;pre&gt;&lt;code&gt;// initialize the screen
-var screen = new pxcan(&amp;quot;#button-example&amp;quot;);
-screen.setBackground(&amp;quot;black&amp;quot;);
-
-// bind a new button called &amp;quot;myButton&amp;quot; to the Z, X, and SPACE keys
-screen.bind(&#39;myButton&#39;, &#39;z&#39;, &#39;x&#39;, &#39; &#39;);
-
-// each frame...
-screen.onFrame = function() {
-    // erase the screen
-    this.reset();
-
-    // show a red rectangle if the button is FIRST PRESSED during this frame
-    if(this.button(&#39;myButton&#39;).wasPressed) {
-        this.fill(&#39;red&#39;, 0,0, this.width/2,this.height, 1,0);
-    }
-
-    // show a blue rectangle if the button is RELEASED during this frame
-    //  it is possible for wasPressed and wasReleased to happen during the
-    //  same frame, if it was pressed and released quickly
-    if(this.button(&#39;myButton&#39;).wasReleased) {
-        this.fill(&#39;blue&#39;, 0,0, this.width/2,this.height, -1,0);
-    }
-    
-    // write &amp;quot;down&amp;quot; or &amp;quot;not down&amp;quot; depending on if the button is currently down
-    if(this.button(&#39;myButton&#39;).isDown) {
-        this.write(&#39;down&#39;, 0,0);
-    }
-    else {
-        this.write(&#39;not down&#39;, 0, 0);
-    }
-
-    // write the number of frames passed in the bottom right corner
-    this.origin(1,1);
-    this.write(this.clock, 0,0);
-};
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h2 id=&#34;touch&#34;&gt;Touch&lt;/h2&gt;
-
-&lt;p&gt;This example demonstrates a lot of the touch functionality included within pxcan.js by implementing a simple drawing program.&lt;/p&gt;
-
-&lt;div id=&#34;touch-example&#34;&gt;&lt;/div&gt;
-
-&lt;pre&gt;&lt;code&gt;var screen = new pxcan(&amp;quot;#touch-example&amp;quot;);
-screen.setBackground(&amp;quot;black&amp;quot;);
-screen.contextMenu = false;
-
-screen.onReady = function() {
-    this.write(&#39;draw&#39;, 0,0);
-};
-
-screen.onFrame = function() {
-    if (!this.touch.changed) return;
-
-    var tch = this.touch;
-    var color = tch.isRightClick ? &#39;red&#39;: &#39;white&#39;;
-    var size = tch.isMouse? 1 : 10;
-
-    if (tch.moved &amp;amp;&amp;amp; tch.isDown) {
-        drawLine(this, color, size, tch.last.bounded().x, tch.last.bounded().y, tch.bounded().x, tch.bounded().y);
-    }
-    else if (tch.wasStarted) {
-        this.fill(color, tch.x, tch.y, size, size);
-    }
-    else if (tch.wasReleased &amp;amp;&amp;amp; tch.isDrag) {
-        drawLine(this, &#39;gray&#39;, size, tch.start.x, tch.start.y, tch.x, tch.y);
-    }
-    else if (tch.wasInterrupted) {
-        this.fill(&#39;orange&#39;);
-    }
-    else if (!tch.inBounds &amp;amp;&amp;amp; tch.last &amp;amp;&amp;amp; tch.last.inBounds) {
-        this.write(&#39;out of bounds&#39;, 0,0);
-    }
-};
-
-function drawLine(screen, color, size, x0,y0, x1,y1) {
-    var dx = Math.abs(x1-x0);
-    var dy = Math.abs(y1-y0);
-    var sx = (x0 &amp;lt; x1) ? 1 : -1;
-    var sy = (y0 &amp;lt; y1) ? 1 : -1;
-    var err = dx-dy;
-
-    while(true){
-    screen.fill(color, x0,y0, size,size);
-
-    if ((x0==x1) &amp;amp;&amp;amp; (y0==y1)) break;
-        var e2 = 2*err;
-        if (e2 &amp;gt;-dy){ err -= dy; x0  += sx; }
-        if (e2 &amp;lt; dx){ err += dx; y0  += sy; }
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h2 id=&#34;hasfocus&#34;&gt;hasFocus&lt;/h2&gt;
-
-&lt;p&gt;A very simple demo to check if the game element has keyboard focus.&lt;/p&gt;
-
-&lt;div id=&#34;focus-example&#34;&gt;&lt;/div&gt;
-
-&lt;pre&gt;&lt;code&gt;var screen = new pxcan(&amp;quot;#focus-example&amp;quot;);
-screen.frameskip = 5;
-
-screen.onFrame = function() {
-    this.fill(this.hasFocus? &#39;green&#39;: &#39;red&#39;);
-    this.write(this.clock, 0,0);
-};
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;script src=&#34;http://replace-this-with-your-hugo-site.com/pxcan.js&#34;&gt;&lt;/script&gt;
-&lt;script&gt;
-    var screen = new pxcan(&#34;#button-example&#34;);
-    screen.setBackground(&#34;black&#34;);
-    screen.bind(&#39;myButton&#39;, &#39;z&#39;, &#39;x&#39;, &#39; &#39;);
-
-    screen.frameskip = 5;
-    
-    screen.onFrame = function() {
-        this.reset();
-
-        if(this.button(&#39;myButton&#39;).wasPressed) {
-            this.fill(&#39;red&#39;, 0,0, this.width/2,this.height, 1,0);
-        }
-
-        if(this.button(&#39;myButton&#39;).wasReleased) {
-            this.fill(&#39;blue&#39;, 0,0, this.width/2,this.height, -1,0);
-        }
-        
-        if(this.button(&#39;myButton&#39;).isDown) {
-            this.write(&#39;down&#39;, 0,0);
-        }
-        else {
-            this.write(&#39;not down&#39;, 0, 0);
-        }
-
-        this.origin(1,1);
-        this.write(this.clock, 0,0);
-    };
-
-    screen = new pxcan(&#34;#touch-example&#34;);
-    screen.setBackground(&#34;black&#34;);
-    screen.contextMenu = false;
-
-    screen.onReady = function() {
-        this.write(&#39;draw&#39;, 0,0);
-    };
-
-    screen.onFrame = function() {
-        if (!this.touch.changed) return;
-
-        var tch = this.touch;
-        var color = tch.isRightClick ? &#39;red&#39;: &#39;white&#39;;
-        var size = tch.isMouse? 1 : 10;
-
-        if (tch.moved &amp;&amp; tch.isDown) {
-            drawLine(this, color, size, tch.last.bounded().x, tch.last.bounded().y, tch.bounded().x, tch.bounded().y);
-        }
-        else if (tch.wasStarted) {
-            this.fill(color, tch.x, tch.y, size, size);
-        }
-        else if (tch.wasReleased &amp;&amp; tch.isDrag) {
-            drawLine(this, &#39;gray&#39;, size, tch.start.x, tch.start.y, tch.x, tch.y);
-        }
-        else if (tch.wasInterrupted) {
-            this.fill(&#39;orange&#39;);
-        }
-        if (!tch.inBounds &amp;&amp; tch.last &amp;&amp; tch.last.inBounds) {
-            this.write(&#39;out of bounds&#39;, 0,0);
-        }
-    };
-
-    function drawLine(screen, color, size, x0,y0, x1,y1) {
-        var dx = Math.abs(x1-x0);
-        var dy = Math.abs(y1-y0);
-        var sx = (x0 &lt; x1) ? 1 : -1;
-        var sy = (y0 &lt; y1) ? 1 : -1;
-        var err = dx-dy;
-
-        while(true){
-        screen.fill(color, x0,y0, size,size);
-
-        if ((x0==x1) &amp;&amp; (y0==y1)) break;
-            var e2 = 2*err;
-            if (e2 &gt;-dy){ err -= dy; x0  += sx; }
-            if (e2 &lt; dx){ err += dx; y0  += sy; }
-        }
-    }
-
-    screen = new pxcan(&#34;#focus-example&#34;);
-    screen.frameskip = 5;
-
-    screen.onFrame = function() {
-        this.fill(this.hasFocus? &#39;green&#39;: &#39;red&#39;);
-        this.write(this.clock, 0,0);
-    };
-&lt;/script&gt;
-</description>
+      <guid>http://www.nigel.fyi/pxcan/examples/</guid>
+      <description>Buttons This example demonstrates how to check if the player has just pressed, just released, or is currently holding down a button.
+ // initialize the screen var screen = new pxcan(&amp;quot;#button-example&amp;quot;); screen.setBackground(&amp;quot;black&amp;quot;); // bind a new button called &amp;quot;myButton&amp;quot; to the Z, X, and SPACE keys screen.bind(&#39;myButton&#39;, &#39;z&#39;, &#39;x&#39;, &#39; &#39;); // each frame... screen.onFrame = function() { // erase the screen this.reset(); // show a red rectangle if the button is FIRST PRESSED during this frame if(this.</description>
     </item>
     
   </channel>
