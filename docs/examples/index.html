@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+  
+  
+  
+  
+   <html class="no-js"> 
+
+  <head lang="en-us">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1">
+    <title>Examples - pxcan.js Docs</title>
+    <meta name="generator" content="Hugo 0.16-DEV" />
+
+    
+    <meta name="description" content="Pixels on an HTML5 Canvas, done right.">
+    
+    <link rel="canonical" href="http://replace-this-with-your-hugo-site.com/examples/">
+    
+    <meta name="author" content="shamblesides">
+    
+
+    <meta property="og:url" content="http://replace-this-with-your-hugo-site.com/examples/">
+    <meta property="og:title" content="pxcan.js Docs">
+    <meta property="og:image" content="http://replace-this-with-your-hugo-site.com/images/logo.png">
+    <meta name="apple-mobile-web-app-title" content="pxcan.js Docs">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <link rel="shortcut icon" type="image/x-icon" href="http://replace-this-with-your-hugo-site.com/images/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="http://replace-this-with-your-hugo-site.com/images/favicon.ico">
+
+    <style>
+      @font-face {
+        font-family: 'Icon';
+        src: url('http://replace-this-with-your-hugo-site.com/fonts/icon.eot?52m981');
+        src: url('http://replace-this-with-your-hugo-site.com/fonts/icon.eot?#iefix52m981')
+               format('embedded-opentype'),
+             url('http://replace-this-with-your-hugo-site.com/fonts/icon.woff?52m981')
+               format('woff'),
+             url('http://replace-this-with-your-hugo-site.com/fonts/icon.ttf?52m981')
+               format('truetype'),
+             url('http://replace-this-with-your-hugo-site.com/fonts/icon.svg?52m981#icon')
+               format('svg');
+        font-weight: normal;
+        font-style: normal;
+      }
+    </style>
+
+    <link rel="stylesheet" href="http://replace-this-with-your-hugo-site.com/stylesheets/application.css">
+    <link rel="stylesheet" href="http://replace-this-with-your-hugo-site.com/stylesheets/temporary.css">
+    <link rel="stylesheet" href="http://replace-this-with-your-hugo-site.com/stylesheets/palettes.css">
+    <link rel="stylesheet" href="http://replace-this-with-your-hugo-site.com/stylesheets/highlight/highlight.css">
+
+    
+    
+    
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Ubuntu:400,700|Ubuntu%2bMono">
+    <style>
+      body, input {
+        font-family: 'Ubuntu', Helvetica, Arial, sans-serif;
+      }
+      pre, code {
+        font-family: 'Ubuntu Mono', 'Courier New', 'Courier', monospace;
+      }
+    </style>
+
+    
+    <script src="http://replace-this-with-your-hugo-site.com/javascripts/modernizr.js"></script>
+
+    
+
+  </head>
+  <body class="palette-primary-green palette-accent-light red">
+
+
+
+	
+	
+
+
+<div class="backdrop">
+	<div class="backdrop-paper"></div>
+</div>
+
+<input class="toggle" type="checkbox" id="toggle-drawer">
+<input class="toggle" type="checkbox" id="toggle-search">
+<label class="toggle-button overlay" for="toggle-drawer"></label>
+
+<header class="header">
+	<nav aria-label="Header">
+  <div class="bar default">
+    <div class="button button-menu" role="button" aria-label="Menu">
+      <label class="toggle-button icon icon-menu" for="toggle-drawer">
+        <span></span>
+      </label>
+    </div>
+    <div class="stretch">
+      <div class="title">
+        Example
+      </div>
+    </div>
+
+    
+    <div class="button button-twitter" role="button" aria-label="Twitter">
+       <a href="https://twitter.com/shamblesides" title="@shamblesides on Twitter" target="_blank" class="toggle-button icon icon-twitter"></a>
+    </div>
+    
+
+    
+    <div class="button button-github" role="button" aria-label="GitHub">
+      <a href="https://github.com/shamblesides" title="@shamblesides on GitHub" target="_blank" class="toggle-button icon icon-github"></a>
+    </div>
+    
+    
+        
+  </div>
+  <div class="bar search">
+    <div class="button button-close" role="button" aria-label="Close">
+      <label class="toggle-button icon icon-back" for="toggle-search"></label>
+    </div>
+    <div class="stretch">
+      <div class="field">
+        <input class="query" type="text" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck>
+      </div>
+    </div>
+    <div class="button button-reset" role="button" aria-label="Search">
+      <button class="toggle-button icon icon-close" id="reset-search"></button>
+    </div>
+  </div>
+</nav>
+</header>
+
+<main class="main">
+	<div class="drawer">
+		<nav aria-label="Navigation">
+  <a href="https://github.com/shamblesides/pxcan" class="project">
+    <div class="banner">
+      
+        <div class="logo">
+          <img src="http://replace-this-with-your-hugo-site.com/images/logo.png">
+        </div>
+      
+      <div class="name">
+        <strong>pxcan.js Docs <span class="version">0.1</span></strong>
+        
+          <br>
+          shamblesides/pxcan
+        
+      </div>
+    </div>
+  </a>
+
+  <div class="scrollable">
+    <div class="wrapper">
+      
+        <ul class="repo">
+          <li class="repo-download">
+            <a href="https://github.com/shamblesides/pxcan/archive/master.zip" target="_blank" title="Download" data-action="download">
+              <i class="icon icon-download"></i> Download
+            </a>
+          </li>
+          <li class="repo-stars">
+            <a href="https://github.com/shamblesides/pxcan/stargazers" target="_blank" title="Stargazers" data-action="star">
+              <i class="icon icon-star"></i> Stars
+              <span class="count">&ndash;</span>
+            </a>
+          </li>
+        </ul>
+        <hr>
+      
+
+      <div class="toc">
+        
+        <ul>
+          
+
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="pxcan.js" href="http://replace-this-with-your-hugo-site.com/">
+	
+	pxcan.js
+</a>
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a class="current" title="Examples" href="http://replace-this-with-your-hugo-site.com/examples/">
+	
+	Examples
+</a>
+
+
+<ul id="scrollspy">
+</ul>
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="License" href="http://replace-this-with-your-hugo-site.com/license/">
+	
+	License
+</a>
+
+
+  
+</li>
+
+
+        </ul>
+        
+
+        
+        <hr>
+        <span class="section">The author</span>
+        
+        <ul>
+          
+          <li>
+            <a href="https://twitter.com/shamblesides" target="_blank" title="@shamblesides on Twitter">
+              @shamblesides on Twitter
+            </a>
+          </li>
+          
+
+          
+          <li>
+            <a href="https://github.com/shamblesides" target="_blank" title="@shamblesides on GitHub">
+              @shamblesides on GitHub
+            </a>
+          </li>
+          
+        </ul>
+        
+      </div>
+    </div>
+  </div>
+</nav>
+
+	</div>
+
+	<article class="article">
+		<div class="wrapper">
+			<h1>Examples </h1>
+
+			
+
+<h2 id="buttons">Buttons</h2>
+
+<p>This example demonstrates how to check if the player has just pressed, just released, or is currently holding down a button.</p>
+
+<div id="button-example"></div>
+
+<pre><code>// initialize the screen
+var screen = new pxcan(&quot;#button-example&quot;);
+screen.setBackground(&quot;black&quot;);
+
+// bind a new button called &quot;myButton&quot; to the Z, X, and SPACE keys
+screen.bind('myButton', 'z', 'x', ' ');
+
+// each frame...
+screen.onFrame = function() {
+    // erase the screen
+    this.reset();
+
+    // show a red rectangle if the button is FIRST PRESSED during this frame
+    if(this.button('myButton').wasPressed) {
+        this.fill('red', 0,0, this.width/2,this.height, 1,0);
+    }
+
+    // show a blue rectangle if the button is RELEASED during this frame
+    //  it is possible for wasPressed and wasReleased to happen during the
+    //  same frame, if it was pressed and released quickly
+    if(this.button('myButton').wasReleased) {
+        this.fill('blue', 0,0, this.width/2,this.height, -1,0);
+    }
+    
+    // write &quot;down&quot; or &quot;not down&quot; depending on if the button is currently down
+    if(this.button('myButton').isDown) {
+        this.write('down', 0,0);
+    }
+    else {
+        this.write('not down', 0, 0);
+    }
+
+    // write the number of frames passed in the bottom right corner
+    this.origin(1,1);
+    this.write(this.clock, 0,0);
+};
+</code></pre>
+
+<h2 id="touch">Touch</h2>
+
+<p>This example demonstrates a lot of the touch functionality included within pxcan.js by implementing a simple drawing program.</p>
+
+<div id="touch-example"></div>
+
+<pre><code>var screen = new pxcan(&quot;#touch-example&quot;);
+screen.setBackground(&quot;black&quot;);
+screen.contextMenu = false;
+
+screen.onReady = function() {
+    this.write('draw', 0,0);
+};
+
+screen.onFrame = function() {
+    if (!this.touch.changed) return;
+
+    var tch = this.touch;
+    var color = tch.isRightClick ? 'red': 'white';
+    var size = tch.isMouse? 1 : 10;
+
+    if (tch.moved &amp;&amp; tch.isDown) {
+        drawLine(this, color, size, tch.last.bounded().x, tch.last.bounded().y, tch.bounded().x, tch.bounded().y);
+    }
+    else if (tch.wasStarted) {
+        this.fill(color, tch.x, tch.y, size, size);
+    }
+    else if (tch.wasReleased &amp;&amp; tch.isDrag) {
+        drawLine(this, 'gray', size, tch.start.x, tch.start.y, tch.x, tch.y);
+    }
+    else if (tch.wasInterrupted) {
+        this.fill('orange');
+    }
+    else if (!tch.inBounds &amp;&amp; tch.last &amp;&amp; tch.last.inBounds) {
+        this.write('out of bounds', 0,0);
+    }
+};
+
+function drawLine(screen, color, size, x0,y0, x1,y1) {
+    var dx = Math.abs(x1-x0);
+    var dy = Math.abs(y1-y0);
+    var sx = (x0 &lt; x1) ? 1 : -1;
+    var sy = (y0 &lt; y1) ? 1 : -1;
+    var err = dx-dy;
+
+    while(true){
+    screen.fill(color, x0,y0, size,size);
+
+    if ((x0==x1) &amp;&amp; (y0==y1)) break;
+        var e2 = 2*err;
+        if (e2 &gt;-dy){ err -= dy; x0  += sx; }
+        if (e2 &lt; dx){ err += dx; y0  += sy; }
+    }
+}
+</code></pre>
+
+<h2 id="hasfocus">hasFocus</h2>
+
+<p>A very simple demo to check if the game element has keyboard focus.</p>
+
+<div id="focus-example"></div>
+
+<pre><code>var screen = new pxcan(&quot;#focus-example&quot;);
+screen.frameskip = 5;
+
+screen.onFrame = function() {
+    this.fill(this.hasFocus? 'green': 'red');
+    this.write(this.clock, 0,0);
+};
+</code></pre>
+
+<script src="http://replace-this-with-your-hugo-site.com/pxcan.js"></script>
+<script>
+    var screen = new pxcan("#button-example");
+    screen.setBackground("black");
+    screen.bind('myButton', 'z', 'x', ' ');
+
+    screen.frameskip = 5;
+    
+    screen.onFrame = function() {
+        this.reset();
+
+        if(this.button('myButton').wasPressed) {
+            this.fill('red', 0,0, this.width/2,this.height, 1,0);
+        }
+
+        if(this.button('myButton').wasReleased) {
+            this.fill('blue', 0,0, this.width/2,this.height, -1,0);
+        }
+        
+        if(this.button('myButton').isDown) {
+            this.write('down', 0,0);
+        }
+        else {
+            this.write('not down', 0, 0);
+        }
+
+        this.origin(1,1);
+        this.write(this.clock, 0,0);
+    };
+
+    screen = new pxcan("#touch-example");
+    screen.setBackground("black");
+    screen.contextMenu = false;
+
+    screen.onReady = function() {
+        this.write('draw', 0,0);
+    };
+
+    screen.onFrame = function() {
+        if (!this.touch.changed) return;
+
+        var tch = this.touch;
+        var color = tch.isRightClick ? 'red': 'white';
+        var size = tch.isMouse? 1 : 10;
+
+        if (tch.moved && tch.isDown) {
+            drawLine(this, color, size, tch.last.bounded().x, tch.last.bounded().y, tch.bounded().x, tch.bounded().y);
+        }
+        else if (tch.wasStarted) {
+            this.fill(color, tch.x, tch.y, size, size);
+        }
+        else if (tch.wasReleased && tch.isDrag) {
+            drawLine(this, 'gray', size, tch.start.x, tch.start.y, tch.x, tch.y);
+        }
+        else if (tch.wasInterrupted) {
+            this.fill('orange');
+        }
+        if (!tch.inBounds && tch.last && tch.last.inBounds) {
+            this.write('out of bounds', 0,0);
+        }
+    };
+
+    function drawLine(screen, color, size, x0,y0, x1,y1) {
+        var dx = Math.abs(x1-x0);
+        var dy = Math.abs(y1-y0);
+        var sx = (x0 < x1) ? 1 : -1;
+        var sy = (y0 < y1) ? 1 : -1;
+        var err = dx-dy;
+
+        while(true){
+        screen.fill(color, x0,y0, size,size);
+
+        if ((x0==x1) && (y0==y1)) break;
+            var e2 = 2*err;
+            if (e2 >-dy){ err -= dy; x0  += sx; }
+            if (e2 < dx){ err += dx; y0  += sy; }
+        }
+    }
+
+    screen = new pxcan("#focus-example");
+    screen.frameskip = 5;
+
+    screen.onFrame = function() {
+        this.fill(this.hasFocus? 'green': 'red');
+        this.write(this.clock, 0,0);
+    };
+</script>
+
+
+			<aside class="copyright" role="note">
+				
+				&copy; 2017 Released under the MIT license &ndash;
+				
+				Documentation built with
+				<a href="https://www.gohugo.io" target="_blank">Hugo</a>
+				using the
+				<a href="http://github.com/digitalcraftsman/hugo-material-docs" target="_blank">Material</a> theme.
+			</aside>
+
+			<footer class="footer">
+				
+
+
+
+
+
+			</footer>
+		</div>
+	</article>
+
+	<div class="results" role="status" aria-live="polite">
+		<div class="scrollable">
+			<div class="wrapper">
+				<div class="meta"></div>
+				<div class="list"></div>
+			</div>
+		</div>
+	</div>
+</main>
+
+    <script>
+    
+      var base_url = 'http:\/\/replace-this-with-your-hugo-site.com\/';
+      var repo_id  = 'shamblesides\/pxcan';
+    
+    </script>
+
+    <script src="http://replace-this-with-your-hugo-site.com/javascripts/application.js"></script>
+    
+
+    <script>
+      /* Add headers to scrollspy */
+      var headers   = document.getElementsByTagName("h2");
+      var scrollspy = document.getElementById('scrollspy');
+
+      if(scrollspy) {
+        if(headers.length > 0) {
+          for(var i = 0; i < headers.length; i++) {
+            var li = document.createElement("li");
+            li.setAttribute("class", "anchor");
+
+            var a  = document.createElement("a");
+            a.setAttribute("href", "#" + headers[i].id);
+            a.setAttribute("title", headers[i].innerHTML);
+            a.innerHTML = headers[i].innerHTML;
+            
+            li.appendChild(a)
+            scrollspy.appendChild(li);
+          }
+        } else {
+          scrollspy.parentElement.removeChild(scrollspy)
+        }
+        
+
+        /* Add permanent link next to the headers */
+        var headers = document.querySelectorAll("h1, h2, h3, h4, h5, h6");
+
+        for(var i = 0; i < headers.length; i++) {
+            var a = document.createElement("a");
+            a.setAttribute("class", "headerlink");
+            a.setAttribute("href", "#" + headers[i].id);
+            a.setAttribute("title", "Permanent link")
+            a.innerHTML = "#";
+            headers[i].appendChild(a);
+        }
+      }
+    </script>
+
+    
+
+    <script src="//gohugo.io/js/highlight.pack.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+  </body>
+</html>
