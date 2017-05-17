@@ -42,24 +42,18 @@ publishDir = "../docs"
 
 
 [social]
-	twitter = "shamblesides"
 	github  = "shamblesides"
 
 
 [[menu.main]]
-	name   = "pxcan.js"
-	url    = "/"
-	weight = 0
+	name   = "Introduction"
+	url    = "introduction/"
+	weight = 1
 
 [[menu.main]]
 	name   = "Examples"
 	url    = "examples/"
 	weight = 10
-
-[[menu.main]]
-	name   = "License"
-	url    = "license/"
-	weight = 40
 
 
 [blackfriday]

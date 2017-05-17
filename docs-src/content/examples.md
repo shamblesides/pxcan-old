@@ -1,6 +1,8 @@
 ---
 date: 2016-07-20T17:39:41-06:00
 title: Examples
+type: page
+weight: 2
 ---
 
 ## Buttons ##

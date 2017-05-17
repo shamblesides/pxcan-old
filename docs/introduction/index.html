@@ -9,18 +9,18 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1">
     <meta http-equiv="X-UA-Compatible" content="IE=10" />
-    <title>Examples - pxcan.js Docs</title>
+    <title>Introduction - pxcan.js Docs</title>
     <meta name="generator" content="Hugo 0.20.7" />
 
     
     <meta name="description" content="Pixels on an HTML5 Canvas, done right.">
     
-    <link rel="canonical" href="http://www.nigel.fyi/pxcan/examples/">
+    <link rel="canonical" href="http://www.nigel.fyi/pxcan/introduction/">
     
     <meta name="author" content="shamblesides">
     
 
-    <meta property="og:url" content="http://www.nigel.fyi/pxcan/examples/">
+    <meta property="og:url" content="http://www.nigel.fyi/pxcan/introduction/">
     <meta property="og:title" content="pxcan.js Docs">
     <meta property="og:image" content="http://www.nigel.fyi/pxcan/images/logo.png">
     <meta name="apple-mobile-web-app-title" content="pxcan.js Docs">
@@ -97,7 +97,7 @@
     </div>
     <div class="stretch">
       <div class="title">
-        Examples
+        Introduction
       </div>
     </div>
 
@@ -180,11 +180,14 @@
 
 
 
-<a  title="Introduction" href="http://www.nigel.fyi/pxcan/introduction/">
+<a class="current" title="Introduction" href="http://www.nigel.fyi/pxcan/introduction/">
 	
 	Introduction
 </a>
 
+
+<ul id="scrollspy">
+</ul>
 
 
   
@@ -198,14 +201,11 @@
 
 
 
-<a class="current" title="Examples" href="http://www.nigel.fyi/pxcan/examples/">
+<a  title="Examples" href="http://www.nigel.fyi/pxcan/examples/">
 	
 	Examples
 </a>
 
-
-<ul id="scrollspy">
-</ul>
 
 
   
@@ -242,212 +242,9 @@
 
 	<article class="article">
 		<div class="wrapper">
-			<h1>Examples </h1>
+			<h1>Introduction </h1>
 
-			
-
-<h2 id="buttons">Buttons</h2>
-
-<p>This example demonstrates how to check if the player has just pressed, just released, or is currently holding down a button.</p>
-
-<div id="button-example"></div>
-
-<pre><code>// initialize the screen
-var screen = new pxcan(&quot;#button-example&quot;);
-screen.setBackground(&quot;black&quot;);
-
-// bind a new button called &quot;myButton&quot; to the Z, X, and SPACE keys
-screen.bind('myButton', 'z', 'x', ' ');
-
-// each frame...
-screen.onFrame = function() {
-    // erase the screen
-    this.reset();
-
-    // show a red rectangle if the button is FIRST PRESSED during this frame
-    if(this.button('myButton').wasPressed) {
-        this.fill('red', 0,0, this.width/2,this.height, 1,0);
-    }
-
-    // show a blue rectangle if the button is RELEASED during this frame
-    //  it is possible for wasPressed and wasReleased to happen during the
-    //  same frame, if it was pressed and released quickly
-    if(this.button('myButton').wasReleased) {
-        this.fill('blue', 0,0, this.width/2,this.height, -1,0);
-    }
-    
-    // write &quot;down&quot; or &quot;not down&quot; depending on if the button is currently down
-    if(this.button('myButton').isDown) {
-        this.write('down', 0,0);
-    }
-    else {
-        this.write('not down', 0, 0);
-    }
-
-    // write the number of frames passed in the bottom right corner
-    this.origin(1,1);
-    this.write(this.clock, 0,0);
-};
-</code></pre>
-
-<h2 id="touch">Touch</h2>
-
-<p>This example demonstrates a lot of the touch functionality included within pxcan.js by implementing a simple drawing program.</p>
-
-<div id="touch-example"></div>
-
-<pre><code>var screen = new pxcan(&quot;#touch-example&quot;);
-screen.setBackground(&quot;black&quot;);
-screen.contextMenu = false;
-
-screen.onReady = function() {
-    this.write('draw', 0,0);
-};
-
-screen.onFrame = function() {
-    if (!this.touch.changed) return;
-
-    var tch = this.touch;
-    var color = tch.isRightClick ? 'red': 'white';
-    var size = tch.isMouse? 1 : 10;
-
-    if (tch.moved &amp;&amp; tch.isDown) {
-        drawLine(this, color, size, tch.last.bounded().x, tch.last.bounded().y, tch.bounded().x, tch.bounded().y);
-    }
-    else if (tch.wasStarted) {
-        this.fill(color, tch.x, tch.y, size, size);
-    }
-    else if (tch.wasReleased &amp;&amp; tch.isDrag) {
-        drawLine(this, 'gray', size, tch.start.x, tch.start.y, tch.x, tch.y);
-    }
-    else if (tch.wasInterrupted) {
-        this.fill('orange');
-    }
-    else if (!tch.inBounds &amp;&amp; tch.last &amp;&amp; tch.last.inBounds) {
-        this.write('out of bounds', 0,0);
-    }
-};
-
-function drawLine(screen, color, size, x0,y0, x1,y1) {
-    var dx = Math.abs(x1-x0);
-    var dy = Math.abs(y1-y0);
-    var sx = (x0 &lt; x1) ? 1 : -1;
-    var sy = (y0 &lt; y1) ? 1 : -1;
-    var err = dx-dy;
-
-    while(true){
-    screen.fill(color, x0,y0, size,size);
-
-    if ((x0==x1) &amp;&amp; (y0==y1)) break;
-        var e2 = 2*err;
-        if (e2 &gt;-dy){ err -= dy; x0  += sx; }
-        if (e2 &lt; dx){ err += dx; y0  += sy; }
-    }
-}
-</code></pre>
-
-<h2 id="hasfocus">hasFocus</h2>
-
-<p>A very simple demo to check if the game element has keyboard focus.</p>
-
-<div id="focus-example"></div>
-
-<pre><code>var screen = new pxcan(&quot;#focus-example&quot;);
-screen.frameskip = 5;
-
-screen.onFrame = function() {
-    this.fill(this.hasFocus? 'green': 'red');
-    this.write(this.clock, 0,0);
-};
-</code></pre>
-
-<script src="http://www.nigel.fyi/pxcan/pxcan.js"></script>
-<script>
-    var screen = new pxcan("#button-example");
-    screen.setBackground("black");
-    screen.bind('myButton', 'z', 'x', ' ');
-
-    screen.frameskip = 5;
-    
-    screen.onFrame = function() {
-        this.reset();
-
-        if(this.button('myButton').wasPressed) {
-            this.fill('red', 0,0, this.width/2,this.height, 1,0);
-        }
-
-        if(this.button('myButton').wasReleased) {
-            this.fill('blue', 0,0, this.width/2,this.height, -1,0);
-        }
-        
-        if(this.button('myButton').isDown) {
-            this.write('down', 0,0);
-        }
-        else {
-            this.write('not down', 0, 0);
-        }
-
-        this.origin(1,1);
-        this.write(this.clock, 0,0);
-    };
-
-    screen = new pxcan("#touch-example");
-    screen.setBackground("black");
-    screen.contextMenu = false;
-
-    screen.onReady = function() {
-        this.write('draw', 0,0);
-    };
-
-    screen.onFrame = function() {
-        if (!this.touch.changed) return;
-
-        var tch = this.touch;
-        var color = tch.isRightClick ? 'red': 'white';
-        var size = tch.isMouse? 1 : 10;
-
-        if (tch.moved && tch.isDown) {
-            drawLine(this, color, size, tch.last.bounded().x, tch.last.bounded().y, tch.bounded().x, tch.bounded().y);
-        }
-        else if (tch.wasStarted) {
-            this.fill(color, tch.x, tch.y, size, size);
-        }
-        else if (tch.wasReleased && tch.isDrag) {
-            drawLine(this, 'gray', size, tch.start.x, tch.start.y, tch.x, tch.y);
-        }
-        else if (tch.wasInterrupted) {
-            this.fill('orange');
-        }
-        if (!tch.inBounds && tch.last && tch.last.inBounds) {
-            this.write('out of bounds', 0,0);
-        }
-    };
-
-    function drawLine(screen, color, size, x0,y0, x1,y1) {
-        var dx = Math.abs(x1-x0);
-        var dy = Math.abs(y1-y0);
-        var sx = (x0 < x1) ? 1 : -1;
-        var sy = (y0 < y1) ? 1 : -1;
-        var err = dx-dy;
-
-        while(true){
-        screen.fill(color, x0,y0, size,size);
-
-        if ((x0==x1) && (y0==y1)) break;
-            var e2 = 2*err;
-            if (e2 >-dy){ err -= dy; x0  += sx; }
-            if (e2 < dx){ err += dx; y0  += sy; }
-        }
-    }
-
-    screen = new pxcan("#focus-example");
-    screen.frameskip = 5;
-
-    screen.onFrame = function() {
-        this.fill(this.hasFocus? 'green': 'red');
-        this.write(this.clock, 0,0);
-    };
-</script>
+			<p>This is pxcan.js.</p>
 
 
 			<aside class="copyright" role="note">
@@ -466,25 +263,25 @@ screen.onFrame = function() {
 <nav class="pagination" aria-label="Footer">
   <div class="previous">
   
-      <a href="http://www.nigel.fyi/pxcan/introduction/" title="Introduction">
-        <span class="direction">
-          Previous
-        </span>
-        <div class="page">
-          <div class="button button-previous" role="button" aria-label="Previous">
-            <i class="icon icon-back"></i>
-          </div>
-          <div class="stretch">
-            <div class="title">
-              Introduction
-            </div>
-          </div>
-        </div>
-      </a>
-  
   </div>
 
   <div class="next">
+  
+      <a href="http://www.nigel.fyi/pxcan/examples/" title="Examples">
+        <span class="direction">
+          Next
+        </span>
+        <div class="page">
+          <div class="stretch">
+            <div class="title">
+              Examples
+            </div>
+          </div>
+          <div class="button button-next" role="button" aria-label="Next">
+            <i class="icon icon-forward"></i>
+          </div>
+        </div>
+      </a>
   
   </div>
 </nav>

@@ -2,18 +2,16 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://www.nigel.fyi/pxcan/introduction/</loc>
+  </url>
+  
+  <url>
     <loc>http://www.nigel.fyi/pxcan/examples/</loc>
     <lastmod>2016-07-20T17:39:41-06:00</lastmod>
   </url>
   
   <url>
     <loc>http://www.nigel.fyi/pxcan/categories/</loc>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://www.nigel.fyi/pxcan/examples/</loc>
-    <lastmod>2016-07-20T17:39:41-06:00</lastmod>
     <priority>0</priority>
   </url>
   
