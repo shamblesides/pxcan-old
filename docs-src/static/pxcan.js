@@ -1,6 +1,6 @@
 'use strict';
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 var pxcan = function pxcan(element) {
   var _this = this;
@@ -525,7 +525,6 @@ var pxcan = function pxcan(element) {
     return document.hasFocus() && document.activeElement === element;
   });
 };
-
 pxcan.Panel = function (parent, x, y, w, h, xAnchor, yAnchor) {
   // verify arguments
   if ([5, 7].indexOf(arguments.length) === -1) throw new Error('invalid number of arguments.');
@@ -598,7 +597,6 @@ pxcan.Panel = function (parent, x, y, w, h, xAnchor, yAnchor) {
 pxcan.prototype.panel = pxcan.Panel.prototype.panel = function (x, y, w, h, xAnchor, yAnchor) {
   if (arguments.length === 4) return new pxcan.Panel(this, x, y, w, h);else if (arguments.length === 6) return new pxcan.Panel(this, x, y, w, h, xAnchor, yAnchor);else throw new Error('invalid number of arguments.');
 };
-
 pxcan.prototype.setBackground = function (bg) {
   (this.element !== window ? this.element : document.getElementsByTagName('body')[0]).style.background = bg;
 };
@@ -843,7 +841,6 @@ pxcan.prototype.border = pxcan.Panel.prototype.border = function () /* [sheet,] 
   this.origin(oldOrigin.x, oldOrigin.y);
   this.offset(oldOffset.x, oldOffset.y);
 };
-
 //preloading module
 (function () {
   var instances = [];
@@ -1122,7 +1119,6 @@ pxcan.Sprite = function (sheet, frame) {
 pxcan.Sprite.prototype.scaledImage = function (scale) {
   return pxcan.scaledImage(this.sheet.src, scale);
 };
-
 pxcan.globalSheets = {};
 
 (function () {
@@ -1160,7 +1156,6 @@ var pxMath = {
     return pxMath.mid(min, val, max);
   }
 };
-
 // custom random number generator
 //  it can just be called as a function, or it can be seeded
 pxcan.random = function () {
@@ -1202,7 +1197,6 @@ pxcan.random = function () {
   };
   return SinRand(Math.random());
 }();
-
 // word wrap function by james padolsey
 // modified from original
 // http://james.padolsey.com/javascript/wordwrap-for-javascript/
