@@ -3,7 +3,7 @@
   "version": "0.2.0",
   "description": "pxcan game library",
   "author": "SHAMBLESiDES",
-  "license": "BSD-2-Clause",
+  "license": "MIT",
   "devDependencies": {
     "babel-preset-env": "^1.4.0",
     "event-stream": "^3.3.4",
